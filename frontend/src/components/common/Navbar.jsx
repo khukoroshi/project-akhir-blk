@@ -10,6 +10,7 @@ function Navbar({ username }) {
 
         <div className="flex items-center gap-4">
           <Link to="/">Home</Link>
+          {username && <Link to="/myList">Anime List</Link>}
           {username ? <p>{username}</p> : <Link to="/login">Login</Link>}
         </div>
       </nav>
