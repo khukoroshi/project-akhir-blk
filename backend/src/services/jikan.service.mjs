@@ -1,12 +1,72 @@
-import axios from "axios";
+import https from "https";
+
 const JIKAN_BASE_URL = "https://api.jikan.moe/v4";
 
-// Bikin default header agar tidak perlu ditulis berulang kali
-const FETCH_OPTIONS = {
-  headers: {
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-  },
+const requestJikan = (url) => {
+  return new Promise((resolve, reject) => {
+    const request = https.get(
+      url,
+      {
+        family: 4,
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "AniWatchList/1.0",
+        },
+      },
+      (response) => {
+        let data = "";
+
+        response.setEncoding("utf8");
+
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        response.on("end", () => {
+          let json;
+
+          try {
+            json = JSON.parse(data);
+          } catch {
+            const error = new Error(
+              "Jikan mengembalikan response yang bukan JSON",
+            );
+
+            error.statusCode = response.statusCode || 500;
+
+            reject(error);
+            return;
+          }
+
+          if (response.statusCode < 200 || response.statusCode >= 300) {
+            const error = new Error(
+              json?.message || `Jikan API error: ${response.statusCode}`,
+            );
+
+            error.statusCode = response.statusCode;
+
+            reject(error);
+            return;
+          }
+
+          resolve(json);
+        });
+      },
+    );
+
+    request.setTimeout(10000, () => {
+      request.destroy();
+
+      const error = new Error("Request ke Jikan timeout");
+      error.statusCode = 504;
+
+      reject(error);
+    });
+
+    request.on("error", (error) => {
+      reject(error);
+    });
+  });
 };
 
 const getAnime = async (query = "") => {
@@ -14,53 +74,15 @@ const getAnime = async (query = "") => {
     ? `${JIKAN_BASE_URL}/anime?q=${encodeURIComponent(query)}`
     : `${JIKAN_BASE_URL}/anime`;
 
-  console.log(url);
-
-  const response = await axios.get(url);
-  return response.data;
-  // console.log("STATUS JIKAN:", response.status);
-
-  // // const data = await response.json();
-
-  // // console.log("RESPONSE JIKAN:", data);
-
-  // if (!response.ok) {
-  //   const error = new Error(`Jikan API error: ${response.status}`);
-  //   error.statusCode = response.status;
-  //   throw error;
-  // }
-
-  // return await response.json();
+  return await requestJikan(url);
 };
 
 const getAnimeByMalId = async (malId) => {
-  const response = await fetch(
-    `${JIKAN_BASE_URL}/anime/${malId}`,
-    FETCH_OPTIONS,
-  );
-
-  if (!response.ok) {
-    const error = new Error(`Jikan API error: ${response.status}`);
-    error.statusCode = response.status;
-    throw error;
-  }
-
-  return await response.json();
+  return await requestJikan(`${JIKAN_BASE_URL}/anime/${malId}`);
 };
 
 const getAnimeEpisodes = async (malId) => {
-  const response = await fetch(
-    `${JIKAN_BASE_URL}/anime/${malId}/episodes`,
-    FETCH_OPTIONS,
-  );
-
-  if (!response.ok) {
-    const error = new Error(`Jikan API error: ${response.status}`);
-    error.statusCode = response.status;
-    throw error;
-  }
-
-  return await response.json();
+  return await requestJikan(`${JIKAN_BASE_URL}/anime/${malId}/episodes`);
 };
 
 export { getAnime, getAnimeByMalId, getAnimeEpisodes };

@@ -1,59 +1,170 @@
+DROP DATABASE AniWatchList;
 CREATE DATABASE AniWatchList;
-USE AniWatchList;-- 
+USE AniWatchList;
 
-CREATE TABLE users(
-	us_id INT unsigned auto_increment primary key,
-    us_name varchar(50) not null unique,
-    us_email varchar(100) not null unique,
-    us_password varchar(255) not null,
-    us_created_at timestamp default current_timestamp
+-- ============================================================
+-- TABLE: users
+-- Menyimpan data akun pengguna
+-- ============================================================
+
+CREATE TABLE users (
+    us_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    us_name VARCHAR(50) NOT NULL UNIQUE,
+    us_email VARCHAR(100) NOT NULL UNIQUE,
+    us_password VARCHAR(255) NOT NULL,
+    us_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- ============================================================
+-- TABLE: animes
+-- Menyimpan anime yang ditambahkan user ke My List
+-- ============================================================
 
-CREATE TABLE animes(
-	anim_id INT unsigned auto_increment primary key,
-    us_id INT unsigned not null,
-    mal_id INT UNSIGNED NULL,
-    anim_title varchar(255) not null,
-    anim_img_url text,
-    anim_current_episode int unsigned default 0,
-    anim_total_episode int unsigned default 0,
-    anim_type ENUM('TV', 'Movie', 'OVA', 'ONA', 'Special') DEFAULT 'TV',
-    anim_status ENUM('watching', 'completed', 'dropped', 'plan to watch') DEFAULT 'watching',
-    anim_tier ENUM('S', 'A', 'B', 'C', 'D') NULL,
-    anim_score TINYINT UNSIGNED CHECK (anim_score BETWEEN 1 AND 10),
-    anim_personal_notes text,
-    anim_created_at timestamp default current_timestamp,
+CREATE TABLE animes (
+    anim_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    -- Relasi ke user pemilik anime
+    us_id INT UNSIGNED NOT NULL,
+    -- Identitas anime dari sumber eksternal
+    external_id INT UNSIGNED NOT NULL,
+    external_source VARCHAR(30) NOT NULL,
+    -- Informasi anime
+    anim_title VARCHAR(255) NOT NULL,
+    anim_img_url TEXT,
+    -- Progress menonton
+    anim_current_episode INT UNSIGNED DEFAULT 0,
+    anim_total_episode INT UNSIGNED DEFAULT 0,
+    -- Informasi user terhadap anime
+    anim_type ENUM(
+        'TV',
+        'Movie',
+        'OVA',
+        'ONA',
+        'Special'
+    ) DEFAULT 'TV',
+    anim_status ENUM(
+        'watching',
+        'completed',
+        'dropped',
+        'plan to watch'
+    ) DEFAULT 'watching',
+    anim_tier ENUM(
+        'S',
+        'A',
+        'B',
+        'C',
+        'D'
+    ) DEFAULT NULL,
+    anim_score TINYINT UNSIGNED
+        CHECK (anim_score BETWEEN 1 AND 10),
+    anim_personal_notes TEXT,
+    anim_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Setiap user hanya boleh memiliki anime yang sama
+    -- satu kali dari sumber yang sama.
+    CONSTRAINT uq_user_anime
+        UNIQUE (us_id, external_source, external_id),
+    -- Relasi anime dengan user
     CONSTRAINT fk_anime_user
-		foreign key(us_id) references users(us_id)
-        on delete cascade
-        on update cascade
+        FOREIGN KEY (us_id)
+        REFERENCES users(us_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
-ALTER TABLE animes ADD UNIQUE(anim_title);
+
+-- ============================================================
+-- STORED PROCEDURES
+-- ============================================================
 
 DELIMITER //
 
-CREATE PROCEDURE sp_insert_anime(
+
+-- ============================================================
+-- PROCEDURE: sp_insert_user
+-- Menambahkan user baru dan mengembalikan data user
+-- ============================================================
+
+-- DROP PROCEDURE IF EXISTS sp_insert_user//
+
+CREATE PROCEDURE sp_insert_user (
+    IN p_us_name VARCHAR(50),
+    IN p_us_email VARCHAR(100),
+    IN p_us_password VARCHAR(255)
+)
+BEGIN
+    INSERT INTO users (
+        us_name,
+        us_email,
+        us_password
+    )
+    VALUES (
+        p_us_name,
+        p_us_email,
+        p_us_password
+    );
+    SELECT
+        us_id,
+        us_name,
+        us_email,
+        us_created_at
+    FROM users
+    WHERE us_id = LAST_INSERT_ID();
+END//
+
+
+-- ============================================================
+-- PROCEDURE: sp_insert_anime
+-- Menambahkan anime ke My List milik user
+-- ============================================================
+
+-- DROP PROCEDURE IF EXISTS sp_insert_anime//
+
+CREATE PROCEDURE sp_insert_anime (
     IN p_us_id INT UNSIGNED,
-    IN p_mal_id INT UNSIGNED,
+    IN p_external_id INT UNSIGNED,
+    IN p_external_source VARCHAR(30),
     IN p_anim_title VARCHAR(255),
     IN p_anim_img_url TEXT,
     IN p_anim_total_episode INT UNSIGNED,
-    IN p_anim_type ENUM('TV', 'Movie', 'OVA', 'ONA', 'Special'),
-    IN p_anim_status ENUM('watching', 'completed', 'dropped', 'plan to watch'),
-    IN p_anim_tier ENUM('S', 'A', 'B', 'C', 'D'),
+    IN p_anim_type ENUM(
+        'TV',
+        'Movie',
+        'OVA',
+        'ONA',
+        'Special'
+    ),
+    IN p_anim_status ENUM(
+        'watching',
+        'completed',
+        'dropped',
+        'plan to watch'
+    ),
+    IN p_anim_tier ENUM(
+        'S',
+        'A',
+        'B',
+        'C',
+        'D'
+    ),
     IN p_anim_score TINYINT UNSIGNED,
     IN p_anim_personal_notes TEXT
 )
 BEGIN
+
     DECLARE v_current_ep INT UNSIGNED DEFAULT 0;
-    IF p_anim_status = 'completed' AND p_anim_total_episode > 0 THEN
+
+    -- Jika anime langsung ditambahkan sebagai completed,
+    -- progress episode otomatis menjadi total episode.
+    IF p_anim_status = 'completed'
+       AND p_anim_total_episode > 0 THEN
+
         SET v_current_ep = p_anim_total_episode;
+
     END IF;
+
 
     INSERT INTO animes (
         us_id,
-        mal_id,
+        external_id,
+        external_source,
         anim_title,
         anim_img_url,
         anim_current_episode,
@@ -63,10 +174,11 @@ BEGIN
         anim_tier,
         anim_score,
         anim_personal_notes
-    ) 
+    )
     VALUES (
         p_us_id,
-        p_mal_id,
+        p_external_id,
+        p_external_source,
         p_anim_title,
         p_anim_img_url,
         v_current_ep,
@@ -77,61 +189,101 @@ BEGIN
         p_anim_score,
         p_anim_personal_notes
     );
-    SELECT * FROM animes WHERE anim_id = LAST_INSERT_ID();
-END //
 
-CREATE PROCEDURE sp_insert_user (
-	p_us_name varchar(50),
-    p_us_email varchar(100),
-    p_us_password varchar(255)
-)
-BEGIN
-	INSERT INTO users (us_name, us_email, us_password) 
-    VALUES (p_us_name, p_us_email, p_us_password);
-    
-    SELECT us_id, us_name , us_email, us_created_at FROM users WHERE us_id = LAST_INSERT_ID();
+
+    -- Mengembalikan data anime yang baru ditambahkan.
+    SELECT *
+    FROM animes
+    WHERE anim_id = LAST_INSERT_ID();
+
 END//
 
-CREATE PROCEDURE sp_update_anime(
+
+-- ============================================================
+-- PROCEDURE: sp_update_anime
+-- Mengubah progress dan informasi personal anime
+-- ============================================================
+
+-- DROP PROCEDURE IF EXISTS sp_update_anime//
+
+CREATE PROCEDURE sp_update_anime (
     IN p_anim_id INT UNSIGNED,
     IN p_us_id INT UNSIGNED,
     IN p_anim_current_episode INT UNSIGNED,
-    IN p_anim_status ENUM('watching', 'completed', 'dropped', 'plan to watch'),
-    IN p_anim_tier ENUM('S', 'A', 'B', 'C', 'D'),
+    IN p_anim_status ENUM(
+        'watching',
+        'completed',
+        'dropped',
+        'plan to watch'
+    ),
+    IN p_anim_tier ENUM(
+        'S',
+        'A',
+        'B',
+        'C',
+        'D'
+    ),
     IN p_anim_score TINYINT UNSIGNED,
     IN p_anim_personal_notes TEXT
 )
 BEGIN
+
     DECLARE v_total_ep INT UNSIGNED DEFAULT 0;
     DECLARE v_final_status VARCHAR(20);
 
-    -- 1. Ambil total episode untuk validasi otomatis
-    SELECT anim_total_episode INTO v_total_ep 
-    FROM animes 
-    WHERE anim_id = p_anim_id AND us_id = p_us_id;
 
-    -- 2. Logika Otomatis: Jika episode tontonan >= total episode, set status ke 'completed'
+    -- Mengambil total episode anime milik user.
+    SELECT anim_total_episode
+    INTO v_total_ep
+    FROM animes
+    WHERE anim_id = p_anim_id
+      AND us_id = p_us_id;
+
+
+    -- Menggunakan status yang dikirim user sebagai default.
     SET v_final_status = p_anim_status;
-    IF v_total_ep > 0 AND p_anim_current_episode >= v_total_ep THEN
+
+
+    -- Jika progress sudah mencapai total episode,
+    -- status otomatis menjadi completed.
+    IF v_total_ep > 0
+       AND p_anim_current_episode >= v_total_ep THEN
+
         SET v_final_status = 'completed';
+
     END IF;
 
-    -- 3. Eksekusi Update
-    UPDATE animes 
-    SET 
+
+    -- Update hanya anime milik user yang sedang login.
+    UPDATE animes
+    SET
         anim_current_episode = p_anim_current_episode,
         anim_status = v_final_status,
         anim_tier = p_anim_tier,
         anim_score = p_anim_score,
         anim_personal_notes = p_anim_personal_notes
-    WHERE anim_id = p_anim_id AND us_id = p_us_id;
+    WHERE anim_id = p_anim_id
+      AND us_id = p_us_id;
 
-    -- 4. Kembalikan data anime setelah berhasil di-update
-    SELECT * FROM animes WHERE anim_id = p_anim_id AND us_id = p_us_id;
-END //
+
+    -- Mengembalikan data setelah update.
+    SELECT *
+    FROM animes
+    WHERE anim_id = p_anim_id
+      AND us_id = p_us_id;
+
+END//
+
 
 DELIMITER ;
 
 
-drop procedure sp_insert_user;
-select * FROM users;
+-- ============================================================
+-- TEST / DEVELOPMENT
+-- ============================================================
+
+-- Melihat seluruh user
+-- SELECT * FROM users;
+
+-- Melihat seluruh anime dalam My List
+-- SELECT * FROM animes;
