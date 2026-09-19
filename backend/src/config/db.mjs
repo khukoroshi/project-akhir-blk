@@ -1,17 +1,3 @@
-// import mysql from "mysql2/promise";
-// import "dotenv/config";
-
-// console.log("Menghubungkan ke database....");
-
-// const db = await mysql.createConnection({
-//   host: process.env.MYSQL_HOST,
-//   user: process.env.MYSQL_USER,
-//   password: process.env.MYSQL_PASSWORD,
-//   database: process.env.MYSQL_DATABASE,
-// });
-// console.log("Berhasil terhubung ke database.");
-// export default db;
-
 import mysql from "mysql2/promise";
 import "dotenv/config";
 

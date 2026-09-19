@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-function Navbar() {
+function Navbar({ username }) {
   return (
     <header className="border-b bg-white">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
@@ -8,10 +8,9 @@ function Navbar() {
           MyApp
         </Link>
 
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
           <Link to="/">Home</Link>
-
-          <Link to="/login">Login</Link>
+          {username ? <p>{username}</p> : <Link to="/login">Login</Link>}
         </div>
       </nav>
     </header>

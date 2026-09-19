@@ -1,0 +1,11 @@
+name: aniwatchlist
+variables:
+  - name: link
+    value: http://localhost:3000
+    description: ""
+  - name: api_auth_link
+    value: api/auth
+    description: ""
+  - name: api_anim_link
+    value: api/anime
+    description: ""

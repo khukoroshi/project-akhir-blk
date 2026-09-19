@@ -1,0 +1,28 @@
+info:
+  name: update list
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{link}}/{{api_anim_link}}/1"
+  body:
+    type: json
+    data: |-
+      {
+        "eps": 1090,
+        "status": "watching",
+        "tier": "C",
+        "score": 8,
+        "notes": "Sudah mendekati episode terbaru minggu ini!"
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0aW5nM0BnbWFpbC5jb20iLCJpYXQiOjE3ODk2MTcyMTQsImV4cCI6MTc5MDIyMjAxNH0.diylJD9IJ7d0ZBzt1XywXAow32A5vQGcyu59sxkO7O0
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -5,7 +5,7 @@ function Button({
   size = "medium",
   disabled = false,
   onClick,
-  className = "",
+  className,
 }) {
   const variants = {
     primary: "bg-blue-600 text-white hover:bg-blue-700",

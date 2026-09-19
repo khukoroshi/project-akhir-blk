@@ -1,0 +1,32 @@
+info:
+  name: menambahkan list anime
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{link}}/{{api_anim_link}}"
+  body:
+    type: json
+    data: |-
+      {
+        "malId": 52034,
+        "title": "Solo Leveling",
+        "imgUrl": "https://cdn.myanimelist.net/images/anime/1172/140880.jpg",
+        "totalEps": 12,
+        "type": "TV",
+        "status": "completed",
+        "tier": "B",
+        "score": 7,
+        "notes": "Sung Jin-woo sangat overpower."
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0aW5nM0BnbWFpbC5jb20iLCJpYXQiOjE3ODk2MTcyMTQsImV4cCI6MTc5MDIyMjAxNH0.diylJD9IJ7d0ZBzt1XywXAow32A5vQGcyu59sxkO7O0
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -4,6 +4,7 @@ import errorHandler from "./middlewares/error.middleware.mjs";
 import AppError from "./utils/appError.mjs";
 import authRoutes from "./routes/auth.routes.mjs";
 import animRoutes from "./routes/anim.routes.mjs";
+import jikanRoutes from "./routes/jikan.routes.mjs";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/anime", animRoutes);
+app.use("/api/catalog", jikanRoutes);
 
 // Endpoint utama
 app.get("/", (req, res) => {

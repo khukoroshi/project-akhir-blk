@@ -1,67 +1,32 @@
-const API_URL = import.meta.env.VITE_API_URL;
+import axios from "axios";
 
-async function request(endpoint, options = {}) {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-    ...options,
-  });
+const api = axios.create({
+  baseURL: "http://localhost:3000/api",
+  headers: { "Content-Type": "application/json" },
+});
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => null);
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 
-    throw new Error(error?.message || "Something went wrong");
-  }
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href("/login");
+    }
+    return Promise.reject(error);
+  },
+);
 
-  return response.json();
-}
-
-export const api = {
-  get: (endpoint, options = {}) =>
-    request(endpoint, {
-      method: "GET",
-      ...options,
-    }),
-
-  post: (endpoint, data, options = {}) =>
-    request(endpoint, {
-      method: "POST",
-      body: JSON.stringify(data),
-      ...options,
-    }),
-
-  put: (endpoint, data, options = {}) =>
-    request(endpoint, {
-      method: "PUT",
-      body: JSON.stringify(data),
-      ...options,
-    }),
-
-  patch: (endpoint, data, options = {}) =>
-    request(endpoint, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-      ...options,
-    }),
-
-  delete: (endpoint, options = {}) =>
-    request(endpoint, {
-      method: "DELETE",
-      ...options,
-    }),
-};
-
-// import { api } from "../services/api";
-
-// const users = await api.get("/users");
-
-// POST:
-
-// await api.post("/users", {
-//   name: "John",
-//   email: "john@example.com",
-// });
-
-// Ini membuat component jauh lebih bersih.
+export default api;

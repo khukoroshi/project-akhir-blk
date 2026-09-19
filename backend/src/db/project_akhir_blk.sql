@@ -29,6 +29,7 @@ CREATE TABLE animes(
         on update cascade
 );
 
+ALTER TABLE animes ADD UNIQUE(anim_title);
 
 DELIMITER //
 
@@ -87,6 +88,50 @@ CREATE PROCEDURE sp_insert_user (
 BEGIN
 	INSERT INTO users (us_name, us_email, us_password) 
     VALUES (p_us_name, p_us_email, p_us_password);
+    
+    SELECT us_id, us_name , us_email, us_created_at FROM users WHERE us_id = LAST_INSERT_ID();
 END//
 
+CREATE PROCEDURE sp_update_anime(
+    IN p_anim_id INT UNSIGNED,
+    IN p_us_id INT UNSIGNED,
+    IN p_anim_current_episode INT UNSIGNED,
+    IN p_anim_status ENUM('watching', 'completed', 'dropped', 'plan to watch'),
+    IN p_anim_tier ENUM('S', 'A', 'B', 'C', 'D'),
+    IN p_anim_score TINYINT UNSIGNED,
+    IN p_anim_personal_notes TEXT
+)
+BEGIN
+    DECLARE v_total_ep INT UNSIGNED DEFAULT 0;
+    DECLARE v_final_status VARCHAR(20);
+
+    -- 1. Ambil total episode untuk validasi otomatis
+    SELECT anim_total_episode INTO v_total_ep 
+    FROM animes 
+    WHERE anim_id = p_anim_id AND us_id = p_us_id;
+
+    -- 2. Logika Otomatis: Jika episode tontonan >= total episode, set status ke 'completed'
+    SET v_final_status = p_anim_status;
+    IF v_total_ep > 0 AND p_anim_current_episode >= v_total_ep THEN
+        SET v_final_status = 'completed';
+    END IF;
+
+    -- 3. Eksekusi Update
+    UPDATE animes 
+    SET 
+        anim_current_episode = p_anim_current_episode,
+        anim_status = v_final_status,
+        anim_tier = p_anim_tier,
+        anim_score = p_anim_score,
+        anim_personal_notes = p_anim_personal_notes
+    WHERE anim_id = p_anim_id AND us_id = p_us_id;
+
+    -- 4. Kembalikan data anime setelah berhasil di-update
+    SELECT * FROM animes WHERE anim_id = p_anim_id AND us_id = p_us_id;
+END //
+
 DELIMITER ;
+
+
+drop procedure sp_insert_user;
+select * FROM users;
