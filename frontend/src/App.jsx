@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
-import AnimeList from "./pages/AnimeList";
+// import AnimeList from "./pages/AnimeList";
+import MyList from "./pages/MyList";
 import AnimeDetail from "./pages/AnimeDetail";
 
 import LoginForm from "./components/features/aunt/LoginForm";
@@ -26,7 +27,7 @@ function App() {
 
           {/* Protected */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/myList" element={<AnimeList />} />
+            <Route path="/myList" element={<MyList />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

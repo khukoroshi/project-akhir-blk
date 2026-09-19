@@ -41,7 +41,12 @@ const cariAnimeById = async (req, res, next) => {
 const createWatchList = async (req, res, next) => {
   try {
     const usId = req.user.id;
-    const { title } = req.body;
+
+    const { externalId, title } = req.body;
+
+    if (!externalId) {
+      return next(new AppError("externalId anime wajib diisi!", 400));
+    }
 
     if (!title) {
       return next(new AppError("Judul anime (title) wajib diisi!", 400));
@@ -58,10 +63,10 @@ const createWatchList = async (req, res, next) => {
     if (error.code === "ER_DUP_ENTRY") {
       return next(new AppError("Anime sudah ada dalam watchlist kamu", 409));
     }
+
     next(error);
   }
 };
-
 // 4. Update Detail Anime (Status, Episode, Tier, Score, Notes)
 const updateWatchList = async (req, res, next) => {
   try {

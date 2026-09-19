@@ -18,7 +18,8 @@ const Anime = {
   // Tambah anime baru ke watchlist (menggunakan Stored Procedure)
   createWatchList: async (usId, data) => {
     const {
-      malId = null,
+      externalId,
+      externalSource = "anilist",
       title,
       imgUrl = null,
       totalEps = 0,
@@ -29,10 +30,12 @@ const Anime = {
       notes = null,
     } = data;
 
-    const query = "CALL sp_insert_anime(?,?,?,?,?,?,?,?,?,?)";
+    const query = "CALL sp_insert_anime(?,?,?,?,?,?,?,?,?,?,?)";
+
     const [result] = await db.execute(query, [
       usId,
-      malId,
+      externalId,
+      externalSource,
       title,
       imgUrl,
       totalEps,
@@ -43,10 +46,8 @@ const Anime = {
       notes,
     ]);
 
-    // Mengambil data anime yang baru saja di-insert dari hasil Stored Procedure
     return result[0][0];
   },
-
   // Update detail anime menggunakan Stored Procedure
   updateWatchList: async (animId, usId, data) => {
     const { eps, status, tier, score, notes } = data;
