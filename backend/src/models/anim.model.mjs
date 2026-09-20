@@ -68,14 +68,22 @@ const Anime = {
 
   // Fitur Quick +1 Episode (Memanfaatkan sp_update_anime)
   incrementEpisode: async (animId, usId) => {
-    // Ambil data anime saat ini
     const currentAnime = await Anime.getAnimeById(animId, usId);
-    if (!currentAnime) return null;
 
-    // Tambah 1 episode
+    if (!currentAnime) {
+      return null;
+    }
+
+    // Jangan melebihi total episode
+    if (
+      currentAnime.anim_total_episode > 0 &&
+      currentAnime.anim_current_episode >= currentAnime.anim_total_episode
+    ) {
+      return currentAnime;
+    }
+
     const newEps = currentAnime.anim_current_episode + 1;
 
-    // Panggil updateWatchList yang menggunakan Stored Procedure
     return await Anime.updateWatchList(animId, usId, {
       eps: newEps,
       status: currentAnime.anim_status,
