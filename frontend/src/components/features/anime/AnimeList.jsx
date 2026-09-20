@@ -574,6 +574,7 @@ function EditAnimeModal({ anime, onClose, onSave }) {
     try {
       await onSave(anime.anim_id, {
         eps: Number(form.eps),
+        teps: anime.anim_total_episode,
         status: form.status,
         tier: form.tier || null,
         score: form.score === "" ? null : Number(form.score),

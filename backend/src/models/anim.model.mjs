@@ -50,13 +50,17 @@ const Anime = {
   },
   // Update detail anime menggunakan Stored Procedure
   updateWatchList: async (animId, usId, data) => {
-    const { eps, status, tier, score, notes } = data;
+    const { eps, teps, status, tier, score, notes } = data;
+    let eps_real = eps;
+    if (status === "completed") {
+      eps_real = teps;
+    }
 
     const query = "CALL sp_update_anime(?, ?, ?, ?, ?, ?, ?)";
     const [result] = await db.execute(query, [
       animId,
       usId,
-      eps,
+      eps_real,
       status,
       tier,
       score,
