@@ -3,12 +3,15 @@ function Input({
   type = "text",
   name,
   placeholder = "",
+  max,
+  min,
   value,
   onChange,
   error,
   disabled = false,
   className = "",
   required = false,
+  children,
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -23,6 +26,8 @@ function Input({
           id={name}
           name={name}
           type={type}
+          max={max}
+          min={min}
           value={value}
           placeholder={placeholder}
           onChange={onChange}
@@ -64,6 +69,8 @@ function Input({
       )}
 
       {error && <span className="text-sm text-red-500">{error}</span>}
+
+      {children}
     </div>
   );
 }

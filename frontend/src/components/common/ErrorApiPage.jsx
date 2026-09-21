@@ -1,12 +1,12 @@
 const ErrorApiPage = ({ error }) => {
   return (
-    <div style={{ textAlign: "center", marginTop: "50px", color: "red" }}>
+    <div className="text-center mt-[50px] text-red-600">
       <h3>Gagal Memuat Data Anime</h3>
 
       <p>{error}</p>
 
-      <p style={{ fontSize: "14px", color: "#666" }}>
-        Kemungkinan server Jikan API sedang down atau sibuk. Coba refresh
+      <p className="text-[#666] text-sm">
+        Kemungkinan server API sedang down atau sibuk. Coba refresh dan tunggu
         beberapa saat lagi.
       </p>
     </div>

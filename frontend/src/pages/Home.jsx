@@ -17,7 +17,6 @@ function Home() {
 
   const [query, setQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  // const [query, setQuery] = useState("");
   useEffect(() => {
     const fetchAnime = async () => {
       setLoading(true);
@@ -45,45 +44,129 @@ function Home() {
     fetchAnime();
   }, [query]);
 
-  // if (loading) {
-  //   return <LoadingPage />;
-  // }
-
-  // if (error) {
-  //   return <ErrorApiPage error={error} />;
-  // }
-
   return (
     <MainLayout username={user?.name}>
-      <div className="mx-auto max-w-7xl">
-        <h1 className="mb-4 text-3xl font-bold">Welcome</h1>
+      <div className="space-y-10">
+        {/* ================================= */}
+        {/* HERO / SEARCH */}
+        {/* ================================= */}
 
-        {user && <p className="mb-4 text-gray-600">Halo, {user.name}!</p>}
+        <section className="relative overflow-hidden rounded-3xl bg-slate-900 px-6 py-12 shadow-sm sm:px-10">
+          {/* Decorative circles */}
 
-        <p className="mb-4 text-gray-600">This is your React starter kit.</p>
+          <div className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
 
-        <input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Cari Anime..."
-          className="rounded border p-2"
-        />
+          <div className="pointer-events-none absolute -bottom-40 left-20 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl" />
 
-        <Button
-          onClick={() => setQuery(searchInput.trim())}
-          variant="secondary"
-          className="ml-2 rounded px-4 py-2"
-        >
-          Search
-        </Button>
+          <div className="relative max-w-3xl">
+            {/* Label */}
 
-        {loading ? (
-          <LoadingPage />
-        ) : error ? (
-          <ErrorApiPage error={error} />
-        ) : (
-          <DaftarAnime animeList={animeList} />
-        )}
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+              Anime Catalog
+            </div>
+
+            {/* Heading */}
+
+            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-5xl">
+              Discover your next
+              <span className="text-indigo-400"> favorite anime.</span>
+            </h1>
+
+            {/* Description */}
+
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+              Search, discover, and keep track of the anime you want to watch.
+              Build your own personal anime collection.
+            </p>
+
+            {/* Search */}
+
+            <div className="mt-8 flex flex-col gap-2 sm:flex-row">
+              <div className="relative flex-1">
+                {/* Search icon */}
+
+                <svg
+                  className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="11" cy="11" r="7" />
+
+                  <path strokeLinecap="round" d="m20 20-4-4" />
+                </svg>
+
+                <input
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setQuery(searchInput.trim());
+                    }
+                  }}
+                  placeholder="Search anime..."
+                  className="h-12 w-full rounded-xl border border-white/10 bg-white/10 pl-12 pr-4 text-sm text-white outline-none placeholder:text-slate-400 transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
+                />
+              </div>
+
+              <Button
+                onClick={() => setQuery(searchInput.trim())}
+                variant="secondary"
+                className="h-12 rounded-xl bg-white px-6 font-semibold text-slate-900 transition hover:bg-slate-100"
+              >
+                Search
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* ================================= */}
+        {/* CATALOG */}
+        {/* ================================= */}
+
+        <section>
+          <div className="mb-5 flex items-end justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                {query ? "Search Result" : "Explore"}
+              </p>
+
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+                {query ? `Results for "${query}"` : "Top Anime"}
+              </h2>
+            </div>
+
+            {!query && (
+              <p className="hidden text-sm text-slate-400 sm:block">
+                Popular anime
+              </p>
+            )}
+          </div>
+
+          {/* ================================= */}
+          {/* API STATE */}
+          {/* ================================= */}
+
+          {loading ? (
+            <LoadingPage />
+          ) : error ? (
+            <ErrorApiPage error={error} />
+          ) : animeList.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+              <p className="text-lg font-semibold text-slate-700">
+                Anime tidak ditemukan
+              </p>
+
+              <p className="mt-2 text-sm text-slate-500">
+                Coba gunakan kata kunci pencarian yang lain.
+              </p>
+            </div>
+          ) : (
+            <DaftarAnime animeList={animeList} />
+          )}
+        </section>
       </div>
     </MainLayout>
   );

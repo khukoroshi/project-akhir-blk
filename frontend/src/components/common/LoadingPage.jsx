@@ -1,7 +1,9 @@
-const LoadingPage = () => {
+const LoadingPage = ({ text = "Loading..." }) => {
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      Loading anime...
+    <div className="flex items-center justify-center gap-2 p-4">
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+
+      <span>{text}</span>
     </div>
   );
 };
