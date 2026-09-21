@@ -50,15 +50,65 @@ function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    <div
+      className="
+      flex
+      min-h-screen
+      items-center
+      justify-center
+      bg-slate-100
+      p-4
+      transition-colors
+
+      dark:bg-slate-950
+    "
+    >
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-md space-y-4 rounded-lg bg-white p-6 shadow"
+        className="
+        w-full
+        max-w-md
+        space-y-4
+        rounded-2xl
+        border
+        border-slate-200
+        bg-white
+        p-6
+        shadow-xl
+        transition-colors
+
+        dark:border-slate-800
+        dark:bg-slate-900
+      "
       >
-        <h1 className="text-2xl font-bold">Login</h1>
+        <h1
+          className="
+          text-2xl
+          font-bold
+          text-slate-900
+
+          dark:text-white
+        "
+        >
+          Login
+        </h1>
 
         {errorMsg && (
-          <div className="rounded bg-red-100 p-3 text-sm text-red-700">
+          <div
+            className="
+            rounded-lg
+            border
+            border-red-200
+            bg-red-50
+            p-3
+            text-sm
+            text-red-700
+
+            dark:border-red-500/20
+            dark:bg-red-500/10
+            dark:text-red-400
+          "
+          >
             {errorMsg}
           </div>
         )}
@@ -83,11 +133,25 @@ function LoginForm() {
           {loading ? "Logging in..." : "Login"}
         </Button>
 
-        <p className="text-center text-sm text-gray-600">
+        <p
+          className="
+          text-center
+          text-sm
+          text-slate-500
+
+          dark:text-slate-400
+        "
+        >
           Belum punya akun?{" "}
           <Link
             to="/register"
-            className="font-medium text-blue-600 hover:underline"
+            className="
+            font-medium
+            text-indigo-600
+            hover:underline
+
+            dark:text-indigo-400
+          "
           >
             Register
           </Link>

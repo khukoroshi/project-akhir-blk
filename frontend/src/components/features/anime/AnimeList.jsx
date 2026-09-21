@@ -3,7 +3,7 @@ import api from "../../../services/api";
 
 import AnimeSection from "./AnimeSection";
 import AnimeCard from "./AnimeCard";
-import AnimeTable from "./AmimeTable";
+import AnimeTable from "./AnimeTable";
 import EditAnimeModal from "./EditAnimeModal";
 
 import LoadingPage from "../../common/LoadingPage";

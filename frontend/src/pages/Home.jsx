@@ -47,10 +47,7 @@ function Home() {
   return (
     <MainLayout username={user?.name}>
       <div className="space-y-10">
-        {/* ================================= */}
         {/* HERO / SEARCH */}
-        {/* ================================= */}
-
         <section className="relative overflow-hidden rounded-3xl bg-slate-900 px-6 py-12 shadow-sm sm:px-10">
           {/* Decorative circles */}
 
@@ -122,44 +119,40 @@ function Home() {
           </div>
         </section>
 
-        {/* ================================= */}
         {/* CATALOG */}
-        {/* ================================= */}
 
         <section>
           <div className="mb-5 flex items-end justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
+              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                 {query ? "Search Result" : "Explore"}
               </p>
 
-              <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 {query ? `Results for "${query}"` : "Top Anime"}
               </h2>
             </div>
 
             {!query && (
-              <p className="hidden text-sm text-slate-400 sm:block">
+              <p className="hidden text-sm text-slate-400 dark:text-slate-500 sm:block">
                 Popular anime
               </p>
             )}
           </div>
 
-          {/* ================================= */}
           {/* API STATE */}
-          {/* ================================= */}
 
           {loading ? (
             <LoadingPage />
           ) : error ? (
             <ErrorApiPage error={error} />
           ) : animeList.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
-              <p className="text-lg font-semibold text-slate-700">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-900">
+              <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">
                 Anime tidak ditemukan
               </p>
 
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Coba gunakan kata kunci pencarian yang lain.
               </p>
             </div>

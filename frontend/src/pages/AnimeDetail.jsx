@@ -117,16 +117,16 @@ function AnimeDetail() {
 
   return (
     <MainLayout username={user?.name}>
-      <div className="space-y-8 block text-center">
+      <div className="space-y-8 block text-center relative pt-6">
         <Link
           to="/"
-          className="text-left inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-900"
+          className="absolute top-0 left-3 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-900"
         >
           <span className="text-lg">←</span>
           Back to Anime
         </Link>
         {/* Hero */}
-        <section className="text-left relative overflow-hidden rounded-3xl bg-slate-950 text-white shadow-xl">
+        <section className="text-left mt-5 relative overflow-hidden rounded-3xl bg-slate-950 text-white shadow-xl">
           {/* BANNER */}
           {anime.bannerImage && (
             <img
@@ -273,19 +273,19 @@ function AnimeDetail() {
         </section>
 
         {/* SYNOPSIS */}
-        <section className="mx-auto rounded-2xl border max-w-[1000px] border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <section className="mx-auto rounded-2xl border max-w-[1000px] border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-5 text-left">
             <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
               About
             </p>
 
-            <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+            <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Synopsis
             </h2>
           </div>
 
           <div
-            className="max-w-4xl leading-7 text-slate-600"
+            className="max-w-4xl leading-7 text-slate-600 dark:text-slate-300"
             dangerouslySetInnerHTML={{
               __html:
                 anime.description || "Tidak ada synopsis untuk anime ini.",
@@ -334,12 +334,14 @@ function AnimeDetail() {
 
 function InfoItem({ label, value }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
       <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
         {label}
       </p>
 
-      <p className="mt-2 font-semibold text-slate-800">{value || "Unknown"}</p>
+      <p className="mt-2 font-semibold text-slate-800 dark:text-slate-100">
+        {value || "Unknown"}
+      </p>
     </div>
   );
 }

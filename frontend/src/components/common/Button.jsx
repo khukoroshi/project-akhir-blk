@@ -5,13 +5,50 @@ function Button({
   size = "medium",
   disabled = false,
   onClick,
-  className,
+  className = "",
 }) {
   const variants = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
-    danger: "bg-red-600 text-white hover:bg-red-700",
-    outline: "border border-gray-300 text-gray-800 hover:bg-gray-100",
+    primary: `
+      bg-slate-900
+      text-white
+      hover:bg-slate-700
+
+      dark:bg-white
+      dark:text-slate-900
+      dark:hover:bg-slate-200
+    `,
+
+    secondary: `
+      bg-slate-100
+      text-slate-900
+      hover:bg-slate-200
+
+      dark:bg-slate-800
+      dark:text-white
+      dark:hover:bg-slate-700
+    `,
+
+    danger: `
+      bg-red-600
+      text-white
+      hover:bg-red-700
+
+      dark:bg-red-500
+      dark:hover:bg-red-600
+    `,
+
+    outline: `
+      border
+      border-slate-300
+      bg-white
+      text-slate-700
+      hover:bg-slate-50
+
+      dark:border-slate-700
+      dark:bg-slate-900
+      dark:text-slate-300
+      dark:hover:bg-slate-800
+    `,
   };
 
   const sizes = {
@@ -26,11 +63,13 @@ function Button({
       disabled={disabled}
       onClick={onClick}
       className={`
-        rounded-md
+        rounded-lg
         font-medium
         transition
+
         disabled:cursor-not-allowed
         disabled:opacity-50
+
         ${variants[variant]}
         ${sizes[size]}
         ${className}

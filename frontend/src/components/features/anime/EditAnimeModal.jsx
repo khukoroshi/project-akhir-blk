@@ -1,10 +1,12 @@
 import { useState } from "react";
+
 import Modal from "../../common/Modal";
 import Input from "../../common/Input";
 
 function EditAnimeModal({ anime, onClose, onSave }) {
   const [form, setForm] = useState({
     eps: anime.anim_current_episode ?? 0,
+    teps: anime.anim_total_episode,
     status: anime.anim_status ?? "watching",
     tier: anime.anim_tier ?? "",
     score: anime.anim_score ?? "",
@@ -46,20 +48,36 @@ function EditAnimeModal({ anime, onClose, onSave }) {
   };
 
   return (
-    <Modal isOpen={onClose} onClose={onClose} title="Edit Anime">
-      <p className="mt-1 text-sm text-gray-500">{anime.anim_title}</p>
+    <Modal isOpen={true} onClose={onClose} title="Edit Anime">
+      {/* TITLE */}
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        {anime.anim_title}
+      </p>
 
       {/* ERROR */}
-
       {error && (
-        <div className="mt-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">
+        <div
+          className="
+            mt-4
+            rounded-lg
+            border
+            border-red-200
+            bg-red-50
+            p-3
+            text-sm
+            text-red-700
+
+            dark:border-red-500/20
+            dark:bg-red-500/10
+            dark:text-red-400
+          "
+        >
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         {/* EPISODE */}
-
         <Input
           label="Current Episode"
           type="number"
@@ -70,36 +88,25 @@ function EditAnimeModal({ anime, onClose, onSave }) {
           onChange={handleChange}
           className="w-full"
         >
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Total: {anime.anim_total_episode || "Unknown"}
           </p>
         </Input>
 
-        {/* <div>
-          <label htmlFor="eps" className="mb-1 block text-sm font-medium">
-            Current Episode
-          </label>
-
-          <input
-            id="eps"
-            name="eps"
-            type="number"
-            min="0"
-            max={anime.anim_total_episode || undefined}
-            value={form.eps}
-            onChange={handleChange}
-            className="w-full rounded-lg border px-3 py-2"
-          />
-
-          <p className="mt-1 text-xs text-gray-500">
-            Total: {anime.anim_total_episode || "Unknown"}
-          </p>
-        </div> */}
-
         {/* STATUS */}
-
         <div>
-          <label htmlFor="status" className="mb-1 block text-sm font-medium">
+          <label
+            htmlFor="status"
+            className="
+              mb-1
+              block
+              text-sm
+              font-medium
+              text-slate-700
+
+              dark:text-slate-300
+            "
+          >
             Status
           </label>
 
@@ -108,7 +115,25 @@ function EditAnimeModal({ anime, onClose, onSave }) {
             name="status"
             value={form.status}
             onChange={handleChange}
-            className="w-full rounded-lg border px-3 py-2"
+            className="
+              w-full
+              rounded-lg
+              border
+              border-slate-300
+              bg-white
+              px-3 py-2
+              text-slate-900
+              outline-none
+              transition
+
+              focus:border-indigo-500
+              focus:ring-2
+              focus:ring-indigo-500/20
+
+              dark:border-slate-700
+              dark:bg-slate-950
+              dark:text-white
+            "
           >
             <option value="watching">Watching</option>
 
@@ -121,9 +146,19 @@ function EditAnimeModal({ anime, onClose, onSave }) {
         </div>
 
         {/* TIER */}
-
         <div>
-          <label htmlFor="tier" className="mb-1 block text-sm font-medium">
+          <label
+            htmlFor="tier"
+            className="
+              mb-1
+              block
+              text-sm
+              font-medium
+              text-slate-700
+
+              dark:text-slate-300
+            "
+          >
             Tier
           </label>
 
@@ -132,7 +167,25 @@ function EditAnimeModal({ anime, onClose, onSave }) {
             name="tier"
             value={form.tier}
             onChange={handleChange}
-            className="w-full rounded-lg border px-3 py-2"
+            className="
+              w-full
+              rounded-lg
+              border
+              border-slate-300
+              bg-white
+              px-3 py-2
+              text-slate-900
+              outline-none
+              transition
+
+              focus:border-indigo-500
+              focus:ring-2
+              focus:ring-indigo-500/20
+
+              dark:border-slate-700
+              dark:bg-slate-950
+              dark:text-white
+            "
           >
             <option value="">No Tier</option>
 
@@ -145,7 +198,6 @@ function EditAnimeModal({ anime, onClose, onSave }) {
         </div>
 
         {/* SCORE */}
-
         <Input
           label="My Score"
           type="number"
@@ -157,28 +209,21 @@ function EditAnimeModal({ anime, onClose, onSave }) {
           onChange={handleChange}
           className="w-full"
         />
-        {/* <div>
-          <label htmlFor="score" className="mb-1 block text-sm font-medium">
-            My Score
-          </label>
-
-          <input
-            id="score"
-            name="score"
-            type="number"
-            min="1"
-            max="10"
-            value={form.score}
-            onChange={handleChange}
-            placeholder="1 - 10"
-            className="w-full rounded-lg border px-3 py-2"
-          />
-        </div> */}
 
         {/* NOTES */}
-
         <div>
-          <label htmlFor="notes" className="mb-1 block text-sm font-medium">
+          <label
+            htmlFor="notes"
+            className="
+              mb-1
+              block
+              text-sm
+              font-medium
+              text-slate-700
+
+              dark:text-slate-300
+            "
+          >
             Notes
           </label>
 
@@ -189,18 +234,57 @@ function EditAnimeModal({ anime, onClose, onSave }) {
             value={form.notes}
             onChange={handleChange}
             placeholder="Tulis catatan tentang anime ini..."
-            className="w-full resize-none rounded-lg border px-3 py-2"
+            className="
+              w-full
+              resize-none
+              rounded-lg
+              border
+              border-slate-300
+              bg-white
+              px-3 py-2
+              text-slate-900
+              outline-none
+              transition
+
+              placeholder:text-slate-400
+
+              focus:border-indigo-500
+              focus:ring-2
+              focus:ring-indigo-500/20
+
+              dark:border-slate-700
+              dark:bg-slate-950
+              dark:text-white
+              dark:placeholder:text-slate-600
+            "
           />
         </div>
 
         {/* BUTTON */}
-
         <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+            className="
+              rounded-lg
+              border
+              border-slate-300
+              bg-white
+              px-4 py-2
+              text-sm
+              font-medium
+              text-slate-700
+              transition
+              hover:bg-slate-50
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+
+              dark:border-slate-700
+              dark:bg-slate-900
+              dark:text-slate-300
+              dark:hover:bg-slate-800
+            "
           >
             Cancel
           </button>
@@ -208,7 +292,22 @@ function EditAnimeModal({ anime, onClose, onSave }) {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-black px-4 py-2 text-sm text-white hover:bg-gray-800 disabled:opacity-50"
+            className="
+              rounded-lg
+              bg-slate-900
+              px-4 py-2
+              text-sm
+              font-medium
+              text-white
+              transition
+              hover:bg-slate-700
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+
+              dark:bg-white
+              dark:text-slate-900
+              dark:hover:bg-slate-200
+            "
           >
             {saving ? "Saving..." : "Save Changes"}
           </button>

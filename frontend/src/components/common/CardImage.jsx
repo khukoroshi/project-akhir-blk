@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import formatStatus from "../../utils/formatStatus";
 
 const CardImage = ({ data }) => {
   const title =
@@ -12,7 +13,7 @@ const CardImage = ({ data }) => {
   return (
     <Link
       to={`/anime/${data.id}`}
-      className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg"
+      className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
     >
       {/* ========================= */}
       {/* COVER */}
@@ -61,7 +62,7 @@ const CardImage = ({ data }) => {
         {/* TITLE */}
 
         <h3
-          className="line-clamp-2 min-h-[40px] text-sm font-bold leading-5 text-slate-900"
+          className="line-clamp-2 min-h-[40px] text-sm font-bold leading-5 text-slate-900 dark:text-white"
           title={title}
         >
           {title}
@@ -69,7 +70,7 @@ const CardImage = ({ data }) => {
 
         {/* INFO */}
 
-        <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500">
+        <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
           <span>{data.episodes ? `${data.episodes} eps` : "Unknown eps"}</span>
 
           <span className="truncate">
@@ -80,23 +81,5 @@ const CardImage = ({ data }) => {
     </Link>
   );
 };
-
-/*
-|--------------------------------------------------------------------------
-| Format status dari AniList
-|--------------------------------------------------------------------------
-*/
-
-function formatStatus(status) {
-  const statusMap = {
-    FINISHED: "Finished",
-    RELEASING: "Airing",
-    NOT_YET_RELEASED: "Upcoming",
-    CANCELLED: "Cancelled",
-    HIATUS: "Hiatus",
-  };
-
-  return statusMap[status] || status;
-}
 
 export default CardImage;
