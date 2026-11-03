@@ -4,7 +4,6 @@ import errorHandler from "./middlewares/error.middleware.mjs";
 import AppError from "./utils/appError.mjs";
 import authRoutes from "./routes/auth.routes.mjs";
 import animRoutes from "./routes/anim.routes.mjs";
-// import jikanRoutes from "./routes/jikan.routes.mjs";
 import anilistRoutes from "./routes/anilist.routes.mjs";
 
 const app = express();
