@@ -5,7 +5,11 @@ info:
 
 http:
   method: GET
-  url: ""
+  url: "{{link}}/{{api_catalog_link}}/anime?q=naruto"
+  params:
+    - name: q
+      value: naruto
+      type: query
   auth: inherit
 
 settings:

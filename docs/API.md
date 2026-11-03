@@ -48,9 +48,9 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 #### `POST /auth/login`
 
 - **Auth:** tidak
-- **Body:** `{ "email": string, "password": string }`
+- **Body:** `email` (format valid, trim, huruf kecil), `password` (wajib terisi). Field lain ditolak (strict).
 - **Sukses 200:** `data: { user: { id, name, email }, token }`
-- **Error:** 401 email atau password salah
+- **Error:** 400 validasi gagal, 401 email atau password salah
 
 #### `GET /auth/profile`
 
@@ -154,16 +154,19 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - **Param / Query:** nama, tipe, keterangan
 - **Body:**
 
-| Field | Tipe | Wajib | Aturan Zod / default |
-|---|---|---|---|
-| ... | ... | ... | ... |
+| Field      | Tipe   | Wajib | Aturan Zod                                      |
+| ---------- | ------ | ----- | ----------------------------------------------- |
+| `name`     | string | ya    | trim, 3-50 karakter                             |
+| `email`    | string | ya    | trim, huruf kecil, format email, maks 100       |
+| `password` | string | ya    | 8-72 karakter, wajib ada huruf dan angka        |
 
 - **Sukses [kode]:** `data: { ... }`
-- **Error:** [kode] kondisi
-- **Catatan:** efek samping, batas, hal yang perlu diketahui frontend
+- **Error:** 400 validasi gagal (pesan error pertama), 400 email sudah digunakan
+- **Catatan:** field di luar tabel ditolak (strict). Email disimpan huruf kecil.
 ```
 
 ## 5. Log Perubahan
 
 - 2026-11-01: File dibuat, diisi dari kode saat ini.
 - 2026-11-02: Katalog AniList: tambah cache 5 menit, timeout 10 detik, error 400/429/502/504.
+- 2026-11-03: Auth: validasi Zod (strict) pada register dan login.

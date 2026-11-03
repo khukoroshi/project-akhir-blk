@@ -5,10 +5,10 @@ import { protect } from "../middlewares/auth.middleware.mjs";
 const router = express.Router();
 
 // Route untuk Registrasi User
-router.post("/register", authController.register);
+router.post("/register", validate(registerSchema), authController.register);
 
 // Route untuk Login User
-router.post("/login", authController.login);
+router.post("/login", validate(loginSchema), authController.login);
 
 // Route Terproteksi untuk Mengambil Profil User
 router.get("/profile", protect, authController.getProfile);

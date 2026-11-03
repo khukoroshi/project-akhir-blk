@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, hapus Jikan).
 - **Sedang dikerjakan:** -
-- **Berikutnya:** Phase 0 #4 (Zod, mulai dari auth)
+- **Berikutnya:** Phase 0 #6 (migrasi SQL tanpa DROP + pisah anime_catalog dan user_anime)
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -73,7 +73,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 | 1   | AuthProvider ganda     | [x] SELESAI | Ada di `main.jsx` DAN `App.jsx`. Hapus yang di `App.jsx`.                                               |
 | 2   | URL API hardcode       | [x] SELESAI | `services/api.js` memakai `http://localhost:3000/api`. `frontend/.env.example` kosong.                  |
 | 3   | JWT di cookie HttpOnly | [ ] BELUM   | Token di `localStorage` (`api.js`, `AuthProvider.jsx`). Backend membaca header `Authorization: Bearer`. |
-| 4   | Validasi Zod           | [ ] BELUM   | Zod belum terpasang, controller langsung memakai `req.body`.                                            |
+| 4   | Validasi Zod           | [x] SELESAI | Zod belum terpasang, controller langsung memakai `req.body`.                                            |
 | 5   | Sanitasi HTML          | [x] SELESAI | `AnimeDetail.jsx` baris ~289 memakai `dangerouslySetInnerHTML`, DOMPurify belum ada.                    |
 | 6   | Migrasi DB aman        | [ ] BELUM   | `project_akhir_blk.sql` diawali `DROP DATABASE AniWatchList;`.                                          |
 | 7   | standarkan AniList     | [x] SELESAI | Jikan sudah dihapus. Service AniList belum punya timeout dan cache.                                     |
@@ -127,3 +127,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: backend/src/services/anilist.service.mjs
   - Keputusan baru: cache hanya di memori proses (hilang saat restart, tidak dibagi antar instance). Jika nanti butuh banyak instance, pindah ke Redis.
   - Berikutnya: Phase 0 #4 (Zod, mulai dari auth lalu watchlist).
+- 2026-11-03 — Phase 0 poin 4 (Zod, cakupan auth)
+  - Selesai: middleware validate(schema) reusable; schema register dan login (strict); dipasang di POST /register dan /login. Zod terpasang di backend.
+  - File diubah: backend/src/middlewares/validate.middleware.mjs (baru), backend/src/validators/auth.validator.mjs (baru), backend/src/routes/auth.routes.mjs, backend/package.json, pnpm-lock.yaml
+  - Keputusan baru: validator ada di backend/src/validators/. Pesan error validasi dalam bahasa Indonesia. Body hasil validasi menggantikan req.body.
+  - Berikutnya: Zod untuk watchlist (POST/PUT/PATCH /anime), lalu pastikan form Register frontend tidak mengirim field asing. Update checklist #4 jadi sebagian selesai.
