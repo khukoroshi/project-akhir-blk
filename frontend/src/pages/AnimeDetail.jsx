@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import DOMPurify from "dompurify";
 import api from "../services/api";
 import { useAuth } from "../context/useAuth";
 
@@ -115,6 +116,11 @@ function AnimeDetail() {
   const alternativeTitle =
     anime.title?.romaji !== title ? anime.title?.romaji : anime.title?.native;
 
+  // Sanitize HTML from AniList; allow only basic formatting tags.
+  const safeDescription = DOMPurify.sanitize(anime.description || "", {
+    ALLOWED_TAGS: ["br", "i", "b", "em", "strong", "p", "ul", "ol", "li"],
+    ALLOWED_ATTR: [],
+  });
   return (
     <MainLayout username={user?.name}>
       <div className="space-y-8 block text-center relative pt-6">
@@ -284,13 +290,16 @@ function AnimeDetail() {
             </h2>
           </div>
 
-          <div
-            className="max-w-4xl leading-7 text-slate-600 dark:text-slate-300"
-            dangerouslySetInnerHTML={{
-              __html:
-                anime.description || "Tidak ada synopsis untuk anime ini.",
-            }}
-          />
+          {safeDescription ? (
+            <div
+              className="max-w-4xl text-left leading-7 text-slate-600 dark:text-slate-300"
+              dangerouslySetInnerHTML={{ __html: safeDescription }}
+            />
+          ) : (
+            <p className="max-w-4xl text-left leading-7 text-slate-600 dark:text-slate-300">
+              Tidak ada synopsis untuk anime ini.
+            </p>
+          )}
         </section>
 
         {/* INFORMATION */}

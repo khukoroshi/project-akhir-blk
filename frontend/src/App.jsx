@@ -9,31 +9,28 @@ import AnimeDetail from "./pages/AnimeDetail";
 import LoginForm from "./components/features/aunt/LoginForm";
 import RegisterForm from "./components/features/aunt/RegisterForm";
 
-import AuthProvider from "./context/AuthProvider";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public */}
-          <Route path="/" element={<Home />} />
+    <BrowserRouter>
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<Home />} />
 
-          <Route path="/anime/:id" element={<AnimeDetail />} />
+        <Route path="/anime/:id" element={<AnimeDetail />} />
 
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<RegisterForm />} />
 
-          {/* Protected */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/myList" element={<MyList />} />
-          </Route>
+        {/* Protected */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/myList" element={<MyList />} />
+        </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

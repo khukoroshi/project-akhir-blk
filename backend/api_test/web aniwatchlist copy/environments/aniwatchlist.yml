@@ -9,3 +9,6 @@ variables:
   - name: api_anim_link
     value: api/anime
     description: ""
+  - name: api_catalog_link
+    value: api/catalog
+    description: ""

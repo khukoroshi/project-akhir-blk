@@ -1,0 +1,7 @@
+info:
+  name: aniList
+  type: folder
+  seq: 4
+
+request:
+  auth: inherit

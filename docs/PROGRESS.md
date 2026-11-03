@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 (perbaikan fondasi), belum ada yang selesai.
+- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, hapus Jikan).
 - **Sedang dikerjakan:** -
-- **Berikutnya:** hapus Jikan, lalu Phase 0 poin 1 (AuthProvider ganda).
+- **Berikutnya:** Phase 0 #4 (Zod, mulai dari auth)
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -68,16 +68,16 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 
 Status hasil pemeriksaan kode, bukan asumsi.
 
-| #   | Item                            | Status                | Temuan                                                                                                  |
-| --- | ------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| 1   | AuthProvider ganda              | [ ] BELUM             | Ada di `main.jsx` DAN `App.jsx`. Hapus yang di `App.jsx`.                                               |
-| 2   | URL API hardcode                | [ ] BELUM             | `services/api.js` memakai `http://localhost:3000/api`. `frontend/.env.example` kosong.                  |
-| 3   | JWT di cookie HttpOnly          | [ ] BELUM             | Token di `localStorage` (`api.js`, `AuthProvider.jsx`). Backend membaca header `Authorization: Bearer`. |
-| 4   | Validasi Zod                    | [ ] BELUM             | Zod belum terpasang, controller langsung memakai `req.body`.                                            |
-| 5   | Sanitasi HTML                   | [ ] BELUM             | `AnimeDetail.jsx` baris ~289 memakai `dangerouslySetInnerHTML`, DOMPurify belum ada.                    |
-| 6   | Migrasi DB aman                 | [ ] BELUM             | `project_akhir_blk.sql` diawali `DROP DATABASE AniWatchList;`.                                          |
-| 7   | Hapus Jikan, standarkan AniList | [~] Sedang dikerjakan | Service AniList belum punya timeout dan cache.                                                          |
-| 8   | Test runner                     | [ ] BELUM             | Script `test` di `backend/package.json` masih placeholder.                                              |
+| #   | Item                   | Status      | Temuan                                                                                                  |
+| --- | ---------------------- | ----------- | ------------------------------------------------------------------------------------------------------- |
+| 1   | AuthProvider ganda     | [x] SELESAI | Ada di `main.jsx` DAN `App.jsx`. Hapus yang di `App.jsx`.                                               |
+| 2   | URL API hardcode       | [x] SELESAI | `services/api.js` memakai `http://localhost:3000/api`. `frontend/.env.example` kosong.                  |
+| 3   | JWT di cookie HttpOnly | [ ] BELUM   | Token di `localStorage` (`api.js`, `AuthProvider.jsx`). Backend membaca header `Authorization: Bearer`. |
+| 4   | Validasi Zod           | [ ] BELUM   | Zod belum terpasang, controller langsung memakai `req.body`.                                            |
+| 5   | Sanitasi HTML          | [x] SELESAI | `AnimeDetail.jsx` baris ~289 memakai `dangerouslySetInnerHTML`, DOMPurify belum ada.                    |
+| 6   | Migrasi DB aman        | [ ] BELUM   | `project_akhir_blk.sql` diawali `DROP DATABASE AniWatchList;`.                                          |
+| 7   | standarkan AniList     | [x] SELESAI | Jikan sudah dihapus. Service AniList belum punya timeout dan cache.                                     |
+| 8   | Test runner            | [ ] BELUM   | Script `test` di `backend/package.json` masih placeholder.                                              |
 
 ## 8. Utang Teknis & Kebersihan
 
@@ -90,8 +90,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
-1. Hapus 3 file Jikan dan baris comment-nya di `app.mjs`. Cari kata `jikan` di seluruh kode.
-2. Phase 0 #1 dan #2 (AuthProvider ganda, `VITE_API_URL`). Isi `frontend/.env.example`.
+1. Hapus 3 file Jikan dan baris comment-nya di `app.mjs`. Cari kata `jikan` di seluruh kode.(selesai)
+2. Phase 0 #1 dan #2 (AuthProvider ganda, `VITE_API_URL`). Isi `frontend/.env.example`.(selesai)
 3. Phase 0 #5 (DOMPurify) dan #7 (timeout + cache AniList).
 4. Phase 0 #4 (Zod) mulai dari auth, lalu watchlist.
 5. Phase 0 #6 (migrasi SQL tanpa DROP) dan pemisahan `anime_catalog` dan `user_anime`.
@@ -110,4 +110,20 @@ Status hasil pemeriksaan kode, bukan asumsi.
 
 ## 11. Log
 
-- 2026-11-01: PROGRESS.md dibuat dari audit repo. Belum ada tugas Phase 0 yang dikerjakan.
+- 2026-11-01: PROGRESS.md dibuat dari audit repo.
+- 2026-11-02: File Jikan dihapus (controller, service, routes).
+- 2026-11-02 — Phase 0 poin 1 dan 2
+  - Selesai: AuthProvider ganda dihapus (sisa di main.jsx). baseURL memakai VITE_API_URL. .env.example terisi.
+  - File diubah: frontend/src/App.jsx, frontend/src/services/api.js, frontend/.env.example
+  - Keputusan baru: wajib membuat frontend/.env lokal dari .env.example.
+  - Berikutnya: Phase 0 #5 dan #7.
+- 2026-11-02 — Phase 0 poin 5 (sanitasi HTML)
+  - Selesai: deskripsi anime di AnimeDetail.jsx disanitasi dengan DOMPurify (whitelist tag dasar, tanpa atribut).
+  - File diubah: frontend/src/pages/AnimeDetail.jsx, frontend/package.json, pnpm-lock.yaml
+  - Keputusan baru: HTML dari API eksternal hanya boleh tag format dasar (br, i, b, em, strong, p, ul, ol, li).
+  - Berikutnya: Phase 0 #7 (timeout + cache AniList).
+- 2026-11-02 — Phase 0 poin 7 (timeout + cache AniList)
+  - Selesai: timeout 10 detik, cache in-memory (TTL 5 menit, maks 200 entri), pesan jelas untuk 429/502/504, validasi ID detail. requestAniList disatukan untuk search dan detail.
+  - File diubah: backend/src/services/anilist.service.mjs
+  - Keputusan baru: cache hanya di memori proses (hilang saat restart, tidak dibagi antar instance). Jika nanti butuh banyak instance, pindah ke Redis.
+  - Berikutnya: Phase 0 #4 (Zod, mulai dari auth lalu watchlist).
