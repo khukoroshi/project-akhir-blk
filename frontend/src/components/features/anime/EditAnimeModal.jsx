@@ -6,7 +6,7 @@ import Input from "../../common/Input";
 function EditAnimeModal({ anime, onClose, onSave }) {
   const [form, setForm] = useState({
     eps: anime.anim_current_episode ?? 0,
-    teps: anime.anim_total_episode,
+    teps: anime.anim_total_episode ?? 0,
     status: anime.anim_status ?? "watching",
     tier: anime.anim_tier ?? "",
     score: anime.anim_score ?? "",
@@ -82,6 +82,7 @@ function EditAnimeModal({ anime, onClose, onSave }) {
           label="Current Episode"
           type="number"
           name="eps"
+          step={1}
           min={0}
           max={anime.anim_total_episode || undefined}
           value={form.eps}
@@ -233,6 +234,7 @@ function EditAnimeModal({ anime, onClose, onSave }) {
             rows="4"
             value={form.notes}
             onChange={handleChange}
+            maxLength={2000}
             placeholder="Tulis catatan tentang anime ini..."
             className="
               w-full

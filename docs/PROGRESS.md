@@ -6,15 +6,15 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, hapus Jikan).
-- **Sedang dikerjakan:** -
+- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #7, hapus Jikan).
+- **Sedang dikerjakan:** migrasi SQL (#6)
 - **Berikutnya:** Phase 0 #6 (migrasi SQL tanpa DROP + pisah anime_catalog dan user_anime)
 
 ## 2. Stack Aktual (sesuai repo)
 
 - **Frontend:** React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), React Router 7, Axios, React Compiler. Package manager: pnpm.
 - **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`. Dev: `nodemon`.
-- **Belum terpasang:** Zod, DOMPurify, Vitest/Supertest, rate limiter, cookie-parser.
+- **Belum terpasang:** Vitest/Supertest, rate limiter, cookie-parser.
 - **API anime eksternal:** AniList (GraphQL) saja. Jikan dibuang.
 
 ## 3. Keputusan Final
@@ -73,7 +73,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 | 1   | AuthProvider ganda     | [x] SELESAI | Ada di `main.jsx` DAN `App.jsx`. Hapus yang di `App.jsx`.                                               |
 | 2   | URL API hardcode       | [x] SELESAI | `services/api.js` memakai `http://localhost:3000/api`. `frontend/.env.example` kosong.                  |
 | 3   | JWT di cookie HttpOnly | [ ] BELUM   | Token di `localStorage` (`api.js`, `AuthProvider.jsx`). Backend membaca header `Authorization: Bearer`. |
-| 4   | Validasi Zod           | [x] SELESAI | Zod belum terpasang, controller langsung memakai `req.body`.                                            |
+| 4   | Validasi Zod           | [x] SELESAI | Middleware Zod terpasang untuk auth & watchlist (POST, PUT, param anim_id strict).                      |
 | 5   | Sanitasi HTML          | [x] SELESAI | `AnimeDetail.jsx` baris ~289 memakai `dangerouslySetInnerHTML`, DOMPurify belum ada.                    |
 | 6   | Migrasi DB aman        | [ ] BELUM   | `project_akhir_blk.sql` diawali `DROP DATABASE AniWatchList;`.                                          |
 | 7   | standarkan AniList     | [x] SELESAI | Jikan sudah dihapus. Service AniList belum punya timeout dan cache.                                     |
@@ -87,13 +87,16 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - `frontend/package.json` bernama `react-starter-kit`, ganti jadi `anisphere-frontend`.
 - Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
 - Tidak ada `.env.example` di backend.
+- Server belum mengetes koneksi MySQL saat startup, sehingga database mati baru ketahuan saat ada request.
+- Schema register bersifat strict: pastikan form Register frontend tidak mengirim field tambahan (misalnya confirmPassword).
+- Register dengan nama yang sudah dipakai (us_name UNIQUE) kemungkinan menghasilkan 500. Service hanya mengecek email.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
 1. Hapus 3 file Jikan dan baris comment-nya di `app.mjs`. Cari kata `jikan` di seluruh kode.(selesai)
 2. Phase 0 #1 dan #2 (AuthProvider ganda, `VITE_API_URL`). Isi `frontend/.env.example`.(selesai)
-3. Phase 0 #5 (DOMPurify) dan #7 (timeout + cache AniList).
-4. Phase 0 #4 (Zod) mulai dari auth, lalu watchlist.
+3. Phase 0 #5 (DOMPurify) dan #7 (timeout + cache AniList).(selesai)
+4. Phase 0 #4 (Zod): auth dan watchlist selesai.(selesai)
 5. Phase 0 #6 (migrasi SQL tanpa DROP) dan pemisahan `anime_catalog` dan `user_anime`.
 6. Phase 0 #3 (cookie HttpOnly) dan #8 (test runner).
 7. Refactor backend ke `modules/` per fitur (auth, anime, watchlist), lalu lanjut Phase 2 PRD.
@@ -132,3 +135,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: backend/src/middlewares/validate.middleware.mjs (baru), backend/src/validators/auth.validator.mjs (baru), backend/src/routes/auth.routes.mjs, backend/package.json, pnpm-lock.yaml
   - Keputusan baru: validator ada di backend/src/validators/. Pesan error validasi dalam bahasa Indonesia. Body hasil validasi menggantikan req.body.
   - Berikutnya: Zod untuk watchlist (POST/PUT/PATCH /anime), lalu pastikan form Register frontend tidak mengirim field asing. Update checklist #4 jadi sebagian selesai.
+- 2026-11-04 — Phase 0 poin 4 (Zod, cakupan watchlist)
+  - Selesai: validate(schema, source) mendukung body/params/query (params/query tanpa menimpa). Schema anim_id, POST, PUT. Terpasang di semua route /anime ber-:anim_id plus POST dan PUT. Item #4 SELESAI.
+  - File diubah: backend/src/middlewares/validate.middleware.mjs, backend/src/validators/anim.validator.mjs (baru), backend/src/routes/anim.routes.mjs
+  - Keputusan baru: type tidak peka huruf besar/kecil (MOVIE -> Movie). PUT tetap full-update, status wajib. strictOptions diduplikasi di dua validator (bisa dipindah ke file bersama saat refactor modul). Cek externalId/title di controller sekarang redundan, belum dihapus.
+  - Berikutnya: (1) terapkan 3 perubahan kecil EditAnimeModal (step, maxLength, teps ?? 0) dan putuskan pemetaan TV_SHORT/MUSIC di AnimeDetail; (2) form Register jangan kirim confirmPassword; (3) perbaiki 2 bug model: incrementEpisode tanpa teps dan completed dengan teps 0 mereset eps; (4) Phase 0 #6 migrasi SQL.
+  - Terverifikasi: AnimeCard dan EditAnimeModal kompatibel dengan schema strict (tidak ada field asing). AnimeList dan AnimeTable tidak mengirim body sendiri.

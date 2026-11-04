@@ -150,6 +150,8 @@ node_modules
 
 *.sublime*
 
+.obsidian
+
 psd
 thumb
 sketch

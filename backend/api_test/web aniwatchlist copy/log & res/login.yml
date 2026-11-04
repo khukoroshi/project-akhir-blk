@@ -8,11 +8,7 @@ http:
   url: "{{link}}/{{api_auth_link}}/login"
   body:
     type: json
-    data: |-
-      {
-        "email": "testing4@gmail.com",
-        "password": "password123"
-      }
+    data: '{"email":"khukoroshi@gmail.com","password":"Khuk0r0SH!"}'
   auth: inherit
 
 settings:

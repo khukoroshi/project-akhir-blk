@@ -64,7 +64,7 @@ const ANIME_SEARCH_QUERY = `
 
 const ANIME_TOP_QUERY = `
   {
-    Page(page: 1, perPage: 50) {
+    Page(page: 1, perPage: 60) {
       media(
         type: ANIME
         sort: SCORE_DESC

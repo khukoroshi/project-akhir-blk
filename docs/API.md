@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-01 (diisi dari kode saat ini, bagian "Rencana" dari PRD).
+> Terakhir diperbarui: 2026-11-04.
 
 ## 1. Konvensi Umum
 
@@ -11,7 +11,7 @@
 - **Format body:** JSON (`Content-Type: application/json`)
 - **Auth saat ini:** header `Authorization: Bearer <token>` (JWT, kedaluwarsa default 7 hari)
 - **Auth target (PRD):** cookie HttpOnly. Saat migrasi, bagian Auth di file ini wajib diperbarui.
-- **Validasi saat ini:** belum ada, hanya cek manual di sebagian controller. **Target:** Zod di semua POST/PUT/PATCH.
+- **Validasi saat ini:** Zod (strict) di endpoint auth dan watchlist. Target: semua POST/PUT/PATCH.
 
 **Response sukses**
 
@@ -40,10 +40,17 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 #### `POST /auth/register`
 
 - **Auth:** tidak
-- **Body:** `{ "name": string, "email": string, "password": string }`
+- **Body** (strict, field lain ditolak):
+
+| Field      | Tipe   | Wajib | Aturan Zod                                |
+| ---------- | ------ | ----- | ----------------------------------------- |
+| `name`     | string | ya    | trim, 3-50 karakter                       |
+| `email`    | string | ya    | trim, huruf kecil, format email, maks 100 |
+| `password` | string | ya    | 8-72 karakter, wajib ada huruf dan angka  |
+
 - **Sukses 201:** `data: { us_id, us_name, us_email }`
-- **Error:** 400 email sudah digunakan
-- **Catatan:** belum ada validasi format email atau panjang password. Nama harus unik di database.
+- **Error:** 400 validasi gagal (pesan error pertama), 400 email sudah digunakan
+- **Catatan:** email disimpan huruf kecil. Nama harus unik di database.
 
 #### `POST /auth/login`
 
@@ -61,6 +68,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 ### Watchlist (semua endpoint di bawah wajib auth)
 
 > Hanya mengakses data milik user yang sedang login (diambil dari JWT).
+> Param `anim_id` wajib bilangan bulat positif (GET /:anim_id, PUT, PATCH, DELETE), kalau tidak 400. Field di luar tabel akan ditolak 400 (strict).
 > Bentuk objek anime di response mengikuti kolom tabel `animes` (`anim_id`, `anim_title`, `anim_status`, dst.). **Belum diverifikasi rinci, cek saat mengerjakan tugas frontend.**
 
 #### `GET /anime`
@@ -70,56 +78,63 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 #### `GET /anime/:anim_id`
 
 - **Sukses 200:** `data: Anime`
-- **Error:** 404 tidak ditemukan di watchlist
+- **Error:** 400 `anim_id` tidak valid, 404 tidak ditemukan di watchlist
 
 #### `POST /anime`
 
 - **Body:**
 
-| Field            | Tipe                                             | Wajib | Default     |
-| ---------------- | ------------------------------------------------ | ----- | ----------- |
-| `externalId`     | number                                           | ya    | -           |
-| `title`          | string                                           | ya    | -           |
-| `externalSource` | string                                           | tidak | `"anilist"` |
-| `imgUrl`         | string                                           | tidak | null        |
-| `totalEps`       | number                                           | tidak | 0           |
-| `type`           | `TV` `Movie` `OVA` `ONA` `Special`               | tidak | `TV`        |
-| `status`         | `watching` `completed` `dropped` `plan to watch` | tidak | `watching`  |
-| `tier`           | `S` `A` `B` `C` `D`                              | tidak | null        |
-| `score`          | number 1-10                                      | tidak | null        |
-| `notes`          | string                                           | tidak | null        |
+| Field            | Tipe                                             | Wajib | Aturan Zod / Default                                                |
+| ---------------- | ------------------------------------------------ | ----- | ------------------------------------------------------------------- |
+| `externalId`     | number                                           | ya    | bilangan bulat positif                                              |
+| `title`          | string                                           | ya    | trim, 1-255 karakter                                                |
+| `externalSource` | string                                           | tidak | hanya `"anilist"`, default `"anilist"`                              |
+| `imgUrl`         | string                                           | tidak | URL http/https maks 500, atau null                                  |
+| `totalEps`       | number                                           | tidak | bilangan bulat >= 0, default 0                                      |
+| `type`           | `TV` `Movie` `OVA` `ONA` `Special`               | tidak | tidak peka huruf besar/kecil (contoh: MOVIE -> Movie), default `TV` |
+| `status`         | `watching` `completed` `dropped` `plan to watch` | tidak | default `watching`                                                  |
+| `tier`           | `S` `A` `B` `C` `D`                              | tidak | `S`-`D` atau null                                                   |
+| `score`          | number                                           | tidak | bilangan bulat 1-10 atau null                                       |
+| `notes`          | string                                           | tidak | maks 2000 karakter atau null                                        |
 
 - **Sukses 201:** `data: Anime`
-- **Error:** 400 `externalId` atau `title` kosong, 409 anime sudah ada di watchlist
+- **Error:** 400 validasi gagal (pesan error pertama), 409 anime sudah ada di watchlist
 
 #### `PUT /anime/:anim_id`
 
-- **Body:** `{ eps, teps, status, tier, score, notes }` (`eps` = episode ditonton, `teps` = total episode)
-- **Perilaku:** jika `status` = `completed`, `eps` otomatis diisi dengan `teps`
+- **Body:** `{ eps, teps, status, tier, score, notes }`
+  - `eps` dan `teps`: wajib bilangan bulat >= 0.
+  - `status`: wajib (`watching`, `completed`, `dropped`, `plan to watch`).
+  - `tier`, `score`, `notes`: opsional/default null (tier: S-D/null, score: 1-10/null, notes: maks 2000/null).
+- **Aturan:** jika `teps` > 0 maka `eps` <= `teps`. jika `status` = `completed`, `eps` otomatis diisi dengan `teps`.
 - **Sukses 200:** `data: Anime`
-- **Error:** 404 tidak ditemukan
-- **Catatan:** semua field dikirim sekaligus. Field yang tidak dikirim bisa menimpa nilai lama dengan kosong (perlu diperiksa saat Zod ditambahkan).
+- **Error:** 400 validasi gagal, 404 tidak ditemukan
+- **Catatan:** Semua field tetap dikirim sekaligus (bukan partial update). `tier`/`score`/`notes` yang tidak dikirim menjadi null.
 
 #### `PATCH /anime/:anim_id/increment`
 
 - **Body:** tidak ada
 - **Sukses 200:** `data: Anime` (episode +1)
-- **Error:** 404 tidak ditemukan
+- **Error:** 400 `anim_id` tidak valid, 404 tidak ditemukan
 
 #### `DELETE /anime/:anim_id`
 
 - **Sukses 200:** `message` saja
-- **Error:** 404 tidak ditemukan di watchlist
+- **Error:** 400 `anim_id` tidak valid, 404 tidak ditemukan di watchlist
 
 ### Katalog AniList (publik, tanpa auth)
 
 #### `GET /catalog/anime?q=<kata kunci>`
 
+- **Query:** `q` (opsional). Jika kosong, mengembalikan top 50 berdasarkan skor.
+- **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large } } ]`
 - **Catatan:** pencarian maksimal 20 hasil. Hasil di-cache di server selama 5 menit (kata kunci tidak peka huruf besar/kecil). Timeout ke AniList 10 detik.
 - **Error:** 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, 504 AniList timeout
 
 #### `GET /catalog/anime/:id`
 
+- **Param:** `id` = ID AniList
+- **Sukses 200:** `data: Media` (detail lengkap dari AniList)
 - **Catatan:** deskripsi bisa berisi HTML, wajib disanitasi di frontend. Detail di-cache 5 menit. Timeout 10 detik.
 - **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 / 502 / 504 sama seperti pencarian
 
@@ -149,20 +164,25 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 ## 4. Template Endpoint Baru (salin saat menambah)
 
 ```
+
+```
+
 #### `METHOD /path/:param`
+
 - **Auth:** ya / tidak (role jika perlu)
 - **Param / Query:** nama, tipe, keterangan
 - **Body:**
 
-| Field      | Tipe   | Wajib | Aturan Zod                                      |
-| ---------- | ------ | ----- | ----------------------------------------------- |
-| `name`     | string | ya    | trim, 3-50 karakter                             |
-| `email`    | string | ya    | trim, huruf kecil, format email, maks 100       |
-| `password` | string | ya    | 8-72 karakter, wajib ada huruf dan angka        |
+| Field | Tipe | Wajib | Aturan Zod / default |
+| ----- | ---- | ----- | -------------------- |
+| ...   | ...  | ...   | ...                  |
 
 - **Sukses [kode]:** `data: { ... }`
-- **Error:** 400 validasi gagal (pesan error pertama), 400 email sudah digunakan
-- **Catatan:** field di luar tabel ditolak (strict). Email disimpan huruf kecil.
+- **Error:** [kode] kondisi
+- **Catatan:** efek samping, batas, hal yang perlu diketahui frontend
+
+```
+
 ```
 
 ## 5. Log Perubahan
@@ -170,3 +190,4 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-01: File dibuat, diisi dari kode saat ini.
 - 2026-11-02: Katalog AniList: tambah cache 5 menit, timeout 10 detik, error 400/429/502/504.
 - 2026-11-03: Auth: validasi Zod (strict) pada register dan login.
+- 2026-11-04: Watchlist: validasi Zod (strict) pada param anim_id, POST, PUT. type tidak peka huruf besar/kecil.

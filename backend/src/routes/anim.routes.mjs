@@ -8,15 +8,28 @@ import {
   deleteWatchList,
 } from "../controllers/anim.controller.mjs";
 import { protect } from "../middlewares/auth.middleware.mjs";
+import { validate } from "../middlewares/validate.middleware.mjs";
+import {
+  animIdParamSchema,
+  createAnimeSchema,
+  updateAnimeSchema,
+} from "../validators/anim.validator.mjs";
 
 const router = express.Router();
+const validateAnimId = validate(animIdParamSchema, "params");
 
 router.use(protect);
+
 router.get("/", getAllAnime);
-router.get("/:anim_id", cariAnimeById);
-router.post("/", createWatchList);
-router.put("/:anim_id", updateWatchList);
-router.patch("/:anim_id/increment", incrementEpisode);
-router.delete("/:anim_id", deleteWatchList);
+router.get("/:anim_id", validateAnimId, cariAnimeById);
+router.post("/", validate(createAnimeSchema), createWatchList);
+router.put(
+  "/:anim_id",
+  validateAnimId,
+  validate(updateAnimeSchema),
+  updateWatchList,
+);
+router.patch("/:anim_id/increment", validateAnimId, incrementEpisode);
+router.delete("/:anim_id", validateAnimId, deleteWatchList);
 
 export default router;
