@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #7, hapus Jikan).
-- **Sedang dikerjakan:** -
-- **Berikutnya:** Phase 0 #6 (migrasi SQL, Chat A dan B)
+- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #7, hapus Jikan; #6 bagian A).
+- **Sedang dikerjakan:** Phase 0 #3 dan #8
+- **Berikutnya:** cookie HttpOnly + test runner.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -24,11 +24,13 @@
 - Validasi input dengan Zod. HTML dari API eksternal wajib disanitasi.
 - Strategi: refactor bertahap, jangan tulis ulang dari nol.
 - Format anime AniList (TV_SHORT, MUSIC) ditampung di database lewat migrasi #6 sebagai 'TV Short' dan 'Music'. Frontend tidak memakai pemetaan format.
+- Watchlist memakai anime_catalog + user_anime. Nilai status memakai spasi ('plan to watch', 'on hold', 'rewatching'), bukan underscore seperti draf PRD. API baru menerima 4 status (watching, completed, dropped, plan to watch).
+- Perubahan skema database hanya lewat file migrasi bernomor di backend/src/db/migrations/ (pnpm migrate): tanpa DROP/TRUNCATE, tanpa DELIMITER, idempotent. project_akhir_blk.sql hanya untuk instalasi baru.
 
 ## 4. Struktur Saat Ini (belum sesuai target)
 
 **Backend** (berlapis per jenis file, BUKAN modular):
-`src/{config, controllers, db, middlewares, models, routes, services, utils, validators}`
+`src/{config, controllers, db (migrate.mjs, migrations/), middlewares, models, routes, services, utils, validators}`
 
 - Fitur yang ada: `auth`, `anim` (watchlist), `anilist` (katalog), `user` (service/model saja, tanpa route).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
@@ -60,25 +62,30 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 
 ## 6. Database Saat Ini
 
-- Database `AniWatchList`, tabel `users` dan `animes` (data katalog dan progres user masih satu tabel).
-- Memakai stored procedure (`sp_insert_user`, `sp_insert_anime`, `sp_update_anime`).
-- File: `backend/src/db/project_akhir_blk.sql` dan `db-project-test.sql`.
-- **Skema PRD (anime_catalog, user_anime, posts, dst.) belum ada.**
+## 6. Database Saat Ini
+
+- Database `AniWatchList`. Tabel: `users`, `animes` (LAMA, jadi cadangan setelah bagian B), `anime_catalog`, `user_anime`, `schema_migrations`.
+- `users` tetap memakai nama kolom lama (`us_id`, `us_name`, `us_email`, `us_password`, `us_created_at`). Semua foreign key baru mengarah ke `users.us_id` dan bertipe INT UNSIGNED.
+- `user_anime.id` = `anim_id` lama, jadi ID di URL tidak berubah. `anime_catalog` punya kolom `anim_type` (TV/Movie/OVA/ONA/Special/TV Short/Music).
+- sp_insert_anime dan sp_update_anime masih ada di database tetapi tidak dipakai kode.
+- Instalasi baru: jalankan `project_akhir_blk.sql`, lalu `pnpm migrate`. Backup sebelum migrasi: `mysqldump`.
+- File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`.
+- Tabel komunitas PRD (posts, comments, dst.) belum ada.
 
 ## 7. Status Checklist Phase 0
 
 Status hasil pemeriksaan kode, bukan asumsi.
 
-| #   | Item                   | Status       | Temuan                                                                                                                                         |
-| --- | ---------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | AuthProvider ganda     | [x] SELESAI  | Tersisa satu di `main.jsx`.                                                                                                                    |
-| 2   | URL API hardcode       | [x] SELESAI  | `api.js` memakai `VITE_API_URL`. `.env.example` terisi.                                                                                        |
-| 3   | JWT di cookie HttpOnly | [ ] BELUM    | Token di `localStorage` (`api.js`, `AuthProvider.jsx`). Backend membaca header `Authorization: Bearer`.                                        |
-| 4   | Validasi Zod           | [x] SELESAI  | Auth dan watchlist (param, POST, PUT) divalidasi strict di `validators/`.                                                                      |
-| 5   | Sanitasi HTML          | [x] SELESAI  | DOMPurify, whitelist tag dasar, tanpa atribut.                                                                                                 |
-| 6   | Migrasi DB aman        | [~] SEBAGIAN | temuan: “Bagian A selesai: DROP DATABASE dihapus, migrasi 001 membuat anime_catalog dan user_anime. Kode belum memakai tabel baru (bagian B).” |
-| 7   | standarkan AniList     | [x] SELESAI  | Timeout 10 detik, cache memori 5 menit, pesan error 429/502/504.                                                                               |
-| 8   | Test runner            | [ ] BELUM    | Script `test` di `backend/package.json` masih placeholder.                                                                                     |
+| #   | Item                   | Status      | Temuan                                                                                                  |
+| --- | ---------------------- | ----------- | ------------------------------------------------------------------------------------------------------- |
+| 1   | AuthProvider ganda     | [x] SELESAI | Tersisa satu di `main.jsx`.                                                                             |
+| 2   | URL API hardcode       | [x] SELESAI | `api.js` memakai `VITE_API_URL`. `.env.example` terisi.                                                 |
+| 3   | JWT di cookie HttpOnly | [ ] BELUM   | Token di `localStorage` (`api.js`, `AuthProvider.jsx`). Backend membaca header `Authorization: Bearer`. |
+| 4   | Validasi Zod           | [x] SELESAI | Auth dan watchlist (param, POST, PUT) divalidasi strict di `validators/`.                               |
+| 5   | Sanitasi HTML          | [x] SELESAI | DOMPurify, whitelist tag dasar, tanpa atribut.                                                          |
+| 6   | Migrasi DB aman        | [x] SELESAI | Kode watchlist memakai anime_catalog + user_anime. Tabel animes lama jadi cadangan.                     |
+| 7   | standarkan AniList     | [x] SELESAI | Timeout 10 detik, cache memori 5 menit, pesan error 429/502/504.                                        |
+| 8   | Test runner            | [ ] BELUM   | Script `test` di `backend/package.json` masih placeholder.                                              |
 
 ## 8. Utang Teknis & Kebersihan
 
@@ -90,9 +97,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Tidak ada `.env.example` di backend.
 - Server belum mengetes koneksi MySQL saat startup, sehingga database mati baru ketahuan saat ada request.
 - Schema register bersifat strict: pastikan form Register frontend tidak mengirim field tambahan (misalnya confirmPassword).
-- Format AniList TV_SHORT dan MUSIC ditolak 400 oleh schema (anim_type belum punya nilainya). Rencana: tambah nilai di ENUM lewat migrasi #6.
 - strictOptions diduplikasi di dua validator.
 - Setelah #6, cek apakah db-project-test.sql masih relevan (tabel animes lama tidak dipakai lagi), dan hapus tabel animes lama lewat tugas tersendiri setelah verifikasi.
+- Data katalog diisi dari body request user pertama. Idealnya diisi server dari AniList.
+- project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -101,7 +109,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 3. Phase 0 #5 (DOMPurify) dan #7 (timeout + cache AniList).(selesai)
 4. Phase 0 #4 (Zod): auth dan watchlist selesai.(selesai)
 5. Perbaikan bug kecil backend (nama ganda register, 2 bug model).(selesai)
-6. Phase 0 #6 (migrasi SQL tanpa DROP, pisah anime_catalog dan user_anime, tambah nilai format anime).
+6. Phase 0 #6: bagian A selesai, bagian B (kode ke tabel baru + tambah nilai format anime di validator).(selesai)
 7. Phase 0 #3 (cookie HttpOnly) dan #8 (test runner).
 8. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
 9. Kapan saja (frontend, chat terpisah): 3 perubahan kecil EditAnimeModal (step, maxLength, teps ?? 0); form Register jangan mengirim confirmPassword.
@@ -118,41 +126,46 @@ Status hasil pemeriksaan kode, bukan asumsi.
 
 ## 11. Log
 
-- ### 2026-11-01: PROGRESS.md dibuat dari audit repo.
-- ### 2026-11-02: File Jikan dihapus (controller, service, routes).
-- ### 2026-11-02 — Phase 0 poin 1 dan 2
+- **2026-11-01**: PROGRESS.md dibuat dari audit repo.
+- **2026-11-02**: File Jikan dihapus (controller, service, routes).
+- **2026-11-02** — Phase 0 poin 1 dan 2
   - Selesai: AuthProvider ganda dihapus (sisa di main.jsx). baseURL memakai VITE_API_URL. .env.example terisi.
   - File diubah: frontend/src/App.jsx, frontend/src/services/api.js, frontend/.env.example
   - Keputusan baru: wajib membuat frontend/.env lokal dari .env.example.
   - Berikutnya: Phase 0 #5 dan #7.
-- ### 2026-11-02 — Phase 0 poin 5 (sanitasi HTML)
+- **2026-11-02** — Phase 0 poin 5 (sanitasi HTML)
   - Selesai: deskripsi anime di AnimeDetail.jsx disanitasi dengan DOMPurify (whitelist tag dasar, tanpa atribut).
   - File diubah: frontend/src/pages/AnimeDetail.jsx, frontend/package.json, pnpm-lock.yaml
   - Keputusan baru: HTML dari API eksternal hanya boleh tag format dasar (br, i, b, em, strong, p, ul, ol, li).
   - Berikutnya: Phase 0 #7 (timeout + cache AniList).
-- ### 2026-11-02 — Phase 0 poin 7 (timeout + cache AniList)
+- **2026-11-02** — Phase 0 poin 7 (timeout + cache AniList)
   - Selesai: timeout 10 detik, cache in-memory (TTL 5 menit, maks 200 entri), pesan jelas untuk 429/502/504, validasi ID detail. requestAniList disatukan untuk search dan detail.
   - File diubah: backend/src/services/anilist.service.mjs
   - Keputusan baru: cache hanya di memori proses (hilang saat restart, tidak dibagi antar instance). Jika nanti butuh banyak instance, pindah ke Redis.
   - Berikutnya: Phase 0 #4 (Zod, mulai dari auth lalu watchlist).
-- ### 2026-11-03 — Phase 0 poin 4 (Zod, cakupan auth)
+- **2026-11-03** — Phase 0 poin 4 (Zod, cakupan auth)
   - Selesai: middleware validate(schema) reusable; schema register dan login (strict); dipasang di POST /register dan /login. Zod terpasang di backend.
   - File diubah: backend/src/middlewares/validate.middleware.mjs (baru), backend/src/validators/auth.validator.mjs (baru), backend/src/routes/auth.routes.mjs, backend/package.json, pnpm-lock.yaml
   - Keputusan baru: validator ada di backend/src/validators/. Pesan error validasi dalam bahasa Indonesia. Body hasil validasi menggantikan req.body.
   - Berikutnya: Zod untuk watchlist (POST/PUT/PATCH /anime), lalu pastikan form Register frontend tidak mengirim field asing. Update checklist #4 jadi sebagian selesai.
-- ### 2026-11-04 — Phase 0 poin 4 (Zod, cakupan watchlist)
+- **2026-11-04** — Phase 0 poin 4 (Zod, cakupan watchlist)
   - Selesai: validate(schema, source) mendukung body/params/query (params/query tanpa menimpa). Schema anim_id, POST, PUT. Terpasang di semua route /anime ber-:anim_id plus POST dan PUT. Item #4 SELESAI.
   - File diubah: backend/src/middlewares/validate.middleware.mjs, backend/src/validators/anim.validator.mjs (baru), backend/src/routes/anim.routes.mjs
   - Keputusan baru: type tidak peka huruf besar/kecil (MOVIE -> Movie). PUT tetap full-update, status wajib. strictOptions diduplikasi di dua validator (bisa dipindah ke file bersama saat refactor modul). Cek externalId/title di controller sekarang redundan, belum dihapus.
   - Berikutnya: (1) terapkan 3 perubahan kecil EditAnimeModal (step, maxLength, teps ?? 0) dan putuskan pemetaan TV_SHORT/MUSIC di AnimeDetail; (2) form Register jangan kirim confirmPassword; (3) perbaiki 2 bug model: incrementEpisode tanpa teps dan completed dengan teps 0 mereset eps; (4) Phase 0 #6 migrasi SQL.
   - Terverifikasi: AnimeCard dan EditAnimeModal kompatibel dengan schema strict (tidak ada field asing). AnimeList dan AnimeTable tidak mengirim body sendiri.
-- ### 2026-11-05 — Perbaikan bug kecil backend
+- **2026-11-05** — Perbaikan bug kecil backend
   - Selesai: register menangani ER_DUP_ENTRY (400 "Nama sudah digunakan" / "Email sudah digunakan"); updateWatchList hanya menyetel eps = teps jika completed DAN teps > 0; incrementEpisode mengirim teps dan tanpa nilai undefined; cek manual externalId/title di controller createWatchList dihapus.
   - File diubah: backend/src/services/auth.service.mjs, backend/src/models/anim.model.mjs, backend/src/controllers/anim.controller.mjs, API.md
   - Keputusan baru: nama kunci unik dibaca dari pesan error MySQL (akhiran us_name / us_email). Jika kunci tidak dikenali, pesan umum "Nama atau email sudah digunakan". Migrasi #6 jangan mengganti nama kedua kunci ini tanpa memperbarui auth.service.
   - Berikutnya: Phase 0 #6 (migrasi SQL tanpa DROP, pisah anime_catalog dan user_anime, tambah nilai TV_SHORT/MUSIC).
-- ### 2026-11-05 — Phase 0 #6 bagian A (struktur database)
+- **2026-11-05** — Phase 0 #6 bagian A (struktur database)
   - Selesai: project_akhir_blk.sql tanpa DROP DATABASE (hanya instalasi baru); runner migrasi (pnpm migrate) dengan tabel schema_migrations; migrasi 001 membuat anime_catalog dan user_anime lalu menyalin data dari animes. Tabel animes lama tidak diubah.
   - File diubah: backend/src/db/project_akhir_blk.sql, backend/src/db/migrate.mjs (baru), backend/src/db/migrations/001_create_anime_catalog_and_user_anime.sql (baru), backend/package.json
   - Keputusan baru: anime_catalog memakai nama kolom PRD plus anim_type (ENUM TV/Movie/OVA/ONA/Special/TV Short/Music); external_id INT UNSIGNED; status memakai spasi ('plan to watch', 'on hold', 'rewatching'), PRD perlu disesuaikan; score DECIMAL(3,1) CHECK 1-10, tier ENUM S-D; user_anime.id = anim_id lama; user_anime punya created_at; konflik katalog diambil dari anim_id terbesar; baris non-anilist di-skip. File migrasi tidak boleh memakai DELIMITER, harus idempotent, tanpa DROP/TRUNCATE. Urutan instalasi baru: project_akhir_blk.sql lalu pnpm migrate.
   - Berikutnya: bagian B (model/controller membaca user_anime + anime_catalog dengan alias agar bentuk objek Anime tetap; decimalNumbers: true; Zod score desimal; update API.md). Tabel animes lama dihapus lewat tugas terpisah setelah terverifikasi. Ubah PRD: status bergaya spasi, score DECIMAL.
+- **2026-11-05** — Phase 0 #6 bagian B (kode ke tabel baru)
+  - Selesai: model watchlist membaca/menulis user_anime + anime_catalog (query biasa dalam transaksi, tanpa procedure baru); alias SELECT menjaga bentuk objek Anime; decimalNumbers: true di db.mjs; validator menerima 'TV Short' dan 'Music' (TV_SHORT dinormalisasi) dan score desimal 1-10 (maks 1 desimal); migrasi 002 menyalin data tertinggal. Item #6 SELESAI.
+  - File diubah: backend/src/models/anim.model.mjs, backend/src/validators/anim.validator.mjs, backend/src/config/db.mjs, backend/src/db/migrations/002_sync_leftover_animes.sql (baru), API.md
+  - Keputusan baru: katalog dibagi antar user dan tidak ditimpa saat anime sama ditambah user lain. Auto-complete memakai total dari katalog. sp_insert_anime dan sp_update_anime tidak dipanggil lagi (belum dihapus). Tabel animes lama tetap sebagai cadangan.
+  - Berikutnya: Phase 0 #3 (cookie HttpOnly) dan #8 (test runner). Ubah PRD: status bergaya spasi, score DECIMAL(3,1). Tugas terpisah: hapus tabel animes lama dan 2 procedure setelah verifikasi, lalu cek db-project-test.sql.

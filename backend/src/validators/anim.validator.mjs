@@ -18,11 +18,11 @@ const required = (label, message) => ({
 
 const STATUSES = ["watching", "completed", "dropped", "plan to watch"];
 const TIERS = ["S", "A", "B", "C", "D"];
-const TYPES = ["TV", "Movie", "OVA", "ONA", "Special"];
+const TYPES = ["TV", "Movie", "OVA", "ONA", "Special", "TV Short", "Music"];
 const TYPE_MAP = Object.fromEntries(TYPES.map((t) => [t.toLowerCase(), t]));
 
 const typeMsg = `type harus salah satu dari: ${TYPES.join(", ")}`;
-const scoreMsg = "score harus bilangan bulat 1-10";
+const scoreMsg = "score harus angka 1-10 (maksimal 1 angka desimal)";
 
 const statusField = z.enum(STATUSES, {
   error: `status harus salah satu dari: ${STATUSES.join(", ")}`,
@@ -34,9 +34,10 @@ const tierField = z
   .default(null);
 
 const scoreField = z
-  .int({ error: scoreMsg })
+  .number({ error: scoreMsg })
   .min(1, scoreMsg)
   .max(10, scoreMsg)
+  .refine((v) => Math.round(v * 10) / 10 === v, scoreMsg) // max 1 decimal (DECIMAL(3,1))
   .nullish()
   .default(null);
 
@@ -87,7 +88,15 @@ export const createAnimeSchema = z.strictObject(
     // Case-insensitive: AniList sends "MOVIE", DB enum expects "Movie"
     type: z
       .string({ error: typeMsg })
-      .transform((v) => TYPE_MAP[v.trim().toLowerCase()])
+      .transform(
+        (v) =>
+          TYPE_MAP[
+            v
+              .trim()
+              .toLowerCase()
+              .replace(/[_\s]+/g, " ")
+          ],
+      )
       .pipe(z.enum(TYPES, { error: typeMsg }))
       .default("TV"),
     status: statusField.default("watching"),

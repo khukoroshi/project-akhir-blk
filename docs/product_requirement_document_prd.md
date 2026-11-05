@@ -1,18 +1,20 @@
 # Product Requirement Document (PRD) — AniSphere
 
-**Project Name:** AniSphere (Formerly *MyAnimeWatchList*)  
-**Version:** 2.0.1 (Refactoring & Community Integration)  
+**Project Name:** AniSphere (Formerly _MyAnimeWatchList_)  
+**Version:** 2.0.2 (Refactoring & Community Integration)  
 **Status:** Active Draft  
-**Target Architecture:** Modular Monolith (Express.js) + Feature-Based React Frontend  
+**Target Architecture:** Modular Monolith (Express.js) + Feature-Based React Frontend
 
 ---
 
 ## 1. Project Overview & Architectural Vision
 
 ### 1.1 Core Concept
+
 **AniSphere** is a hybrid **Anime Watchlist Tracker & Social Community Platform**. It bridges personal episode/anime tracking with community interaction, allowing anime fans to discuss, review, share thoughts, and build connections around their favorite series.
 
 ### 1.2 Core Architectural Decisions
+
 1. **Primary Concept:** Hybrid (Anime Tracker + Social Community)
 2. **Community Model:** Open Community Feed with anime-specific discussion threads.
 3. **Development Strategy:** **Phased Refactoring** — Retain existing React 19 + Express setup while restructuring database schemas, decoupling anime catalog data from user watchlists, and introducing domain-driven features incrementally.
@@ -25,10 +27,11 @@
 Before implementing community features, the following foundational issues in `project-akhir-blk-main` must be resolved:
 
 ### 2.1 Critical Fixes Checklist
+
 - [ ] **Dual `AuthProvider` Bug:** Remove duplicate `AuthProvider` wrapping in `App.jsx`. Retain single wrapper at `main.jsx`.
 - [ ] **Hardcoded API URLs:** Replace hardcoded `"http://localhost:3000/api"` in `frontend/src/services/api.js` with Vite environment variable `import.meta.env.VITE_API_URL`.
 - [ ] **JWT Storage & Auth:** Transition JWT storage from `localStorage` to **HttpOnly, Secure, SameSite Cookies** with CSRF protection mechanisms.
-- [ ] **Backend Input Validation:** Introduce **Zod** or **Joi** middleware across all POST/PUT routes (validate email formats, string lengths, score boundaries 0-10, episode counts, and enum statuses).
+- [ ] **Backend Input Validation:** Introduce **Zod** or **Joi** middleware across all POST/PUT routes (validate email formats, string lengths, score boundaries 1-10, episode counts, and enum statuses).
 - [ ] **HTML Sanitization:** Replace raw `dangerouslySetInnerHTML` in `AnimeDetail.jsx` with `DOMPurify.sanitize()` or direct plain-text rendering to mitigate XSS risks from external AniList API payloads.
 - [ ] **Database Migration Safety:** Remove `DROP DATABASE` directives from `project_akhir_blk.sql`. Implement a structured SQL migration script workflow (Schema Creation -> Data Migration -> Seeders).
 - [ ] **AniList API Integration:** AniList is the single external anime API. Remove all Jikan code (controller, service, routes). Standardize the AniList handler with request timeouts, rate-limit handling, and search query caching.
@@ -39,7 +42,12 @@ Before implementing community features, the following foundational issues in `pr
 ## 3. Database Schema & Architecture
 
 ### 3.1 Relational Architecture Concept
+
 The current `animes` table blends master anime data with user progress. We decouple this into `anime_catalog` (cached master data) and `user_anime` (user-specific watchlist state).
+**Catatan skema aktual:** tabel `users` mempertahankan nama kolom lama (`us_id`, `us_name`, `us_email`, `us_password`, `us_created_at`). Pada draf SQL di bawah, setiap `users(id)` dibaca sebagai `users(us_id)`, dan kolom foreign key ke users wajib bertipe `INT UNSIGNED`. Skema `anime_catalog` dan `user_anime` yang sebenarnya ada di `backend/src/db/migrations/001_create_anime_catalog_and_user_anime.sql` dan menggantikan draf di bawah. Perbedaannya:
+
+- `anime_catalog`: `external_id` INT UNSIGNED, kolom tambahan `anim_type` (TV, Movie, OVA, ONA, Special, TV Short, Music).
+- `user_anime`: status memakai spasi (`'plan to watch'`, `'on hold'`), `score` DECIMAL(3,1) dengan CHECK 1-10 dan boleh NULL, `tier` ENUM('S','A','B','C','D'), ada kolom `created_at`, dan `id` sama dengan `anim_id` lama.
 
 ```
 [USERS] 1 ─── 1 [USER_PROFILES]
@@ -78,35 +86,6 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 2. ANIME CATALOG & TRACKER DECOUPLING
-CREATE TABLE IF NOT EXISTS anime_catalog (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  external_id VARCHAR(100) NOT NULL,
-  source ENUM('anilist') NOT NULL DEFAULT 'anilist',
-  title VARCHAR(255) NOT NULL,
-  cover_image VARCHAR(500),
-  total_episodes INT DEFAULT 0,
-  status VARCHAR(50),
-  synopsis TEXT,
-  genres JSON,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE KEY unique_external_anime (external_id, source)
-);
-
-CREATE TABLE IF NOT EXISTS user_anime (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  anime_id INT NOT NULL,
-  status ENUM('watching', 'completed', 'plan_to_watch', 'dropped', 'on_hold', 'rewatching') NOT NULL,
-  episodes_watched INT DEFAULT 0,
-  score DECIMAL(3,1) DEFAULT 0.0,
-  tier VARCHAR(10) NULL,
-  notes TEXT,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (anime_id) REFERENCES anime_catalog(id) ON DELETE CASCADE,
-  UNIQUE KEY unique_user_anime (user_id, anime_id)
-);
 
 -- 3. COMMUNITY FEED & INTERACTION
 CREATE TABLE IF NOT EXISTS posts (
@@ -192,6 +171,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 ## 4. Software Architecture Specifications
 
 ### 4.1 Backend Structure (Modular Monolith)
+
 ```
 backend/
 ├── src/
@@ -199,7 +179,7 @@ backend/
 │   ├── middlewares/         # Auth, Zod Validation, Error Handler, Rate Limiter
 │   ├── integrations/        # AniList API client with timeout & cache
 │   ├── modules/             # Feature Modules
-│   │   ├── auth/            # Controllers, Services, Models, Routes
+│   │   ├── auth/            # Controllers, Services, Models, Routes, Validators
 │   │   ├── users/           # User profile & social follow
 │   │   ├── anime/           # Catalog caching & API fetching
 │   │   ├── watchlist/       # Personal tracking & status
@@ -213,6 +193,7 @@ backend/
 ```
 
 ### 4.2 Frontend Structure (Feature-Based Domain Layout)
+
 ```
 frontend/src/
 ├── components/              # Global reusable UI (Button, Modal, Navbar, Input)
@@ -236,23 +217,27 @@ frontend/src/
 ## 5. API Endpoint Specifications
 
 ### Auth & User Management
+
 - `POST /api/auth/register` — Create user account
 - `POST /api/auth/login` — Authenticate & set HttpOnly cookie
 - `POST /api/auth/logout` — Clear auth cookie
 - `GET /api/auth/me` — Fetch active session user profile
 
 ### Profiles & Social Relationships
+
 - `GET /api/users/:username` — Fetch public profile & tracking stats
 - `PUT /api/users/profile` — Update bio, display name, avatar
 - `POST /api/users/:id/follow` — Follow/Unfollow user
 
 ### Anime Catalog & Watchlist
+
 - `GET /api/anime/search?q=...` — Proxy search through AniList API + cache
 - `GET /api/anime/:id` — Details from catalog + external metadata
 - `GET /api/watchlist` — Fetch personal watchlist
 - `POST /api/watchlist` — Add or update anime progress in user watchlist
 
 ### Community Feed & Discussions
+
 - `GET /api/posts?page=1&limit=20` — Paginated chronological feed
 - `POST /api/posts` — Create a feed post (with optional anime linkage)
 - `POST /api/posts/:id/like` — Toggle like on post
@@ -260,6 +245,7 @@ frontend/src/
 - `POST /api/posts/:id/comments` — Add comment or reply
 
 ### Reviews
+
 - `GET /api/anime/:id/reviews` — Get user reviews for a specific anime
 - `POST /api/reviews` — Write/Edit long-form anime review
 
@@ -268,6 +254,7 @@ frontend/src/
 ## 6. Development Roadmap & Implementation Steps
 
 ### Phase 1: Security, Hygiene & Database Refactoring
+
 1. Fix duplicate `AuthProvider` in frontend.
 2. Setup environment variables (`VITE_API_URL`, DB secrets).
 3. Implement Zod request validation middleware on Express routes.
@@ -275,22 +262,26 @@ frontend/src/
 5. Implement HttpOnly Cookie authentication flow.
 
 ### Phase 2: User Profiles & Social Graph
+
 1. Implement User Profile schema and endpoints.
 2. Build Profile page UI with stats summary (total watched, episodes, score distribution).
 3. Implement Follow/Unfollow API and action controls on profile pages.
 
 ### Phase 3: Community Feed Implementation
+
 1. Construct `posts`, `post_images`, `comments`, and `post_likes` backend modules.
 2. Build `Community Feed` UI page with `CreatePostModal` and `PostCard`.
 3. Add spoiler toggles and image upload support (Cloudinary/Storage).
 4. Implement comment thread components supporting replies via `parent_comment_id`.
 
 ### Phase 4: Anime Discussion & Reviews Integration
+
 1. Extend `AnimeDetail` page to include tabs: Overview, Reviews, Discussions, Watchers.
 2. Implement Anime Review creation and rating components.
 3. Link feed posts specifically to an `anime_id` for targeted discussions.
 
 ### Phase 5: Notifications & Optimization
+
 1. Build notification polling / query endpoint for likes, comments, and follows.
 2. Implement SQL query optimizations, pagination on feeds, and backend indexing.
 
@@ -306,3 +297,5 @@ When assisting on this repository, all AI agents must strictly adhere to the fol
 4. **Validation First:** Ensure every new POST/PUT endpoint is guarded by a Zod schema before processing logic.
 5. **Database Safety:** Never issue destructible `DROP TABLE` or `DROP DATABASE` queries during schema migrations. Always provide backwards-compatible migration steps.
 6. **Single External API:** AniList is the only external anime API. Do not add or reintroduce Jikan.
+7. **Skema Lewat Migrasi:** Setiap perubahan skema database ditulis sebagai file bernomor di backend/src/db/migrations/ (tanpa DELIMITER, idempotent, tanpa DROP/TRUNCATE).
+8. **Foreign Key ke Users:** Gunakan users(us_id) dengan tipe INT UNSIGNED, bukan users(id).

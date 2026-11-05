@@ -69,7 +69,9 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 > Hanya mengakses data milik user yang sedang login (diambil dari JWT).
 > Param `anim_id` wajib bilangan bulat positif (GET /:anim_id, PUT, PATCH, DELETE), kalau tidak 400. Field di luar tabel akan ditolak 400 (strict).
-> Bentuk objek `Anime` (dari `SELECT *` pada stored procedure; GET list dan detail diasumsikan sama, belum diverifikasi): `anim_id`, `us_id`, `external_id`, `external_source`, `anim_title`, `anim_img_url`, `anim_current_episode`, `anim_total_episode`, `anim_type`, `anim_status`, `anim_tier`, `anim_score`, `anim_personal_notes`, `anim_created_at`. Bentuk ini tidak boleh berubah saat migrasi #6.
+> Bentuk objek `Anime` (terverifikasi lewat alias SELECT dari `user_anime` + `anime_catalog`, sama untuk GET list, GET detail, POST, PUT, PATCH):
+> `{ anim_id: number (= user_anime.id), us_id: number, external_id: number, external_source: "anilist", anim_title: string, anim_img_url: string|null, anim_current_episode: number, anim_total_episode: number, anim_type: "TV"|"Movie"|"OVA"|"ONA"|"Special"|"TV Short"|"Music", anim_status: "watching"|"completed"|"dropped"|"plan to watch", anim_tier: "S"|"A"|"B"|"C"|"D"|null, anim_score: number|null (boleh desimal, mis. 8.5), anim_personal_notes: string|null, anim_created_at: string (ISO 8601) }`
+> Bentuk ini tidak boleh berubah.
 
 #### `GET /anime`
 
@@ -84,18 +86,18 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 - **Body:**
 
-| Field            | Tipe                                             | Wajib | Aturan Zod / Default                                                                                                        |
-| ---------------- | ------------------------------------------------ | ----- | --------------------------------------------------------------------------------------------------------------------------- |
-| `externalId`     | number                                           | ya    | bilangan bulat positif                                                                                                      |
-| `title`          | string                                           | ya    | trim, 1-255 karakter                                                                                                        |
-| `externalSource` | string                                           | tidak | hanya `"anilist"`, default `"anilist"`                                                                                      |
-| `imgUrl`         | string                                           | tidak | URL http/https maks 500, atau null                                                                                          |
-| `totalEps`       | number                                           | tidak | bilangan bulat >= 0, default 0                                                                                              |
-| `type`           | `TV` `Movie` `OVA` `ONA` `Special`               | tidak | tidak peka huruf besar/kecil (contoh: MOVIE -> Movie), default `TV`. Nilai AniList TV_SHORT dan MUSIC saat ini ditolak 400. |
-| `status`         | `watching` `completed` `dropped` `plan to watch` | tidak | default `watching`                                                                                                          |
-| `tier`           | `S` `A` `B` `C` `D`                              | tidak | `S`-`D` atau null                                                                                                           |
-| `score`          | number                                           | tidak | bilangan bulat 1-10 atau null                                                                                               |
-| `notes`          | string                                           | tidak | maks 2000 karakter atau null                                                                                                |
+| Field            | Tipe                                                  | Wajib | Aturan Zod / Default                                                                                           |
+| ---------------- | ----------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------- |
+| `externalId`     | number                                                | ya    | bilangan bulat positif                                                                                         |
+| `title`          | string                                                | ya    | trim, 1-255 karakter                                                                                           |
+| `externalSource` | string                                                | tidak | hanya `"anilist"`, default `"anilist"`                                                                         |
+| `imgUrl`         | string                                                | tidak | URL http/https maks 500, atau null                                                                             |
+| `totalEps`       | number                                                | tidak | bilangan bulat >= 0, default 0                                                                                 |
+| `type`           | `TV` `Movie` `OVA` `ONA` `Special` `TV Short` `Music` | tidak | tidak peka huruf besar/kecil, garis bawah dianggap spasi (MOVIE -> Movie, TV_SHORT -> TV Short), default `TV`. |
+| `status`         | `watching` `completed` `dropped` `plan to watch`      | tidak | default `watching`                                                                                             |
+| `tier`           | `S` `A` `B` `C` `D`                                   | tidak | `S`-`D` atau null                                                                                              |
+| `score`          | number                                                | tidak | angka 1-10, maksimal 1 desimal (8 atau 8.5), atau null                                                         |
+| `notes`          | string                                                | tidak | maks 2000 karakter atau null                                                                                   |
 
 - **Sukses 201:** `data: Anime`
 - **Error:** 400 validasi gagal (pesan error pertama), 409 anime sudah ada di watchlist
@@ -105,7 +107,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - **Body:** `{ eps, teps, status, tier, score, notes }`
   - `eps` dan `teps`: wajib bilangan bulat >= 0.
   - `status`: wajib (`watching`, `completed`, `dropped`, `plan to watch`).
-  - `tier`, `score`, `notes`: opsional/default null (tier: S-D/null, score: 1-10/null, notes: maks 2000/null).
+  - `tier`, `score`, `notes`: opsional/default null (tier: S-D/null, score: 1-10, maks 1 desimal/null, notes: maks 2000/null).
 - **Aturan:** jika `teps` > 0 maka `eps` <= `teps`. Jika `status` = `completed` dan `teps` > 0, `eps` otomatis diisi `teps`. Jika `teps` = 0 (total tidak diketahui), `eps` memakai nilai yang dikirim.
 - **Sukses 200:** `data: Anime`
 - **Error:** 400 validasi gagal, 404 tidak ditemukan
@@ -185,3 +187,4 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-03: Auth: validasi Zod (strict) pada register dan login.
 - 2026-11-04: Watchlist: validasi Zod (strict) pada param anim_id, POST, PUT. type tidak peka huruf besar/kecil.
 - 2026-11-05: Register: nama duplikat kini 400 "Nama sudah digunakan" (dulu 500). PUT: completed dengan teps 0 mempertahankan eps. PATCH increment: tidak lagi 500 untuk anime completed dengan total 0.
+- 2026-11-05: Watchlist beralih ke tabel anime_catalog + user_anime (bentuk response tidak berubah). type menerima TV Short dan Music (TV_SHORT dinormalisasi). score boleh desimal (1-10, maks 1 desimal). PUT pada ID tidak ada kini selalu 404.

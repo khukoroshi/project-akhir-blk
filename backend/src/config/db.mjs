@@ -12,6 +12,7 @@ const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10, // Maksimal 10 koneksi simultan
   queueLimit: 0,
+  decimalNumbers: true, // DECIMAL columns (user_anime.score) come back as number, not "8.0"
 });
 
 // Tes koneksi saat server pertama kali dinyalakan
