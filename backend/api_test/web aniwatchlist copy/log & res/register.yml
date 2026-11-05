@@ -8,7 +8,7 @@ http:
   url: "{{link}}/{{api_auth_link}}/register"
   body:
     type: json
-    data: '{"name":"khukoroshi","email":"Budi@Mail.com","password":"rahasia123"}'
+    data: '{"name":"budi","email":"khukoroshi@gmail.com","password":"rahasia123"}'
   auth: inherit
 
 settings:

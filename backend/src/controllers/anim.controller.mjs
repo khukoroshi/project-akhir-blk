@@ -42,16 +42,6 @@ const createWatchList = async (req, res, next) => {
   try {
     const usId = req.user.id;
 
-    const { externalId, title } = req.body;
-
-    if (!externalId) {
-      return next(new AppError("externalId anime wajib diisi!", 400));
-    }
-
-    if (!title) {
-      return next(new AppError("Judul anime (title) wajib diisi!", 400));
-    }
-
     const newAnime = await Anime.createWatchList(usId, req.body);
 
     res.status(201).json({

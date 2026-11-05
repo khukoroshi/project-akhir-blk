@@ -1,0 +1,21 @@
+Temuan
+Cek manual di controller redundan. if (!externalId) dan if (!title) di createWatchList tidak akan pernah jalan lagi, karena schema menolak lebih dulu. Controller sengaja tidak saya ubah. ER_DUP_ENTRY tetap perlu.
+Frontend yang akan ditolak schema strict:
+AnimeDetail.jsx mengirim type: anime.format, nilai AniList seperti "MOVIE". Saya buat type tidak peka huruf besar/kecil ("MOVIE" menjadi "Movie") supaya tetap jalan. "TV_SHORT" dan "MUSIC" tetap ditolak 400, jadi frontend perlu pemetaan (misalnya TV_SHORT menjadi TV), dan keputusannya di Anda.
+Bug lama di luar tugas ini: incrementEpisode di model memanggil updateWatchList tanpa teps. Untuk anime berstatus completed dengan total episode 0, eps_real menjadi undefined, dan mysql2 melempar error 500. Perbaikannya sebaiknya jadi tugas terpisah.
+
+Bug lama di model (tugas terpisah), sekarang ada dua:
+incrementEpisode tidak mengirim teps. Untuk anime completed dengan total 0, eps_real menjadi undefined, lalu mysql2 melempar error 500. Lewat UI aman karena AnimeCard hanya dipakai untuk status watching, tapi lewat API langsung bisa terjadi.
+Di updateWatchList, jika status === "completed" maka eps_real = teps. Kalau total episode tidak diketahui (0), episode yang ditonton ikut menjadi 0. Contoh: anime masih tayang, total 0, Anda tandai selesai dengan eps 12, tersimpan eps 0. Perbaikan: if (status === "completed" && teps > 0).
+
+
+AnimeDetail.jsx (keputusan di Anda): AniList mengirim format TV_SHORT dan MUSIC, yang ditolak schema dengan 400. Usulan pemetaan:
+
+jsx
+// di atas komponen
+const FORMAT_MAP = { TV_SHORT: "TV", MUSIC: "Special" };
+
+// handleAddToList: ganti baris type
+type: FORMAT_MAP[anime.format] || anime.format || "TV",
+
+Apakah MUSIC sebaiknya jadi Special? Itu pilihan Anda. Field lain di AnimeDetail sudah sesuai schema.

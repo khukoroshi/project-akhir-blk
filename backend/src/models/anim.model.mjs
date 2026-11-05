@@ -51,8 +51,9 @@ const Anime = {
   // Update detail anime menggunakan Stored Procedure
   updateWatchList: async (animId, usId, data) => {
     const { eps, teps, status, tier, score, notes } = data;
+
     let eps_real = eps;
-    if (status === "completed") {
+    if (status === "completed" && teps > 0) {
       eps_real = teps;
     }
 
@@ -87,13 +88,13 @@ const Anime = {
     }
 
     const newEps = currentAnime.anim_current_episode + 1;
-
     return await Anime.updateWatchList(animId, usId, {
       eps: newEps,
+      teps: currentAnime.anim_total_episode ?? 0,
       status: currentAnime.anim_status,
-      tier: currentAnime.anim_tier,
-      score: currentAnime.anim_score,
-      notes: currentAnime.anim_personal_notes,
+      tier: currentAnime.anim_tier ?? null,
+      score: currentAnime.anim_score ?? null,
+      notes: currentAnime.anim_personal_notes ?? null,
     });
   },
 

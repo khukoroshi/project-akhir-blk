@@ -19,12 +19,36 @@ export const registerUser = async (data) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  const [result] = await db.execute("CALL sp_insert_user(?, ?, ?)", [
-    name,
-    email,
-    hashedPassword,
-  ]);
+  // const [result] = await db.execute("CALL sp_insert_user(?, ?, ?)", [
+  //   name,
+  //   email,
+  //   hashedPassword,
+  // ]);
   // Ambil new_us_id dari baris pertama hasil Stored Procedure
+  let result;
+  try {
+    [result] = await db.execute("CALL sp_insert_user(?, ?, ?)", [
+      name,
+      email,
+      hashedPassword,
+    ]);
+  } catch (error) {
+    // Safety net for race conditions: the pre-check above can pass
+    // while another request inserts the same value first.
+    if (error.code === "ER_DUP_ENTRY") {
+      const message = error.sqlMessage || error.message || "";
+      const key = message.match(/for key '([^']+)'/)?.[1] || "";
+
+      if (key.endsWith("us_name")) {
+        throw new AppError("Nama sudah digunakan", 400);
+      }
+      if (key.endsWith("us_email")) {
+        throw new AppError("Email sudah digunakan", 400);
+      }
+      throw new AppError("Nama atau email sudah digunakan", 400);
+    }
+    throw error;
+  }
 
   const newUserId = result[0][0].new_us_id;
   return {

@@ -1,18 +1,19 @@
 -- ============================================================
 -- DATABASE
+-- For FRESH INSTALL only. For schema changes, add a new file in
+-- src/db/migrations/ and run: pnpm migrate
+-- Fresh install order: run this file first, then pnpm migrate.
 -- ============================================================
 
-DROP DATABASE IF EXISTS AniWatchList;
 CREATE DATABASE IF NOT EXISTS AniWatchList;
 USE AniWatchList;
-
 
 -- ============================================================
 -- TABLE: users
 -- Menyimpan data akun pengguna
 -- ============================================================
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     us_id         INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
     us_name       VARCHAR(50)   NOT NULL UNIQUE,
     us_email      VARCHAR(100)  NOT NULL UNIQUE,
@@ -26,7 +27,7 @@ CREATE TABLE users (
 -- Menyimpan anime yang ditambahkan user ke My List
 -- ============================================================
 
-CREATE TABLE animes (
+CREATE TABLE IF NOT EXISTS animes (
     anim_id               INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
     us_id                 INT UNSIGNED  NOT NULL,
     external_id           INT UNSIGNED  NOT NULL,
