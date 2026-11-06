@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{link}}/{{api_anim_link}}/1"
+  url: "{{link}}/{{api_anim_link}}/abc"
   auth:
     type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0aW5nM0BnbWFpbC5jb20iLCJpYXQiOjE3ODk2MTcyMTQsImV4cCI6MTc5MDIyMjAxNH0.diylJD9IJ7d0ZBzt1XywXAow32A5vQGcyu59sxkO7O0
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6ImtodWtvcm9zaGkiLCJlbWFpbCI6ImtodWtvcm9zaGlAZ21haWwuY29tIiwiaWF0IjoxNzkzOTQ3MDc1LCJleHAiOjE3OTQ1NTE4NzV9.u8YxK9YvjUToWYUJz8mi8YZ1tN0hYgLF3tu3JcwwZZM
 
 settings:
   encodeUrl: true

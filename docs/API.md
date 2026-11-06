@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-05.
+> Terakhir diperbarui: 2026-11-06.
 
 ## 1. Konvensi Umum
 
@@ -101,6 +101,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 - **Sukses 201:** `data: Anime`
 - **Error:** 400 validasi gagal (pesan error pertama), 409 anime sudah ada di watchlist
+- **Catatan:** data katalog (judul, gambar, total episode, tipe) diisi dari request user pertama yang menambahkan anime itu, dan tidak ditimpa request user lain. Frontend sebaiknya mengirim data AniList yang akurat.
 
 #### `PUT /anime/:anim_id`
 

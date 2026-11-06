@@ -34,7 +34,7 @@ function EditAnimeModal({ anime, onClose, onSave }) {
     try {
       await onSave(anime.anim_id, {
         eps: Number(form.eps),
-        teps: anime.anim_total_episode,
+        teps: anime.anim_total_episode ?? 0,
         status: form.status,
         tier: form.tier || null,
         score: form.score === "" ? null : Number(form.score),
@@ -203,6 +203,7 @@ function EditAnimeModal({ anime, onClose, onSave }) {
           label="My Score"
           type="number"
           name="score"
+          step={0.1}
           min={1}
           max={10}
           value={form.score}

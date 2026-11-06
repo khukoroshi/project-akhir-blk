@@ -5,10 +5,10 @@ info:
 
 http:
   method: DELETE
-  url: "{{link}}/{{api_anim_link}}/2"
+  url: "{{link}}/{{api_anim_link}}/11"
   auth:
     type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0aW5nM0BnbWFpbC5jb20iLCJpYXQiOjE3ODk2MTcyMTQsImV4cCI6MTc5MDIyMjAxNH0.diylJD9IJ7d0ZBzt1XywXAow32A5vQGcyu59sxkO7O0
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwibmFtZSI6InRlc3RpbmciLCJlbWFpbCI6InRlc3RpbmdAZ21haWwuY29tIiwiaWF0IjoxNzkzOTQ3NTE0LCJleHAiOjE3OTQ1NTIzMTR9.lNDqXqhRE0mkMbFNaVP7qcPeLkEI3HTne6ZeEYwscEM
 
 settings:
   encodeUrl: true

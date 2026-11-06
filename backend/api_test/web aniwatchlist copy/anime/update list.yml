@@ -5,20 +5,13 @@ info:
 
 http:
   method: PUT
-  url: "{{link}}/{{api_anim_link}}/1"
+  url: "{{link}}/{{api_anim_link}}/11"
   body:
     type: json
-    data: |-
-      {
-        "eps": 1090,
-        "status": "watching",
-        "tier": "C",
-        "score": 8,
-        "notes": "Sudah mendekati episode terbaru minggu ini!"
-      }
+    data: '{"eps":5,"teps":5,"status":"watching","tier":null,"score":null,"notes":null}'
   auth:
     type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0aW5nM0BnbWFpbC5jb20iLCJpYXQiOjE3ODk2MTcyMTQsImV4cCI6MTc5MDIyMjAxNH0.diylJD9IJ7d0ZBzt1XywXAow32A5vQGcyu59sxkO7O0
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwibmFtZSI6InRlc3RpbmciLCJlbWFpbCI6InRlc3RpbmdAZ21haWwuY29tIiwiaWF0IjoxNzkzOTQ3NTE0LCJleHAiOjE3OTQ1NTIzMTR9.lNDqXqhRE0mkMbFNaVP7qcPeLkEI3HTne6ZeEYwscEM
 
 settings:
   encodeUrl: true

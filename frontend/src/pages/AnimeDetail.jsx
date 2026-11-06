@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import api from "../services/api";
 import { useAuth } from "../context/useAuth";
@@ -13,6 +13,7 @@ import LoadingPage from "../components/common/LoadingPage";
 import ErrorApiPage from "../components/common/ErrorApiPage";
 
 function AnimeDetail() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useAuth();
   const [anime, setAnime] = useState(null);
@@ -124,13 +125,16 @@ function AnimeDetail() {
   return (
     <MainLayout username={user?.name}>
       <div className="space-y-8 block text-center relative pt-6">
-        <Link
-          to="/"
+        <button
+          type="button"
+          onClick={() =>
+            window.history.length > 1 ? navigate(-1) : navigate("/")
+          }
           className="absolute top-0 left-3 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-900"
         >
           <span className="text-lg">←</span>
           Back to Anime
-        </Link>
+        </button>
         {/* Hero */}
         <section className="text-left mt-5 relative overflow-hidden rounded-3xl bg-slate-950 text-white shadow-xl">
           {/* BANNER */}

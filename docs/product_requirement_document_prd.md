@@ -39,11 +39,18 @@ Before implementing community features, the following foundational issues in `pr
 
 ---
 
+### 2.2 UX Fixes & Enhancements (Phase 0)
+
+- [x] **Login state:** setelah login, navbar (status user) dan tab MyList langsung muncul tanpa refresh. Kontrak: respons login memakai `data.user`.
+- [x] **Navigasi kembali:** kata kunci pencarian disimpan di URL (`/?q=...`) sehingga tombol Back mengembalikan hasil pencarian, bukan daftar top anime.
+- [ ] **Pagination katalog:** 48 anime per halaman dengan navigasi nomor halaman (`< prev 48`, `next 48 >`), nomor halaman disimpan di URL (`?page=`).
+
 ## 3. Database Schema & Architecture
 
 ### 3.1 Relational Architecture Concept
 
 The current `animes` table blends master anime data with user progress. We decouple this into `anime_catalog` (cached master data) and `user_anime` (user-specific watchlist state).
+
 **Catatan skema aktual:** tabel `users` mempertahankan nama kolom lama (`us_id`, `us_name`, `us_email`, `us_password`, `us_created_at`). Pada draf SQL di bawah, setiap `users(id)` dibaca sebagai `users(us_id)`, dan kolom foreign key ke users wajib bertipe `INT UNSIGNED`. Skema `anime_catalog` dan `user_anime` yang sebenarnya ada di `backend/src/db/migrations/001_create_anime_catalog_and_user_anime.sql` dan menggantikan draf di bawah. Perbedaannya:
 
 - `anime_catalog`: `external_id` INT UNSIGNED, kolom tambahan `anim_type` (TV, Movie, OVA, ONA, Special, TV Short, Music).
@@ -87,7 +94,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 
 
--- 3. COMMUNITY FEED & INTERACTION
+-- 2. COMMUNITY FEED & INTERACTION
 CREATE TABLE IF NOT EXISTS posts (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
@@ -129,7 +136,7 @@ CREATE TABLE IF NOT EXISTS post_likes (
   FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );
 
--- 4. SOCIAL & REVIEWS
+-- 3. SOCIAL & REVIEWS
 CREATE TABLE IF NOT EXISTS follows (
   follower_id INT NOT NULL,
   following_id INT NOT NULL,

@@ -38,8 +38,13 @@ function RegisterForm() {
       return;
     }
 
-    if (form.password.length < 6) {
-      setError("Password minimal 6 karakter.");
+    if (form.password.length < 8) {
+      setError("Password minimal 8 karakter.");
+      return;
+    }
+
+    if (!/[A-Za-z]/.test(form.password) || !/\d/.test(form.password)) {
+      setError("Password harus mengandung huruf dan angka.");
       return;
     }
 

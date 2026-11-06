@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import api from "../services/api";
 
@@ -15,9 +16,26 @@ function Home() {
 
   const { user } = useAuth();
 
-  const [query, setQuery] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = (searchParams.get("q") ?? "").trim();
+
+  const [searchInput, setSearchInput] = useState(query);
+  const [prevQuery, setPrevQuery] = useState(query);
+
+  // Keep the input in sync when the URL changes (Back/Forward)
+  if (query !== prevQuery) {
+    setPrevQuery(query);
+    setSearchInput(query);
+  }
+
+  const handleSearch = () => {
+    const keyword = searchInput.trim();
+    setSearchParams(keyword ? { q: keyword } : {});
+  };
+
   useEffect(() => {
+    let ignore = false;
+
     const fetchAnime = async () => {
       setLoading(true);
       setError(null);
@@ -27,8 +45,10 @@ function Home() {
           params: query ? { q: query } : {},
         });
 
+        if (ignore) return;
         setAnimeList(response.data.data || []);
       } catch (err) {
+        if (ignore) return;
         console.error("Gagal mengambil data:", err);
 
         setError(
@@ -37,11 +57,15 @@ function Home() {
             "Gagal mengambil data anime",
         );
       } finally {
-        setLoading(false);
+        if (!ignore) setLoading(false);
       }
     };
 
     fetchAnime();
+
+    return () => {
+      ignore = true;
+    };
   }, [query]);
 
   return (
@@ -99,9 +123,7 @@ function Home() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setQuery(searchInput.trim());
-                    }
+                    if (e.key === "Enter") handleSearch();
                   }}
                   placeholder="Search anime..."
                   className="h-12 w-full rounded-xl border border-white/10 bg-white/10 pl-12 pr-4 text-sm text-white outline-none placeholder:text-slate-400 transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
@@ -109,7 +131,7 @@ function Home() {
               </div>
 
               <Button
-                onClick={() => setQuery(searchInput.trim())}
+                onClick={handleSearch}
                 variant="secondary"
                 className="h-12 rounded-xl bg-white px-6 font-semibold text-slate-900 transition hover:bg-slate-100"
               >

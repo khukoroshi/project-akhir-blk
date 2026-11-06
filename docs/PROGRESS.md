@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #7, hapus Jikan; #6 bagian A).
-- **Sedang dikerjakan:** Phase 0 #3 dan #8
-- **Berikutnya:** cookie HttpOnly + test runner.
+- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan). Tersisa #3 dan #8.
+- **Sedang dikerjakan:** -
+- **Berikutnya:** pagination katalog, lalu #8 test runner, lalu #3 cookie HttpOnly.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -26,6 +26,8 @@
 - Format anime AniList (TV_SHORT, MUSIC) ditampung di database lewat migrasi #6 sebagai 'TV Short' dan 'Music'. Frontend tidak memakai pemetaan format.
 - Watchlist memakai anime_catalog + user_anime. Nilai status memakai spasi ('plan to watch', 'on hold', 'rewatching'), bukan underscore seperti draf PRD. API baru menerima 4 status (watching, completed, dropped, plan to watch).
 - Perubahan skema database hanya lewat file migrasi bernomor di backend/src/db/migrations/ (pnpm migrate): tanpa DROP/TRUNCATE, tanpa DELIMITER, idempotent. project_akhir_blk.sql hanya untuk instalasi baru.
+- Skor di API: angka 1-10 dengan maksimal 1 desimal (mis. 8.5). Kolom database DECIMAL(3,1).
+- Katalog (anime_catalog) dibagi antar user: judul, gambar, total episode, dan tipe diisi dari request user pertama yang menambahkan anime itu, dan tidak ditimpa user lain.
 
 ## 4. Struktur Saat Ini (belum sesuai target)
 
@@ -62,8 +64,6 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 
 ## 6. Database Saat Ini
 
-## 6. Database Saat Ini
-
 - Database `AniWatchList`. Tabel: `users`, `animes` (LAMA, jadi cadangan setelah bagian B), `anime_catalog`, `user_anime`, `schema_migrations`.
 - `users` tetap memakai nama kolom lama (`us_id`, `us_name`, `us_email`, `us_password`, `us_created_at`). Semua foreign key baru mengarah ke `users.us_id` dan bertipe INT UNSIGNED.
 - `user_anime.id` = `anim_id` lama, jadi ID di URL tidak berubah. `anime_catalog` punya kolom `anim_type` (TV/Movie/OVA/ONA/Special/TV Short/Music).
@@ -71,6 +71,7 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 - Instalasi baru: jalankan `project_akhir_blk.sql`, lalu `pnpm migrate`. Backup sebelum migrasi: `mysqldump`.
 - File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`.
 - Tabel komunitas PRD (posts, comments, dst.) belum ada.
+- - File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`, `migrations/002_sync_leftover_animes.sql`.
 
 ## 7. Status Checklist Phase 0
 
@@ -96,11 +97,11 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
 - Tidak ada `.env.example` di backend.
 - Server belum mengetes koneksi MySQL saat startup, sehingga database mati baru ketahuan saat ada request.
-- Schema register bersifat strict: pastikan form Register frontend tidak mengirim field tambahan (misalnya confirmPassword).
 - strictOptions diduplikasi di dua validator.
 - Setelah #6, cek apakah db-project-test.sql masih relevan (tabel animes lama tidak dipakai lagi), dan hapus tabel animes lama lewat tugas tersendiri setelah verifikasi.
 - Data katalog diisi dari body request user pertama. Idealnya diisi server dari AniList.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
+- Enhancement: pagination katalog 48 per halaman (1 request AniList per halaman, nomor halaman di URL).
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -109,10 +110,13 @@ Status hasil pemeriksaan kode, bukan asumsi.
 3. Phase 0 #5 (DOMPurify) dan #7 (timeout + cache AniList).(selesai)
 4. Phase 0 #4 (Zod): auth dan watchlist selesai.(selesai)
 5. Perbaikan bug kecil backend (nama ganda register, 2 bug model).(selesai)
-6. Phase 0 #6: bagian A selesai, bagian B (kode ke tabel baru + tambah nilai format anime di validator).(selesai)
-7. Phase 0 #3 (cookie HttpOnly) dan #8 (test runner).
-8. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
-9. Kapan saja (frontend, chat terpisah): 3 perubahan kecil EditAnimeModal (step, maxLength, teps ?? 0); form Register jangan mengirim confirmPassword.
+6. Phase 0 #6 (migrasi SQL, pisah anime_catalog dan user_anime). (selesai)
+7. Frontend UX (chat terpisah): login langsung menampilkan navbar dan tab MyList; kata kunci pencarian di URL agar Back mengembalikan hasil.(selesai)
+8. Pagination katalog (backend + frontend, perbarui API.md). Kerjakan SETELAH chat frontend UX, karena sama-sama mengubah Home.jsx.
+9. Phase 0 #8 (test runner: Vitest + Supertest untuk auth dan watchlist).
+10. Phase 0 #3 (cookie HttpOnly + perlindungan CSRF).
+11. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
+12. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -169,3 +173,13 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: backend/src/models/anim.model.mjs, backend/src/validators/anim.validator.mjs, backend/src/config/db.mjs, backend/src/db/migrations/002_sync_leftover_animes.sql (baru), API.md
   - Keputusan baru: katalog dibagi antar user dan tidak ditimpa saat anime sama ditambah user lain. Auto-complete memakai total dari katalog. sp_insert_anime dan sp_update_anime tidak dipanggil lagi (belum dihapus). Tabel animes lama tetap sebagai cadangan.
   - Berikutnya: Phase 0 #3 (cookie HttpOnly) dan #8 (test runner). Ubah PRD: status bergaya spasi, score DECIMAL(3,1). Tugas terpisah: hapus tabel animes lama dan 2 procedure setelah verifikasi, lalu cek db-project-test.sql.
+- **2026-11-06** — Frontend kecil (skor desimal, EditAnimeModal, Register)
+  - Selesai: input skor EditAnimeModal menerima desimal (step 0.1); teps selalu angka (?? 0). Terverifikasi tanpa perubahan: maxLength catatan 2000, step episode 1, RegisterForm hanya kirim name/email/password, tampilan skor di AnimeCard dan AnimeTableRow aman untuk desimal.
+  - File diubah: frontend/src/components/features/anime/EditAnimeModal.jsx, frontend/src/components/features/aunt/RegisterForm.jsx (validasi password 8+ karakter, huruf dan angka, sesuai API.md)
+  - Keputusan baru: validasi password frontend mengikuti kontrak API.md.
+  - Berikutnya: frontend UX (login langsung tampil navbar dan MyList, kata kunci pencarian di URL), lalu pagination katalog, lalu #8 test runner.
+- **2026-11-06** — Frontend UX (login state, kata kunci di URL)
+  - Selesai: LoginForm membaca data.user (bukan userInfo), console.log respons login dan log objek error dihapus (berisi token/password). Home memakai useSearchParams (?q=) sebagai sumber kebenaran; input disinkronkan saat URL berubah; fetch memakai flag ignore untuk mencegah race condition.
+  - File diubah: frontend/src/components/features/aunt/LoginForm.jsx, frontend/src/pages/Home.jsx
+  - Keputusan baru: setiap pencarian menambah entri riwayat browser (Back berpindah antar pencarian). Pencarian kosong menghapus ?q=. Pagination nanti memakai ?page= di URL yang sama.
+  - Berikutnya: cek tombol kembali di AnimeDetail.jsx (jika Link to="/", ganti navigate(-1)); pagination katalog (backend + frontend, perbarui API.md); lalu #8 test runner.

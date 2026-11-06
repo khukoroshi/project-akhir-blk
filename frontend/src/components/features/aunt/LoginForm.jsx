@@ -32,17 +32,12 @@ function LoginForm() {
         password,
       });
 
-      console.log("Login response:", response.data);
-
-      const token = response.data.data.token;
-      const user = response.data.data.userInfo;
+      const { token, user } = response.data.data;
 
       login(token, user);
 
       navigate("/");
     } catch (err) {
-      console.error("Login gagal:", err);
-
       setErrorMsg(err.response?.data?.message || "Email atau password salah");
     } finally {
       setLoading(false);
