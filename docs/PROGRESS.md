@@ -64,14 +64,13 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 
 ## 6. Database Saat Ini
 
-- Database `AniWatchList`. Tabel: `users`, `animes` (LAMA, jadi cadangan setelah bagian B), `anime_catalog`, `user_anime`, `schema_migrations`.
+- Database `AniWatchList`. Tabel: `users`, `animes` (lama, cadangan, tidak dipakai kode)., `anime_catalog`, `user_anime`, `schema_migrations`.
 - `users` tetap memakai nama kolom lama (`us_id`, `us_name`, `us_email`, `us_password`, `us_created_at`). Semua foreign key baru mengarah ke `users.us_id` dan bertipe INT UNSIGNED.
 - `user_anime.id` = `anim_id` lama, jadi ID di URL tidak berubah. `anime_catalog` punya kolom `anim_type` (TV/Movie/OVA/ONA/Special/TV Short/Music).
 - sp_insert_anime dan sp_update_anime masih ada di database tetapi tidak dipakai kode.
 - Instalasi baru: jalankan `project_akhir_blk.sql`, lalu `pnpm migrate`. Backup sebelum migrasi: `mysqldump`.
-- File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`.
 - Tabel komunitas PRD (posts, comments, dst.) belum ada.
-- - File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`, `migrations/002_sync_leftover_animes.sql`.
+- File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`, `migrations/002_sync_leftover_animes.sql`.
 
 ## 7. Status Checklist Phase 0
 
@@ -101,7 +100,6 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Setelah #6, cek apakah db-project-test.sql masih relevan (tabel animes lama tidak dipakai lagi), dan hapus tabel animes lama lewat tugas tersendiri setelah verifikasi.
 - Data katalog diisi dari body request user pertama. Idealnya diisi server dari AniList.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
-- Enhancement: pagination katalog 48 per halaman (1 request AniList per halaman, nomor halaman di URL).
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -112,11 +110,12 @@ Status hasil pemeriksaan kode, bukan asumsi.
 5. Perbaikan bug kecil backend (nama ganda register, 2 bug model).(selesai)
 6. Phase 0 #6 (migrasi SQL, pisah anime_catalog dan user_anime). (selesai)
 7. Frontend UX (chat terpisah): login langsung menampilkan navbar dan tab MyList; kata kunci pencarian di URL agar Back mengembalikan hasil.(selesai)
-8. Pagination katalog (backend + frontend, perbarui API.md). Kerjakan SETELAH chat frontend UX, karena sama-sama mengubah Home.jsx.
-9. Phase 0 #8 (test runner: Vitest + Supertest untuk auth dan watchlist).
-10. Phase 0 #3 (cookie HttpOnly + perlindungan CSRF).
-11. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
-12. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
+8. Pagination katalog (backend + frontend, perbarui API.md).
+9. Filter kategori di Home (10 tab). Kerjakan SETELAH pagination.
+10. Phase 0 #8 (test runner: Vitest + Supertest untuk auth dan watchlist).
+11. Phase 0 #3 (cookie HttpOnly + perlindungan CSRF).
+12. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
+13. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -183,3 +182,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: frontend/src/components/features/aunt/LoginForm.jsx, frontend/src/pages/Home.jsx
   - Keputusan baru: setiap pencarian menambah entri riwayat browser (Back berpindah antar pencarian). Pencarian kosong menghapus ?q=. Pagination nanti memakai ?page= di URL yang sama.
   - Berikutnya: cek tombol kembali di AnimeDetail.jsx (jika Link to="/", ganti navigate(-1)); pagination katalog (backend + frontend, perbarui API.md); lalu #8 test runner.
+- **2026-11-07** — Pagination katalog (backend + frontend)
+  - Selesai: GET /catalog/anime menerima ?page= (1-200, divalidasi Zod strict, perPage tetap 48). Satu request AniList per halaman, kunci cache memuat page. Response menambah meta { page, perPage, hasNextPage }. Daftar top maks 10 halaman (400 jika lebih, hasNextPage false di halaman 10). Komponen Pagination (Sebelumnya / Halaman X / Berikutnya), Home menyimpan ?q= dan ?page= di URL dan gulir ke atas saat pindah halaman. Grid: 2 kolom (hp), 3 (tablet), 4 (laptop), 6 (desktop).
+  - File diubah: backend/src/validators/anilist.validator.mjs (baru), backend/src/routes/anilist.routes.mjs, backend/src/controllers/anilist.controller.mjs, backend/src/services/anilist.service.mjs, frontend/src/components/common/Pagination.jsx (baru), frontend/src/components/common/DaftarAnime.jsx, frontend/src/pages/Home.jsx, API.md
+  - Keputusan baru: perPage hanya ditentukan server. Daftar top dibatasi 10 halaman (480 judul). Tombol kembali AnimeDetail sudah benar, tidak diubah. strictOptions kini diduplikasi di tiga validator (utang teknis).
+  - Berikutnya: filter kategori Home (10 tab, ?filter=) memakai pagination ini, lalu #8 test runner, lalu #3 cookie HttpOnly. PRD bagian 2.2 punya dua baris "Pagination katalog", hapus baris lama dan centang yang baru.

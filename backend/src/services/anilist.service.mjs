@@ -3,6 +3,8 @@ const ANILIST_URL = "https://graphql.anilist.co";
 const REQUEST_TIMEOUT_MS = 10_000;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const CACHE_MAX_ENTRIES = 200;
+const PER_PAGE = 48;
+const MAX_TOP_PAGES = 10;
 
 const cache = new Map();
 
@@ -35,57 +37,38 @@ const createError = (message, statusCode) => {
 };
 
 const ANIME_SEARCH_QUERY = `
-  query ($search: String!) {
-    Page(perPage: 20) {
-      media(
-        search: $search
-        type: ANIME
-      ) {
+  query ($search: String!, $page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) {
+      pageInfo {
+        hasNextPage
+      }
+      media(search: $search, type: ANIME) {
         id
-
-        title {
-          romaji
-          english
-          native
-        }
-
+        title { romaji english native }
         episodes
         format
         status
         averageScore
-
-        coverImage {
-          large
-        }
+        coverImage { large }
       }
     }
   }
 `;
 
 const ANIME_TOP_QUERY = `
-  {
-    Page(page: 1, perPage: 60) {
-      media(
-        type: ANIME
-        sort: SCORE_DESC
-        isAdult: false
-      ) {
+  query ($page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) {
+      pageInfo {
+        hasNextPage
+      }
+      media(type: ANIME, sort: SCORE_DESC, isAdult: false) {
         id
-
-        title {
-          romaji
-          english
-          native
-        }
-
+        title { romaji english native }
         episodes
         format
         status
         averageScore
-
-        coverImage {
-          large
-        }
+        coverImage { large }
       }
     }
   }
@@ -209,19 +192,32 @@ const getAnimeDetail = async (id) => {
   return data.Media;
 };
 
-const getAnime = async (query = "") => {
+const getAnime = async (query = "", page = 1) => {
   const search = query.trim();
-  const cacheKey = search ? `search:${search.toLowerCase()}` : "top";
+  const cacheKey = search
+    ? `search:${page}:${search.toLowerCase()}`
+    : `top:${page}`;
 
   const cached = getCached(cacheKey);
   if (cached !== undefined) return cached;
 
+  const variables = { page, perPage: PER_PAGE };
   const data = search
-    ? await requestAniList(ANIME_SEARCH_QUERY, { search })
-    : await requestAniList(ANIME_TOP_QUERY);
+    ? await requestAniList(ANIME_SEARCH_QUERY, { ...variables, search })
+    : await requestAniList(ANIME_TOP_QUERY, variables);
 
-  setCached(cacheKey, data.Page.media);
-  return data.Page.media;
+  // The top list is capped at MAX_TOP_PAGES, so the last page never has a next.
+  const hasNextPage =
+    Boolean(data.Page.pageInfo?.hasNextPage) &&
+    (search !== "" || page < MAX_TOP_PAGES);
+
+  const result = {
+    items: data.Page.media,
+    meta: { page, perPage: PER_PAGE, hasNextPage },
+  };
+
+  setCached(cacheKey, result);
+  return result;
 };
 
 export { getAnime, getAnimeDetail };

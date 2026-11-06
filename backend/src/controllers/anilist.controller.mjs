@@ -5,12 +5,14 @@ import AppError from "../utils/appError.mjs";
 const searchAnime = async (req, res, next) => {
   try {
     const query = req.query.q || "";
+    const page = Number(req.query.page) || 1; // already validated by Zod
 
-    const result = await getAnime(query);
+    const { items, meta } = await getAnime(query, page);
 
     res.status(200).json({
       status: "success",
-      data: result,
+      data: items,
+      meta,
     });
   } catch (error) {
     next(

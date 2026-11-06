@@ -8,16 +8,22 @@ import Button from "../components/common/Button";
 import LoadingPage from "../components/common/LoadingPage";
 import ErrorApiPage from "../components/common/ErrorApiPage";
 import DaftarAnime from "../components/common/DaftarAnime";
+import Pagination from "../components/common/Pagination";
 
 function Home() {
   const [animeList, setAnimeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [hasNextPage, setHasNextPage] = useState(false);
+
   const { user } = useAuth();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const query = (searchParams.get("q") ?? "").trim();
+
+  const rawPage = Number(searchParams.get("page"));
+  const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
 
   const [searchInput, setSearchInput] = useState(query);
   const [prevQuery, setPrevQuery] = useState(query);
@@ -33,6 +39,15 @@ function Home() {
     setSearchParams(keyword ? { q: keyword } : {});
   };
 
+  const goToPage = (nextPage) => {
+    const params = {};
+    if (query) params.q = query;
+    if (nextPage > 1) params.page = String(nextPage);
+
+    setSearchParams(params);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   useEffect(() => {
     let ignore = false;
 
@@ -42,11 +57,12 @@ function Home() {
 
       try {
         const response = await api.get("/catalog/anime", {
-          params: query ? { q: query } : {},
+          params: { ...(query && { q: query }), page },
         });
 
         if (ignore) return;
         setAnimeList(response.data.data || []);
+        setHasNextPage(response.data.meta?.hasNextPage ?? false);
       } catch (err) {
         if (ignore) return;
         console.error("Gagal mengambil data:", err);
@@ -66,7 +82,7 @@ function Home() {
     return () => {
       ignore = true;
     };
-  }, [query]);
+  }, [query, page]);
 
   return (
     <MainLayout username={user?.name}>
@@ -180,6 +196,13 @@ function Home() {
             </div>
           ) : (
             <DaftarAnime animeList={animeList} />
+          )}
+          {!loading && !error && animeList.length > 0 && (
+            <Pagination
+              page={page}
+              hasNextPage={hasNextPage}
+              onPageChange={goToPage}
+            />
           )}
         </section>
       </div>

@@ -28,13 +28,13 @@ Before implementing community features, the following foundational issues in `pr
 
 ### 2.1 Critical Fixes Checklist
 
-- [ ] **Dual `AuthProvider` Bug:** Remove duplicate `AuthProvider` wrapping in `App.jsx`. Retain single wrapper at `main.jsx`.
-- [ ] **Hardcoded API URLs:** Replace hardcoded `"http://localhost:3000/api"` in `frontend/src/services/api.js` with Vite environment variable `import.meta.env.VITE_API_URL`.
+- [x] **Dual `AuthProvider` Bug:** Remove duplicate `AuthProvider` wrapping in `App.jsx`. Retain single wrapper at `main.jsx`.
+- [x] **Hardcoded API URLs:** Replace hardcoded `"http://localhost:3000/api"` in `frontend/src/services/api.js` with Vite environment variable `import.meta.env.VITE_API_URL`.
 - [ ] **JWT Storage & Auth:** Transition JWT storage from `localStorage` to **HttpOnly, Secure, SameSite Cookies** with CSRF protection mechanisms.
-- [ ] **Backend Input Validation:** Introduce **Zod** or **Joi** middleware across all POST/PUT routes (validate email formats, string lengths, score boundaries 1-10, episode counts, and enum statuses).
-- [ ] **HTML Sanitization:** Replace raw `dangerouslySetInnerHTML` in `AnimeDetail.jsx` with `DOMPurify.sanitize()` or direct plain-text rendering to mitigate XSS risks from external AniList API payloads.
-- [ ] **Database Migration Safety:** Remove `DROP DATABASE` directives from `project_akhir_blk.sql`. Implement a structured SQL migration script workflow (Schema Creation -> Data Migration -> Seeders).
-- [ ] **AniList API Integration:** AniList is the single external anime API. Remove all Jikan code (controller, service, routes). Standardize the AniList handler with request timeouts, rate-limit handling, and search query caching.
+- [x] **Backend Input Validation:** Introduce **Zod** or **Joi** middleware across all POST/PUT routes (validate email formats, string lengths, score boundaries 1-10, episode counts, and enum statuses).
+- [x] **HTML Sanitization:** Replace raw `dangerouslySetInnerHTML` in `AnimeDetail.jsx` with `DOMPurify.sanitize()` or direct plain-text rendering to mitigate XSS risks from external AniList API payloads.
+- [x] **Database Migration Safety:** Remove `DROP DATABASE` directives from `project_akhir_blk.sql`. Implement a structured SQL migration script workflow (Schema Creation -> Data Migration -> Seeders).
+- [x] **AniList API Integration:** AniList is the single external anime API. Remove all Jikan code (controller, service, routes). Standardize the AniList handler with request timeouts, rate-limit handling, and search query caching.
 - [ ] **Backend Test Runner:** Configure Vitest/Supertest inside `backend/package.json`.
 
 ---
@@ -44,6 +44,8 @@ Before implementing community features, the following foundational issues in `pr
 - [x] **Login state:** setelah login, navbar (status user) dan tab MyList langsung muncul tanpa refresh. Kontrak: respons login memakai `data.user`.
 - [x] **Navigasi kembali:** kata kunci pencarian disimpan di URL (`/?q=...`) sehingga tombol Back mengembalikan hasil pencarian, bukan daftar top anime.
 - [ ] **Pagination katalog:** 48 anime per halaman dengan navigasi nomor halaman (`< prev 48`, `next 48 >`), nomor halaman disimpan di URL (`?page=`).
+- [ ] **Pagination katalog:** 48 anime per halaman (1 request AniList per halaman) dengan tombol Sebelumnya / Berikutnya dan penanda halaman. Nomor halaman disimpan di URL (`?page=`).
+- [ ] **Filter katalog Home:** tab kategori di atas daftar anime (All Anime, Top Airing, Top Upcoming, Top TV Series, Top Movies, Top OVAs, Top ONAs, Top Specials, Most Popular, Most Favorited). Pilihan disimpan di URL (`?filter=`), memakai pagination yang sama, dan dipetakan di server ke parameter AniList (format, status, urutan).
 
 ## 3. Database Schema & Architecture
 
