@@ -1,7 +1,6 @@
-import "dotenv/config";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import mysql from "mysql2/promise";
 
 const MIGRATIONS_DIR = path.join(
@@ -9,18 +8,17 @@ const MIGRATIONS_DIR = path.join(
   "migrations",
 );
 
-let connection;
-
-try {
-  connection = await mysql.createConnection({
-    host: process.env.MYSQL_HOST,
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE,
-    port: Number(process.env.MYSQL_PORT) || 3306,
+export const createConnectionFromEnv = (env = process.env) =>
+  mysql.createConnection({
+    host: env.MYSQL_HOST,
+    user: env.MYSQL_USER,
+    password: env.MYSQL_PASSWORD,
+    database: env.MYSQL_DATABASE,
+    port: Number(env.MYSQL_PORT) || 3306,
     multipleStatements: true, // one migration file = many statements
   });
 
+export const runMigrations = async (connection, { log = console.log } = {}) => {
   await connection.query(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
       filename    VARCHAR(255) PRIMARY KEY,
@@ -39,11 +37,11 @@ try {
   const pending = files.filter((file) => !executed.has(file));
 
   if (pending.length === 0) {
-    console.log("No pending migrations.");
+    log("No pending migrations.");
   }
 
   for (const file of pending) {
-    console.log(`Running ${file}...`);
+    log(`Running ${file}...`);
     const sql = await fs.readFile(path.join(MIGRATIONS_DIR, file), "utf8");
     await connection.query(sql);
     // Recorded only after success, so a failed file can be re-run safely.
@@ -51,11 +49,25 @@ try {
       "INSERT INTO schema_migrations (filename) VALUES (?)",
       [file],
     );
-    console.log(`Done ${file}`);
+    log(`Done ${file}`);
   }
-} catch (error) {
-  console.error("Migration failed:", error.message);
-  process.exitCode = 1;
-} finally {
-  if (connection) await connection.end();
+};
+
+// Run as CLI only when executed directly (pnpm migrate), not when imported.
+if (
+  process.argv[1] &&
+  pathToFileURL(process.argv[1]).href === import.meta.url
+) {
+  await import("dotenv/config");
+  let connection;
+
+  try {
+    connection = await createConnectionFromEnv();
+    await runMigrations(connection);
+  } catch (error) {
+    console.error("Migration failed:", error.message);
+    process.exitCode = 1;
+  } finally {
+    if (connection) await connection.end();
+  }
 }

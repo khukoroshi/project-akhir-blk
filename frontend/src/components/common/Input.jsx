@@ -3,6 +3,7 @@ function Input({
   type = "text",
   name,
   placeholder = "",
+  step,
   max,
   min,
   value,
@@ -36,6 +37,7 @@ function Input({
         id={name}
         name={name}
         type={type}
+        step={step}
         max={max}
         min={min}
         value={value}

@@ -11,7 +11,7 @@
 - **Format body:** JSON (`Content-Type: application/json`)
 - **Auth saat ini:** header `Authorization: Bearer <token>` (JWT, kedaluwarsa default 7 hari)
 - **Auth target (PRD):** cookie HttpOnly. Saat migrasi, bagian Auth di file ini wajib diperbarui.
-- **Validasi saat ini:** Zod (strict) di endpoint auth dan watchlist. Target: semua endpoint baru wajib Zod.
+- **Validasi saat ini:** Zod (strict) di endpoint auth, watchlist, dan katalog (query). Target: semua endpoint baru wajib Zod.
 
 **Response sukses**
 
@@ -127,7 +127,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 ### Katalog AniList (publik, tanpa auth)
 
-#### `GET /catalog/anime?q=<kata kunci>&page=<n>`
+#### `GET /catalog/anime?q=<kata kunci>&page=<n>&filter=<kategori>`
 
 - **Auth:** tidak
 - **Query** (strict, parameter lain ditolak 400):
@@ -135,7 +135,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
   - `page` (opsional, bilangan bulat 1-200, default 1). Daftar top (tanpa `q`) dibatasi maksimal halaman 10.
   - `filter` (opsional, default `all`): `all` `airing` `upcoming` `tv` `movie` `ova` `ona` `special` `popular` `favorited`. Nilai lain 400 "filter tidak valid". Diabaikan jika `q` ada.
 - **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large } } ]`, `meta: { page, perPage, hasNextPage }`
-- **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top. Kunci cache memuat filter dan page.
+- **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top. Kunci cache memuat filter dan page. Pencarian (q) belum mengecualikan konten dewasa (rencana).
 - **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 parameter tidak dikenal, 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, 504 AniList timeout
 
 #### `GET /catalog/anime/:id`
@@ -193,5 +193,5 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-04: Watchlist: validasi Zod (strict) pada param anim_id, POST, PUT. type tidak peka huruf besar/kecil.
 - 2026-11-05: Register: nama duplikat kini 400 "Nama sudah digunakan" (dulu 500). PUT: completed dengan teps 0 mempertahankan eps. PATCH increment: tidak lagi 500 untuk anime completed dengan total 0.
 - 2026-11-05: Watchlist beralih ke tabel anime_catalog + user_anime (bentuk response tidak berubah). type menerima TV Short dan Music (TV_SHORT dinormalisasi). score boleh desimal (1-10, maks 1 desimal). PUT pada ID tidak ada kini selalu 404.
-- 2026-11-07: Katalog AniList: tambah query `page`, 48 judul per halaman, field `meta` { page, perPage, hasNextPage }. Daftar top maks 10 halaman. Sebelumnya search 20 hasil dan top 50-60 hasil tanpa halaman.
+- 2026-11-07: Katalog AniList: tambah query `page`, 48 judul per halaman, field `meta` { page, perPage, hasNextPage }. Daftar top maks 10 halaman. Sebelumnya search 20 hasil dan top 50 hasil tanpa halaman.
 - 2026-11-07: Katalog AniList: tambah query filter (10 kategori) untuk daftar top.
