@@ -9,6 +9,8 @@ import LoadingPage from "../components/common/LoadingPage";
 import ErrorApiPage from "../components/common/ErrorApiPage";
 import DaftarAnime from "../components/common/DaftarAnime";
 import Pagination from "../components/common/Pagination";
+import FilterTabs from "../components/common/FilterTabs";
+import { CATALOG_FILTERS } from "../utils/catalogFilters";
 
 function Home() {
   const [animeList, setAnimeList] = useState([]);
@@ -24,6 +26,11 @@ function Home() {
 
   const rawPage = Number(searchParams.get("page"));
   const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
+
+  const rawFilter = searchParams.get("filter");
+  const activeFilter =
+    CATALOG_FILTERS.find((f) => f.key === rawFilter) ?? CATALOG_FILTERS[0];
+  const filter = activeFilter.key; // invalid values fall back to "all"
 
   const [searchInput, setSearchInput] = useState(query);
   const [prevQuery, setPrevQuery] = useState(query);
@@ -42,6 +49,7 @@ function Home() {
   const goToPage = (nextPage) => {
     const params = {};
     if (query) params.q = query;
+    else if (filter !== "all") params.filter = filter;
     if (nextPage > 1) params.page = String(nextPage);
 
     setSearchParams(params);
@@ -57,7 +65,9 @@ function Home() {
 
       try {
         const response = await api.get("/catalog/anime", {
-          params: { ...(query && { q: query }), page },
+          params: query
+            ? { q: query, page }
+            : { page, ...(filter !== "all" && { filter }) },
         });
 
         if (ignore) return;
@@ -82,7 +92,7 @@ function Home() {
     return () => {
       ignore = true;
     };
-  }, [query, page]);
+  }, [query, page, filter]);
 
   return (
     <MainLayout username={user?.name}>
@@ -160,21 +170,26 @@ function Home() {
         {/* CATALOG */}
 
         <section>
-          <div className="mb-5 flex items-end justify-between">
+          <FilterTabs activeKey={query ? null : filter} />
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                 {query ? "Search Result" : "Explore"}
               </p>
 
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {query ? `Results for "${query}"` : "Top Anime"}
+                {query ? `Results for "${query}"` : activeFilter.title}
               </h2>
             </div>
 
-            {!query && (
-              <p className="hidden text-sm text-slate-400 dark:text-slate-500 sm:block">
-                Popular anime
-              </p>
+            {!loading && !error && animeList.length > 0 && (
+              <Pagination
+                page={page}
+                hasNextPage={hasNextPage}
+                onPageChange={goToPage}
+                className=""
+                label="Pagination atas"
+              />
             )}
           </div>
 
@@ -202,6 +217,7 @@ function Home() {
               page={page}
               hasNextPage={hasNextPage}
               onPageChange={goToPage}
+              label="Pagination bawah"
             />
           )}
         </section>

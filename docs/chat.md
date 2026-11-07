@@ -43,7 +43,13 @@ Beri hanya bagian yang diubah. Di akhir beri blok perubahan API.md
 (parameter page dan field meta) dan blok serah-terima PROGRESS.md.
 Chat filter
 
-Kerjakan setelah pagination di-commit dan di-push. File dipilih ulang: anilist.service.mjs, anilist.controller.mjs, anilist.validator.mjs (baru dari chat pagination), Home.jsx, dan komponen Pagination yang baru dibuat.
+Kerjakan setelah pagination di-commit dan di-push.
+File dipilih ulang:
+
+- anilist.service.mjs
+- anilist.controller.mjs
+- anilist.validator.mjs (baru dari chat pagination)
+- Home.jsx, dan komponen Pagination yang baru dibuat.
 
 Tugas: filter kategori katalog di Home (tab seperti MyAnimeList).
 

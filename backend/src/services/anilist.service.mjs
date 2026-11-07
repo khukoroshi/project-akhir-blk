@@ -6,6 +6,19 @@ const CACHE_MAX_ENTRIES = 200;
 const PER_PAGE = 48;
 const MAX_TOP_PAGES = 10;
 
+const CATALOG_FILTERS = {
+  all: { sort: ["SCORE_DESC"] },
+  airing: { status: "RELEASING", sort: ["SCORE_DESC"] },
+  upcoming: { status: "NOT_YET_RELEASED", sort: ["POPULARITY_DESC"] },
+  tv: { format: "TV", sort: ["SCORE_DESC"] },
+  movie: { format: "MOVIE", sort: ["SCORE_DESC"] },
+  ova: { format: "OVA", sort: ["SCORE_DESC"] },
+  ona: { format: "ONA", sort: ["SCORE_DESC"] },
+  special: { format: "SPECIAL", sort: ["SCORE_DESC"] },
+  popular: { sort: ["POPULARITY_DESC"] },
+  favorited: { sort: ["FAVOURITES_DESC"] },
+};
+
 const cache = new Map();
 
 const getCached = (key) => {
@@ -56,12 +69,12 @@ const ANIME_SEARCH_QUERY = `
 `;
 
 const ANIME_TOP_QUERY = `
-  query ($page: Int!, $perPage: Int!) {
+  query ($page: Int!, $perPage: Int!, $sort: [MediaSort], $format: MediaFormat, $status: MediaStatus) {
     Page(page: $page, perPage: $perPage) {
       pageInfo {
         hasNextPage
       }
-      media(type: ANIME, sort: SCORE_DESC, isAdult: false) {
+      media(type: ANIME, isAdult: false, sort: $sort, format: $format, status: $status) {
         id
         title { romaji english native }
         episodes
@@ -192,11 +205,12 @@ const getAnimeDetail = async (id) => {
   return data.Media;
 };
 
-const getAnime = async (query = "", page = 1) => {
+const getAnime = async (query = "", page = 1, filter = "all") => {
   const search = query.trim();
+  const filterKey = Object.hasOwn(CATALOG_FILTERS, filter) ? filter : "all";
   const cacheKey = search
     ? `search:${page}:${search.toLowerCase()}`
-    : `top:${page}`;
+    : `top:${filterKey}:${page}`;
 
   const cached = getCached(cacheKey);
   if (cached !== undefined) return cached;
@@ -204,7 +218,10 @@ const getAnime = async (query = "", page = 1) => {
   const variables = { page, perPage: PER_PAGE };
   const data = search
     ? await requestAniList(ANIME_SEARCH_QUERY, { ...variables, search })
-    : await requestAniList(ANIME_TOP_QUERY, variables);
+    : await requestAniList(ANIME_TOP_QUERY, {
+        ...variables,
+        ...CATALOG_FILTERS[filterKey],
+      });
 
   // The top list is capped at MAX_TOP_PAGES, so the last page never has a next.
   const hasNextPage =

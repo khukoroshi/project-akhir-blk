@@ -6,8 +6,9 @@ const searchAnime = async (req, res, next) => {
   try {
     const query = req.query.q || "";
     const page = Number(req.query.page) || 1; // already validated by Zod
+    const filter = req.query.filter || "all"; // ignored by service if q exists
 
-    const { items, meta } = await getAnime(query, page);
+    const { items, meta } = await getAnime(query, page, filter);
 
     res.status(200).json({
       status: "success",

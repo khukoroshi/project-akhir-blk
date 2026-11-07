@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-06.
+> Terakhir diperbarui: 2026-11-07.
 
 ## 1. Konvensi Umum
 
@@ -131,10 +131,11 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 - **Auth:** tidak
 - **Query** (strict, parameter lain ditolak 400):
-  - `q` (opsional, maks 100 karakter). Jika kosong, mengembalikan daftar top berdasarkan skor.
+  - `q` (opsional, maks 100 karakter). Jika kosong, mengembalikan daftar top.
   - `page` (opsional, bilangan bulat 1-200, default 1). Daftar top (tanpa `q`) dibatasi maksimal halaman 10.
+  - `filter` (opsional, default `all`): `all` `airing` `upcoming` `tv` `movie` `ova` `ona` `special` `popular` `favorited`. Nilai lain 400 "filter tidak valid". Diabaikan jika `q` ada.
 - **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large } } ]`, `meta: { page, perPage, hasNextPage }`
-- **Catatan:** `perPage` tetap 48 (ditentukan server, tidak bisa diubah client). Satu request AniList per halaman. Cache 5 menit per kombinasi kata kunci + page (kata kunci tidak peka huruf besar/kecil). Di halaman 10 daftar top, `hasNextPage` selalu `false`. Timeout ke AniList 10 detik.
+- **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top. Kunci cache memuat filter dan page.
 - **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 parameter tidak dikenal, 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, 504 AniList timeout
 
 #### `GET /catalog/anime/:id`
@@ -193,3 +194,4 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-05: Register: nama duplikat kini 400 "Nama sudah digunakan" (dulu 500). PUT: completed dengan teps 0 mempertahankan eps. PATCH increment: tidak lagi 500 untuk anime completed dengan total 0.
 - 2026-11-05: Watchlist beralih ke tabel anime_catalog + user_anime (bentuk response tidak berubah). type menerima TV Short dan Music (TV_SHORT dinormalisasi). score boleh desimal (1-10, maks 1 desimal). PUT pada ID tidak ada kini selalu 404.
 - 2026-11-07: Katalog AniList: tambah query `page`, 48 judul per halaman, field `meta` { page, perPage, hasNextPage }. Daftar top maks 10 halaman. Sebelumnya search 20 hasil dan top 50-60 hasil tanpa halaman.
+- 2026-11-07: Katalog AniList: tambah query filter (10 kategori) untuk daftar top.

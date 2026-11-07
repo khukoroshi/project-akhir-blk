@@ -13,6 +13,19 @@ const strictOptions = {
   },
 };
 
+export const CATALOG_FILTERS = [
+  "all",
+  "airing",
+  "upcoming",
+  "tv",
+  "movie",
+  "ova",
+  "ona",
+  "special",
+  "popular",
+  "favorited",
+];
+
 const pageMsg = `page harus bilangan bulat 1-${MAX_PAGE}`;
 
 // Query values always arrive as strings, so page is checked as text.
@@ -27,6 +40,9 @@ export const catalogQuerySchema = z
         .string({ error: pageMsg })
         .regex(/^[1-9]\d{0,2}$/, pageMsg)
         .refine((v) => Number(v) <= MAX_PAGE, pageMsg)
+        .optional(),
+      filter: z
+        .enum(CATALOG_FILTERS, { error: "filter tidak valid" })
         .optional(),
     },
     strictOptions,

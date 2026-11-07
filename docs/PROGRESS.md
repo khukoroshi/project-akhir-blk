@@ -187,3 +187,13 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: backend/src/validators/anilist.validator.mjs (baru), backend/src/routes/anilist.routes.mjs, backend/src/controllers/anilist.controller.mjs, backend/src/services/anilist.service.mjs, frontend/src/components/common/Pagination.jsx (baru), frontend/src/components/common/DaftarAnime.jsx, frontend/src/pages/Home.jsx, API.md
   - Keputusan baru: perPage hanya ditentukan server. Daftar top dibatasi 10 halaman (480 judul). Tombol kembali AnimeDetail sudah benar, tidak diubah. strictOptions kini diduplikasi di tiga validator (utang teknis).
   - Berikutnya: filter kategori Home (10 tab, ?filter=) memakai pagination ini, lalu #8 test runner, lalu #3 cookie HttpOnly. PRD bagian 2.2 punya dua baris "Pagination katalog", hapus baris lama dan centang yang baru.
+- **2026-11-07** — Filter kategori katalog Home
+  - Selesai: GET /catalog/anime menerima ?filter= (enum Zod, default all), dipetakan di server ke status/format/urutan AniList dengan isAdult: false. Filter diabaikan jika q ada. Cache key: top:<filter>:<page>. Frontend: komponen FilterTabs (nav + Link, aria-current, scroll horizontal), filter di URL bersama q/page. Klik tab menghapus q dan reset page; mencari menghapus filter.
+  - File diubah: backend/src/validators/anilist.validator.mjs, backend/src/services/anilist.service.mjs, backend/src/controllers/anilist.controller.mjs, frontend/src/pages/Home.jsx, frontend/src/components/common/FilterTabs.jsx (baru), frontend/src/utils/catalogFilters.js (baru), API.md
+  - Keputusan baru: daftar filter ada di dua tempat (validator backend dan catalogFilters.js frontend), jaga tetap sama. filter tidak valid di URL dianggap "all" di frontend. Pencarian (q) belum memakai isAdult: false (tugas kecil berikutnya). Semua filter tetap dibatasi 10 halaman.
+  - Berikutnya: #8 test runner (Vitest + Supertest), lalu #3 cookie HttpOnly. PRD 2.2: centang filter katalog, hapus baris "Pagination katalog" yang lama, centang yang baru.
+- **2026-11-07** — Pagination ganda di Home
+  - Selesai: teks "Popular anime" diganti Pagination di kanan judul katalog (atas), pagination bawah tetap. Pagination menerima prop className dan label.
+  - File diubah: frontend/src/components/common/Pagination.jsx, frontend/src/pages/Home.jsx
+  - Keputusan baru: tidak ada perubahan API.
+  - Berikutnya: #8 test runner, lalu #3 cookie HttpOnly.
