@@ -50,7 +50,9 @@ export const registerUser = async (data) => {
     throw error;
   }
 
-  const newUserId = result[0][0].new_us_id;
+  // sp_insert_user returns the new row as us_id (older versions used new_us_id).
+  const inserted = result[0][0];
+  const newUserId = inserted.us_id ?? inserted.new_us_id;
   return {
     us_id: newUserId,
     us_name: name,

@@ -14,20 +14,9 @@ const PROFILE = "/api/auth/profile";
 
 const expectError = (res, status) => {
   expect(res.status).toBe(status);
+  expect(res.body.status).toBe("error");
   expect(typeof res.body.message).toBe("string");
 };
-
-// TEMUAN #1: API.md bilang status error = "error", aktualnya 4xx = "fail".
-it.fails(
-  "kontrak API.md: body.status pada error 4xx adalah 'error'",
-  async () => {
-    const res = await api()
-      .post(LOGIN)
-      .send({ email: "bukan-email", password: "x" });
-    expect(res.status).toBe(400);
-    expect(res.body.status).toBe("error");
-  },
-);
 
 const countUsers = async () => {
   const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM users");
@@ -43,17 +32,10 @@ describe("POST /api/auth/register", () => {
     expect(res.body.data).toMatchObject({
       us_name: defaultCredentials.name,
       us_email: defaultCredentials.email,
+      us_id: expect.any(Number),
     });
     expect(res.body.data).not.toHaveProperty("us_password");
     expect(JSON.stringify(res.body)).not.toContain(defaultCredentials.password);
-  });
-
-  // TEMUAN #2: API.md bilang register mengembalikan us_id, aktualnya tidak ada.
-  it.fails("kontrak API.md: respons register memuat us_id", async () => {
-    const res = await api().post(REGISTER).send(defaultCredentials);
-
-    expect(res.status).toBe(201);
-    expect(res.body.data.us_id).toEqual(expect.any(Number));
   });
 
   it("menyimpan password sebagai hash bcrypt", async () => {

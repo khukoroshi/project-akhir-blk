@@ -111,10 +111,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Data katalog diisi dari body request user pertama. Idealnya diisi server dari AniList.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 13).
-- Temuan tes #1: error 4xx mengembalikan status "fail", bukan "error" seperti di API.md §1. Putuskan: koreksi API.md (disarankan, cek dulu apakah frontend membaca body.status) atau ubah middleware. Tes penanda: it.fails di auth.test.mjs.
-- Temuan tes #2: POST /auth/register tidak mengembalikan us_id, padahal API.md menyebutnya. Putuskan: koreksi API.md atau tambahkan us_id di kode. Tes penanda: it.fails di auth.test.mjs.
 - Auth masih memakai sp_insert_user. Tugas #13 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
 - db.mjs menelan error koneksi (hanya console.error). Global setup test menyambung duluan agar error terbaca. Pertimbangkan pesan error yang jelas untuk ECONNREFUSED di tugas cleanup.
+- auth.controller.mjs punya import User yang tidak terpakai.
+- auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -225,3 +225,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: backend/vitest.config.mjs, backend/.env.test.example, backend/tests/{base-schema.sql, global-setup.mjs, setup.mjs, auth.test.mjs}, backend/tests/support/{env,guard,db,helpers}.mjs
   - Keputusan baru: file tes tidak berjalan paralel (satu database bersama). Env test dibaca dari .env.test. Variabel database proyek adalah MYSQL_DATABASE (bukan DB_NAME). Tidak ada perubahan API (API.md belum diubah, menunggu keputusan temuan #1 dan #2).
   - Berikutnya: putuskan temuan #1 dan #2, lalu #8 bagian B (watchlist + katalog, AniList di-mock), centang "Backend Test Runner" di PRD 2.1 setelah bagian B, lalu #3 cookie HttpOnly.
+- **2026-11-09** — Perbaikan temuan tes #1 dan #2 (opsi B)
+  - Selesai: AppError selalu bernilai status "error"; register mengembalikan us_id (penyebab: service membaca kolom new_us_id, procedure mengembalikan us_id). Tes penanda it.fails dihapus, expectError kembali memeriksa body.status. 28 tes auth lolos.
+  - File diubah: backend/src/utils/appError.mjs, backend/src/services/auth.service.mjs, backend/tests/auth.test.mjs, API.md (log saja)
+  - Keputusan baru: semua respons error memakai status "error". Fallback new_us_id sementara, hapus setelah SHOW CREATE PROCEDURE di database asli terverifikasi.
+  - Berikutnya: #8 bagian B (tes watchlist + katalog, AniList di-mock), lalu centang "Backend Test Runner" di PRD 2.1, lalu #3 cookie HttpOnly.

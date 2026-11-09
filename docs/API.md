@@ -195,3 +195,4 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-05: Watchlist beralih ke tabel anime_catalog + user_anime (bentuk response tidak berubah). type menerima TV Short dan Music (TV_SHORT dinormalisasi). score boleh desimal (1-10, maks 1 desimal). PUT pada ID tidak ada kini selalu 404.
 - 2026-11-07: Katalog AniList: tambah query `page`, 48 judul per halaman, field `meta` { page, perPage, hasNextPage }. Daftar top maks 10 halaman. Sebelumnya search 20 hasil dan top 50 hasil tanpa halaman.
 - 2026-11-07: Katalog AniList: tambah query filter (10 kategori) untuk daftar top.
+- 2026-11-09: Kode disesuaikan dengan kontrak: error 4xx kini bernilai status "error" (dulu "fail"), dan POST /auth/register mengembalikan us_id (dulu hilang).
