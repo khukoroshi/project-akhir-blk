@@ -35,7 +35,7 @@ Before implementing community features, the following foundational issues in `pr
 - [x] **HTML Sanitization:** Replace raw `dangerouslySetInnerHTML` in `AnimeDetail.jsx` with `DOMPurify.sanitize()` or direct plain-text rendering to mitigate XSS risks from external AniList API payloads.
 - [x] **Database Migration Safety:** Remove `DROP DATABASE` directives from `project_akhir_blk.sql`. Implement a structured SQL migration script workflow (Schema Creation -> Data Migration -> Seeders).
 - [x] **AniList API Integration:** AniList is the single external anime API. Remove all Jikan code (controller, service, routes). Standardize the AniList handler with request timeouts, rate-limit handling, and search query caching.
-- [ ] **Backend Test Runner:** Configure Vitest/Supertest inside `backend/package.json`.
+- [x] **Backend Test Runner:** Configure Vitest/Supertest inside `backend/package.json`.
 
 ---
 
@@ -43,10 +43,10 @@ Before implementing community features, the following foundational issues in `pr
 
 - [x] **Login state:** setelah login, navbar (status user) dan tab MyList langsung muncul tanpa refresh. Kontrak: respons login memakai `data.user`.
 - [x] **Navigasi kembali:** kata kunci pencarian disimpan di URL (`/?q=...`) sehingga tombol Back mengembalikan hasil pencarian, bukan daftar top anime.
-- [ ] **Pagination katalog:** 48 anime per halaman dengan navigasi nomor halaman (`< prev 48`, `next 48 >`), nomor halaman disimpan di URL (`?page=`).
-- [ ] **Pagination katalog:** 48 anime per halaman (1 request AniList per halaman) dengan tombol Sebelumnya / Berikutnya dan penanda halaman. Nomor halaman disimpan di URL (`?page=`).
-- [ ] **Filter katalog Home:** tab kategori di atas daftar anime (All Anime, Top Airing, Top Upcoming, Top TV Series, Top Movies, Top OVAs, Top ONAs, Top Specials, Most Popular, Most Favorited). Pilihan disimpan di URL (`?filter=`), memakai pagination yang sama, dan dipetakan di server ke parameter AniList (format, status, urutan).
+- [x] **Pagination katalog:** 48 anime per halaman (1 request AniList per halaman) dengan tombol Sebelumnya / Berikutnya dan penanda halaman. Nomor halaman disimpan di URL (`?page=`).
+- [x] **Filter katalog Home:** tab kategori di atas daftar anime (All Anime, Top Airing, Top Upcoming, Top TV Series, Top Movies, Top OVAs, Top ONAs, Top Specials, Most Popular, Most Favorited). Pilihan disimpan di URL (`?filter=`), memakai pagination yang sama, dan dipetakan di server ke parameter AniList (format, status, urutan).
 
+---
 ## 3. Database Schema & Architecture
 
 ### 3.1 Relational Architecture Concept

@@ -35,3 +35,17 @@ CREATE TABLE IF NOT EXISTS animes (
 
     INDEX idx_animes_us_id (us_id)
 ) ENGINE = InnoDB;
+
+CREATE PROCEDURE IF NOT EXISTS sp_insert_user (
+    IN p_us_name     VARCHAR(50),
+    IN p_us_email    VARCHAR(100),
+    IN p_us_password VARCHAR(255)
+)
+BEGIN
+    INSERT INTO users (us_name, us_email, us_password)
+    VALUES (p_us_name, p_us_email, p_us_password);
+
+    SELECT us_id, us_name, us_email, us_created_at
+    FROM users
+    WHERE us_id = LAST_INSERT_ID();
+END;
