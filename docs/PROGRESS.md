@@ -6,7 +6,7 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8 bagian A). Tersisa #3 dan #8 bagian B.
+- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8). Tersisa #3.
 - **Sedang dikerjakan:** -
 - **Berikutnya:** #8 bagian B (tes watchlist + katalog, AniList di-mock), lalu cleanup backend kecil, lalu #3 cookie HttpOnly.
 
@@ -126,7 +126,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 7. Frontend UX (chat terpisah): login langsung menampilkan navbar dan tab MyList; kata kunci pencarian di URL agar Back mengembalikan hasil.(selesai)
 8. Pagination katalog. (selesai)
 9. Filter kategori di Home (10 tab). (selesai)
-10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).
+10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).(selesai)
 11. Backend cleanup kecil (dilindungi tes #8): isAdult untuk pencarian, strictOptions ke file bersama, JWT_SECRET lewat env.mjs dan divalidasi saat startup, tes koneksi MySQL saat startup.
 12. Phase 0 #3 (cookie HttpOnly + perlindungan CSRF).
 13. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
