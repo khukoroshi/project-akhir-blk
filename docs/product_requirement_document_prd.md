@@ -47,6 +47,7 @@ Before implementing community features, the following foundational issues in `pr
 - [x] **Filter katalog Home:** tab kategori di atas daftar anime (All Anime, Top Airing, Top Upcoming, Top TV Series, Top Movies, Top OVAs, Top ONAs, Top Specials, Most Popular, Most Favorited). Pilihan disimpan di URL (`?filter=`), memakai pagination yang sama, dan dipetakan di server ke parameter AniList (format, status, urutan).
 
 ---
+
 ## 3. Database Schema & Architecture
 
 ### 3.1 Relational Architecture Concept
@@ -308,3 +309,4 @@ When assisting on this repository, all AI agents must strictly adhere to the fol
 6. **Single External API:** AniList is the only external anime API. Do not add or reintroduce Jikan.
 7. **Skema Lewat Migrasi:** Setiap perubahan skema database ditulis sebagai file bernomor di backend/src/db/migrations/ (tanpa DELIMITER, idempotent, tanpa DROP/TRUNCATE).
 8. **Foreign Key ke Users:** Gunakan users(us_id) dengan tipe INT UNSIGNED, bukan users(id).
+9. **Tes Wajib:** Setiap endpoint baru atau perubahan perilaku API wajib disertai tes Supertest di backend/tests/. Tes hanya berjalan di database berakhiran `_test` dan tidak boleh memanggil internet (AniList di-mock).

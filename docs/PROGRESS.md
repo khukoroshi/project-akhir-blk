@@ -6,15 +6,14 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog). Tersisa #3 dan #8.
-- **Sedang dikerjakan:** verifikasi #8 bagian A (kode sudah ditulis; pnpm test belum dijalankan di Windows maupun Linux).
-- **Berikutnya:** #8 bagian B (tes watchlist + katalog), lalu #3 cookie HttpOnly.
+- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8 bagian A). Tersisa #3 dan #8 bagian B.
+- **Sedang dikerjakan:** -
+- **Berikutnya:** #8 bagian B (tes watchlist + katalog, AniList di-mock), lalu cleanup backend kecil, lalu #3 cookie HttpOnly.
 
 ## 2. Stack Aktual (sesuai repo)
 
 - **Frontend:** React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), React Router 7, Axios, React Compiler. Package manager: pnpm.
-- **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`. Dev: `nodemon`. Vitest + Supertest.
-- **Terpasang:** Vitest/Supertest, rate limiter, cookie-parser.
+- **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`. Dev: `nodemon`, Vitest, Supertest.
 - **Belum terpasang:** rate limiter, cookie-parser.
 - **API anime eksternal:** AniList (GraphQL) saja. Jikan dibuang.
 
@@ -31,24 +30,24 @@
 - Katalog (anime_catalog) dibagi antar user: judul, gambar, total episode, dan tipe diisi dari request user pertama yang menambahkan anime itu, dan tidak ditimpa user lain.
 - Katalog: perPage 48 ditentukan server; daftar top (semua filter) maks 10 halaman; filter hanya berlaku tanpa q (klik tab menghapus q, mencari menghapus filter). q, page, dan filter disimpan di URL.
 - Dua perangkat (Windows dan Linux): .env, .env.test, isi database, dan node_modules per perangkat, tidak ikut git. Setelah git pull: pnpm install bila package.json/lockfile berubah; pnpm migrate (backup dulu) bila ada file migrasi baru. Database test (AniWatchList_test) dibuat manual di tiap perangkat.
-- Temuan #1 dan #2 diputuskan opsi B (kode disesuaikan dengan API.md), dikerjakan sebagai tugas kecil terpisah.
+- Semua respons error API memakai status "error" (bukan "fail"). POST /auth/register mengembalikan us_id.
+- Tes backend: black box lewat Supertest berdasarkan API.md; hanya jalan di database berakhiran \_test; tidak boleh memanggil internet (AniList di-mock). Temuan yang belum diputuskan ditandai it.fails, bukan diperbaiki diam-diam.
 
 ## 4. Struktur Saat Ini (belum sesuai target)
 
 **Backend** (berlapis per jenis file, BUKAN modular):
-`src/{config, controllers, db (migrate.mjs, migrations/), middlewares, models, routes, services, utils, validators}`
+`src/{config, controllers, db (migrate.mjs, migrations/), middlewares, models, routes, services, utils, validators ({auth,anim,anilist}.validator.mjs)}`
 
 - Fitur yang ada: `auth`, `anim` (watchlist), `anilist` (katalog), `user` (service/model saja, tanpa route).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
-- Test backend: backend/vitest.config.mjs, backend/tests/ (base-schema.sql, global-setup.mjs, setup.mjs, auth.test.mjs, support/).
+- `Test backend`: backend/vitest.config.mjs, backend/tests/ (base-schema.sql, global-setup.mjs, setup.mjs, auth.test.mjs, support/).
 
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, layouts, pages, services, utils}`
 
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Target `features/` dari PRD belum dibuat. Folder `aunt` kemungkinan typo dari `auth`.
-- Backend: `validators/{auth,anim,anilist}.validator.mjs`.
 - Frontend katalog: `components/common/{Pagination,DaftarAnime,FilterTabs}.jsx`, `utils/catalogFilters.js` (daftar filter, harus sama dengan validator backend).
 
 ## 5. Endpoint yang Sudah Ada
@@ -84,16 +83,16 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 
 Status hasil pemeriksaan kode, bukan asumsi.
 
-| #   | Item                   | Status       | Temuan                                                                                                  |
-| --- | ---------------------- | ------------ | ------------------------------------------------------------------------------------------------------- |
-| 1   | AuthProvider ganda     | [x] SELESAI  | Tersisa satu di `main.jsx`.                                                                             |
-| 2   | URL API hardcode       | [x] SELESAI  | `api.js` memakai `VITE_API_URL`. `.env.example` terisi.                                                 |
-| 3   | JWT di cookie HttpOnly | [ ] BELUM    | Token di `localStorage` (`api.js`, `AuthProvider.jsx`). Backend membaca header `Authorization: Bearer`. |
-| 4   | Validasi Zod           | [x] SELESAI  | Auth dan watchlist (param, POST, PUT) divalidasi strict di `validators/`.                               |
-| 5   | Sanitasi HTML          | [x] SELESAI  | DOMPurify, whitelist tag dasar, tanpa atribut.                                                          |
-| 6   | Migrasi DB aman        | [x] SELESAI  | Kode watchlist memakai anime_catalog + user_anime. Tabel animes lama jadi cadangan.                     |
-| 7   | standarkan AniList     | [x] SELESAI  | Timeout 10 detik, cache memori 5 menit, pesan error 429/502/504.                                        |
-| 8   | Test runner            | [~] SEBAGIAN | Bagian A selesai (infrastruktur + tes auth). Bagian B (watchlist + katalog, AniList di-mock) belum.     |
+| #   | Item                   | Status      | Temuan                                                                                                                         |
+| --- | ---------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | AuthProvider ganda     | [x] SELESAI | Tersisa satu di `main.jsx`.                                                                                                    |
+| 2   | URL API hardcode       | [x] SELESAI | `api.js` memakai `VITE_API_URL`. `.env.example` terisi.                                                                        |
+| 3   | JWT di cookie HttpOnly | [ ] BELUM   | Token di `localStorage` (`api.js`, `AuthProvider.jsx`). Backend membaca header `Authorization: Bearer`.                        |
+| 4   | Validasi Zod           | [x] SELESAI | Auth dan watchlist (param, POST, PUT) divalidasi strict di `validators/`.                                                      |
+| 5   | Sanitasi HTML          | [x] SELESAI | DOMPurify, whitelist tag dasar, tanpa atribut.                                                                                 |
+| 6   | Migrasi DB aman        | [x] SELESAI | Kode watchlist memakai anime_catalog + user_anime. Tabel animes lama jadi cadangan.                                            |
+| 7   | standarkan AniList     | [x] SELESAI | Timeout 10 detik, cache memori 5 menit, pesan error 429/502/504.                                                               |
+| 8   | Test runner            | [~] SELESAI | Bagian A selesai: Vitest + Supertest, database test, 28 tes auth lolos. Bagian B (watchlist + katalog, AniList di-mock) belum. |
 
 ## 8. Utang Teknis & Kebersihan
 
@@ -127,7 +126,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 7. Frontend UX (chat terpisah): login langsung menampilkan navbar dan tab MyList; kata kunci pencarian di URL agar Back mengembalikan hasil.(selesai)
 8. Pagination katalog. (selesai)
 9. Filter kategori di Home (10 tab). (selesai)
-10. Phase 0 #8 (test runner). Bagian A: kode selesai, verifikasi (pnpm test hijau dua kali di kedua perangkat) pending. Bagian B: tes watchlist + katalog (AniList di-mock).
+10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).
 11. Backend cleanup kecil (dilindungi tes #8): isAdult untuk pencarian, strictOptions ke file bersama, JWT_SECRET lewat env.mjs dan divalidasi saat startup, tes koneksi MySQL saat startup.
 12. Phase 0 #3 (cookie HttpOnly + perlindungan CSRF).
 13. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
@@ -214,12 +213,6 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: tidak ada perubahan API.
   - Berikutnya: #8 test runner, lalu #3 cookie HttpOnly.
 - **2026-11-08** — Phase 0 #8 bagian A (infrastruktur test + tes auth)
-  - Selesai: Vitest + Supertest; database AniWatchList_test; global setup menolak jalan jika MYSQL_DATABASE tidak berakhiran "\_test" (juga dicek ulang di setiap worker dan sebelum DELETE); base-schema.sql + migrasi dijalankan otomatis; pembersihan antar tes dengan DELETE; fetch di-stub agar tes tidak memanggil jaringan; tes auth (register, login, profile).
-  - File diubah: backend/src/db/migrate.mjs (diekspor jadi runMigrations/createConnectionFromEnv, CLI pnpm migrate tetap sama), backend/package.json, .gitignore.
-  - File baru: backend/vitest.config.mjs, backend/.env.test.example, backend/tests/{base-schema.sql, global-setup.mjs, setup.mjs, auth.test.mjs}, backend/tests/support/{env,guard,db,helpers}.mjs
-  - Keputusan baru: file tes tidak berjalan paralel (satu database bersama). Env test dibaca dari .env.test dan menimpa .env. Variabel database proyek adalah MYSQL_DATABASE (bukan DB_NAME). Tidak ada perubahan API (API.md tidak diubah).
-  - Berikutnya: #8 bagian B (tes watchlist + katalog dengan AniList di-mock), lalu centang "Backend Test Runner" di PRD 2.1, lalu #3 cookie HttpOnly.
-- **2026-11-08** — Phase 0 #8 bagian A (infrastruktur test + tes auth)
   - Selesai: Vitest + Supertest; database AniWatchList_test; global setup menolak jalan jika MYSQL_DATABASE tidak berakhiran "\_test" (dicek ulang di setiap worker dan sebelum DELETE); base-schema.sql (users, animes, sp_insert_user) + migrasi dijalankan otomatis; pembersihan antar tes dengan DELETE; fetch di-stub agar tes tidak memanggil jaringan; 28 tes auth lolos, 2 temuan ditandai it.fails.
   - File diubah: backend/src/db/migrate.mjs (diekspor jadi runMigrations/createConnectionFromEnv, CLI pnpm migrate tetap sama), backend/package.json, .gitignore.
   - File baru: backend/vitest.config.mjs, backend/.env.test.example, backend/tests/{base-schema.sql, global-setup.mjs, setup.mjs, auth.test.mjs}, backend/tests/support/{env,guard,db,helpers}.mjs
@@ -230,3 +223,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: backend/src/utils/appError.mjs, backend/src/services/auth.service.mjs, backend/tests/auth.test.mjs, API.md (log saja)
   - Keputusan baru: semua respons error memakai status "error". Fallback new_us_id sementara, hapus setelah SHOW CREATE PROCEDURE di database asli terverifikasi.
   - Berikutnya: #8 bagian B (tes watchlist + katalog, AniList di-mock), lalu centang "Backend Test Runner" di PRD 2.1, lalu #3 cookie HttpOnly.
+- **2026-11-09** — Phase 0 #8 bagian B (tes watchlist + katalog)
+  - Selesai: tests/watchlist.test.mjs (~93 tes: auth, POST, GET, PUT, PATCH, DELETE, kepemilikan, katalog dibagi) dan tests/catalog.test.mjs (~51 tes: validasi query, bentuk respons, pemetaan 10 filter, cache, error 429/502/504, detail). AniList di-mock lewat vi.stubGlobal("fetch") per tes. Temuan it.fails: [isi setelah tes dijalankan]. Item #8 SELESAI jika pnpm test hijau dua kali.
+  - File diubah: backend/src/services/anilist.service.mjs (hanya menambah export clearCacheForTests, perilaku tidak berubah)
+  - File baru: backend/tests/watchlist.test.mjs, backend/tests/catalog.test.mjs
+  - Keputusan baru: cache AniList direset tiap tes lewat clearCacheForTests (khusus tes). Tes watchlist memakai teps = total katalog agar tidak bergantung pada perilaku PUT yang belum terdokumentasi.
+  - Perilaku teramati, tidak dijadikan assertion: lihat daftar di catatan (isAdult pencarian, hasNextPage halaman 10, status non-429 diteruskan, GraphQL errors 200 jadi 502, PATCH di episode = total, isi data DELETE).
+  - Berikutnya: #11 backend cleanup kecil (isAdult pencarian, strictOptions ke file bersama, JWT_SECRET lewat env.mjs, tes koneksi MySQL), lalu #3 cookie HttpOnly.

@@ -237,4 +237,7 @@ const getAnime = async (query = "", page = 1, filter = "all") => {
   return result;
 };
 
-export { getAnime, getAnimeDetail };
+// Test-only: lets each test start with an empty cache. No behavior change.
+const clearCacheForTests = () => cache.clear();
+
+export { getAnime, getAnimeDetail, clearCacheForTests };
