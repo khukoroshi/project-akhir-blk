@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8). Tersisa #3.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** #11 backend cleanup kecil (dua chat: A konfigurasi dan startup, B katalog dan validator), lalu #3 cookie HttpOnly.
+- **Berikutnya:** #11 bagian B (katalog dan validator), lalu #3 cookie HttpOnly.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -96,13 +96,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
 
 ## 8. Utang Teknis & Kebersihan
 
-- `JWT_SECRET` dibaca langsung dari `process.env` di middleware, belum lewat `config/env.mjs` dan tidak divalidasi saat startup.
 - `cors()` terbuka untuk semua origin.
 - `frontend/penyimpanan.txt` berisi salinan kode lama (scratch), hapus dari repo.
 - `frontend/package.json` bernama `react-starter-kit`, ganti jadi `anisphere-frontend`.
 - Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
-- Tidak ada `.env.example` di backend.
-- Server belum mengetes koneksi MySQL saat startup, sehingga database mati baru ketahuan saat ada request.
 - strictOptions diduplikasi di tiga validator (auth, anim, anilist). Pindahkan ke file bersama.
 - Daftar filter katalog ada di dua tempat (validator backend dan frontend/src/utils/catalogFilters.js). Jaga tetap sama.
 - Pencarian katalog (q) belum memakai isAdult: false (daftar top sudah).
@@ -111,8 +108,6 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 13).
 - Auth masih memakai sp_insert_user. Tugas #13 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
-- db.mjs menelan error koneksi (hanya console.error). Global setup test menyambung duluan agar error terbaca. Pertimbangkan pesan error yang jelas untuk ECONNREFUSED di tugas cleanup.
-- auth.controller.mjs punya import User yang tidak terpakai.
 - auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
 - BELUM DIKETAHUI: apakah PUT /anime/:anim_id dengan `teps` mengubah anime_catalog.total_episodes. Katalog dipakai bersama semua user, jadi jika ya, satu user bisa mengubah total episode untuk semua orang. Tes sengaja memakai teps = total katalog. Selidiki di tugas cleanup B.
 - Status gagal dari AniList selain 429 (mis. 500) diteruskan apa adanya, bukan 502. Putuskan: jadikan 502.
@@ -233,3 +228,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: cache AniList direset tiap tes lewat clearCacheForTests (khusus tes). Tes watchlist memakai teps = total katalog agar tidak bergantung pada perilaku PUT yang belum terdokumentasi.
   - Perilaku teramati, tidak dijadikan assertion: lihat daftar di catatan (isAdult pencarian, hasNextPage halaman 10, status non-429 diteruskan, GraphQL errors 200 jadi 502, PATCH di episode = total, isi data DELETE).
   - Berikutnya: #11 backend cleanup kecil (isAdult pencarian, strictOptions ke file bersama, JWT_SECRET lewat env.mjs, tes koneksi MySQL), lalu #3 cookie HttpOnly.
+- **2026-11-10** — Backend cleanup kecil, bagian A (konfigurasi dan startup)
+  - Selesai: env.mjs memusatkan MYSQL*\*, JWT*\*, PORT, NODE_ENV dan melempar error jelas jika JWT_SECRET kosong atau < 16 karakter (nilai tidak dicetak). Middleware auth, auth.service, dan db.mjs memakai env.mjs. index.mjs menguji koneksi MySQL sebelum listen dengan pesan jelas untuk ECONNREFUSED, ER_ACCESS_DENIED_ERROR, ER_BAD_DB_ERROR, lalu exit 1. db.mjs tidak lagi melakukan tes koneksi. backend/.env.example dibuat. Import User tak terpakai dihapus. tests/support/env.mjs ikut memeriksa panjang JWT_SECRET.
+  - File diubah: backend/src/config/env.mjs, backend/src/config/db.mjs, backend/index.mjs, backend/src/middlewares/auth.middleware.mjs, backend/src/services/auth.service.mjs, backend/src/controllers/auth.controller.mjs, backend/tests/support/env.mjs
+  - File baru: backend/.env.example
+  - Keputusan baru: process.env hanya dibaca di env.mjs (kecuali migrate.mjs dan tes). index.mjs memakai import() dinamis supaya error konfigurasi tampil bersih dan app.mjs tidak melakukan cek startup. Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama. Tidak ada perubahan API, API.md tidak diubah.
+  - Berikutnya: #11 bagian B (isAdult pencarian, strictOptions ke file bersama, status non-429 AniList jadi 502, selidiki PUT teps vs anime_catalog), lalu #3 cookie HttpOnly (termasuk CORS).
