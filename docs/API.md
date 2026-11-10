@@ -142,8 +142,8 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 - **Param:** `id` = ID AniList
 - **Sukses 200:** `data: Media` (detail lengkap dari AniList)
-- **Catatan:** deskripsi bisa berisi HTML, wajib disanitasi di frontend. Detail di-cache 5 menit. Timeout 10 detik.
-- **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 / 502 / 504 sama seperti pencarian
+- **Catatan:** deskripsi bisa berisi HTML, wajib disanitasi di frontend. Detail di-cache 5 menit. Timeout 10 detik. Di halaman 10 daftar top, meta.hasNextPage selalu false.
+- **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 / 502 / 504 sama seperti pencarian, 502 juga jika AniList membalas 200 dengan error GraphQL.
 
 ---
 

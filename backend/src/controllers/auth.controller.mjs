@@ -1,5 +1,4 @@
 import * as authService from "../services/auth.service.mjs";
-import User from "../models/user.model.mjs";
 
 // Controller untuk Register
 export const register = async (req, res, next) => {

@@ -16,6 +16,9 @@ const REQUIRED_KEYS = [
   "JWT_SECRET",
 ];
 
+// Keep in sync with backend/src/config/env.mjs
+const MIN_JWT_SECRET_LENGTH = 16;
+
 export const readTestEnv = () => {
   if (!fs.existsSync(ENV_FILE)) {
     throw new Error(
@@ -43,6 +46,11 @@ export const assertSafeTestEnv = (env) => {
   );
   if (missing.length > 0) {
     throw new Error(`TES DIHENTIKAN: .env.test kurang: ${missing.join(", ")}`);
+  }
+  if (env.JWT_SECRET.length < MIN_JWT_SECRET_LENGTH) {
+    throw new Error(
+      `TES DIHENTIKAN: JWT_SECRET di .env.test minimal ${MIN_JWT_SECRET_LENGTH} karakter.`,
+    );
   }
   assertSafeDatabaseName(env.MYSQL_DATABASE);
 };
