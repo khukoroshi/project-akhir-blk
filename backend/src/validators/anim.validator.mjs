@@ -1,14 +1,5 @@
 import { z } from "zod";
-
-const strictOptions = {
-  error: (issue) => {
-    if (issue.code === "unrecognized_keys") {
-      return `Field tidak dikenal: ${issue.keys.join(", ")}`;
-    }
-    if (issue.code === "invalid_type") return "Body request tidak valid";
-    return undefined;
-  },
-};
+import { bodyStrictOptions as strictOptions } from "./common.mjs";
 
 // "<label> wajib diisi" when missing, otherwise the given type message
 const required = (label, message) => ({

@@ -229,6 +229,14 @@ describe("GET /api/catalog/anime: pemetaan filter ke AniList", () => {
     expect(sent().query).toMatch(/isAdult:\s*false/);
   });
 
+  it("pencarian (q) juga mengecualikan konten dewasa", async () => {
+    mockPage();
+
+    await api().get(CATALOG).query({ q: "naruto" });
+
+    expect(sent().query).toMatch(/isAdult:\s*false/);
+  });
+
   it("jika q ada, filter diabaikan", async () => {
     mockPage();
 
@@ -353,6 +361,25 @@ describe("error dari AniList", () => {
 
       expectError(await call(), 504);
     });
+
+    it("status gagal 500 dari AniList menjadi 502", async () => {
+      fetchMock.mockImplementation(async () =>
+        jsonResponse(
+          { errors: [{ message: "Internal Server Error" }] },
+          { status: 500 },
+        ),
+      );
+
+      expectError(await call(), 502);
+    });
+
+    it("503 dengan body bukan JSON menjadi 502", async () => {
+      fetchMock.mockImplementation(
+        async () => new Response("<html>Bad Gateway</html>", { status: 503 }),
+      );
+
+      expectError(await call(), 502);
+    });
   });
 
   it("429 memuat waktu tunggu dari Retry-After", async () => {
@@ -367,6 +394,20 @@ describe("error dari AniList", () => {
 
     expectError(res, 429);
     expect(res.body.message).toContain("30");
+  });
+
+  it.each([
+    ["pencarian", () => api().get(CATALOG).query({ q: "naruto" })],
+    ["daftar top", () => api().get(CATALOG)],
+  ])("404 dari AniList pada %s menjadi 502", async (_name, call) => {
+    fetchMock.mockImplementation(async () =>
+      jsonResponse(
+        { errors: [{ message: "Not Found.", status: 404 }] },
+        { status: 404 },
+      ),
+    );
+
+    expectError(await call(), 502);
   });
 });
 

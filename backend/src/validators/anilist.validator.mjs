@@ -1,17 +1,8 @@
 import { z } from "zod";
+import { queryStrictOptions as strictOptions } from "./common.mjs";
 
 const MAX_PAGE = 200;
 const MAX_TOP_PAGE = 10;
-
-const strictOptions = {
-  error: (issue) => {
-    if (issue.code === "unrecognized_keys") {
-      return `Parameter tidak dikenal: ${issue.keys.join(", ")}`;
-    }
-    if (issue.code === "invalid_type") return "Query request tidak valid";
-    return undefined;
-  },
-};
 
 export const CATALOG_FILTERS = [
   "all",

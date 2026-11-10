@@ -55,7 +55,7 @@ const ANIME_SEARCH_QUERY = `
       pageInfo {
         hasNextPage
       }
-      media(search: $search, type: ANIME) {
+      media(search: $search, type: ANIME, isAdult: false) {
         id
         title { romaji english native }
         episodes
@@ -129,7 +129,11 @@ const ANIME_DETAIL_QUERY = `
   }
 `;
 
-const requestAniList = async (query, variables = {}) => {
+const requestAniList = async (
+  query,
+  variables = {},
+  { allowNotFound = false } = {},
+) => {
   let response;
   let text;
 
@@ -172,9 +176,18 @@ const requestAniList = async (query, variables = {}) => {
   }
 
   if (!response.ok) {
+    // Only the detail endpoint treats AniList's 404 as "not found".
+    if (allowNotFound && response.status === 404) {
+      throw createError(
+        result?.errors?.[0]?.message || "Anime tidak ditemukan",
+        404,
+      );
+    }
+
+    // Any other failure is an upstream problem, not the client's fault.
     throw createError(
-      result?.errors?.[0]?.message || `AniList API error: ${response.status}`,
-      response.status,
+      `AniList mengembalikan error (${response.status}). Coba lagi nanti.`,
+      502,
     );
   }
 
@@ -199,7 +212,11 @@ const getAnimeDetail = async (id) => {
   const cached = getCached(cacheKey);
   if (cached !== undefined) return cached;
 
-  const data = await requestAniList(ANIME_DETAIL_QUERY, { id: numericId });
+  const data = await requestAniList(
+    ANIME_DETAIL_QUERY,
+    { id: numericId },
+    { allowNotFound: true },
+  );
 
   setCached(cacheKey, data.Media);
   return data.Media;

@@ -1,14 +1,5 @@
 import { z } from "zod";
-
-const strictOptions = {
-  error: (issue) => {
-    if (issue.code === "unrecognized_keys") {
-      return `Field tidak dikenal: ${issue.keys.join(", ")}`;
-    }
-    if (issue.code === "invalid_type") return "Body request tidak valid";
-    return undefined; // fall back to the field's own message
-  },
-};
+import { bodyStrictOptions as strictOptions } from "./common.mjs";
 
 const emailField = z
   .string({ error: "Email wajib diisi" })

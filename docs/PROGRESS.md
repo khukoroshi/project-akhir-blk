@@ -100,17 +100,14 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - `frontend/penyimpanan.txt` berisi salinan kode lama (scratch), hapus dari repo.
 - `frontend/package.json` bernama `react-starter-kit`, ganti jadi `anisphere-frontend`.
 - Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
-- strictOptions diduplikasi di tiga validator (auth, anim, anilist). Pindahkan ke file bersama.
 - Daftar filter katalog ada di dua tempat (validator backend dan frontend/src/utils/catalogFilters.js). Jaga tetap sama.
-- Pencarian katalog (q) belum memakai isAdult: false (daftar top sudah).
 - Setelah #6, cek apakah db-project-test.sql masih relevan (tabel animes lama tidak dipakai lagi), dan hapus tabel animes lama lewat tugas tersendiri setelah verifikasi.
 - Data katalog diisi dari body request user pertama. Idealnya diisi server dari AniList.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 13).
 - Auth masih memakai sp_insert_user. Tugas #13 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
 - auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
-- BELUM DIKETAHUI: apakah PUT /anime/:anim_id dengan `teps` mengubah anime_catalog.total_episodes. Katalog dipakai bersama semua user, jadi jika ya, satu user bisa mengubah total episode untuk semua orang. Tes sengaja memakai teps = total katalog. Selidiki di tugas cleanup B.
-- Status gagal dari AniList selain 429 (mis. 500) diteruskan apa adanya, bukan 502. Putuskan: jadikan 502.
+- PUT /anime/:anim_id TIDAK mengubah anime_catalog.total_episodes (hasil baca anim.model.mjs; controller dan trigger belum diperiksa). Risiko yang ada: eps bisa melebihi total katalog dan completed bisa dipalsukan lewat teps dari klien; polusi katalog terjadi di POST (user pertama menentukan data). Keputusan perbaikan (A/B/C) menunggu pemilik proyek.
 - Perilaku belum tercatat di API.md: hasNextPage selalu false di halaman 10 daftar top; respons 200 AniList dengan `errors` GraphQL menjadi 502; isi `data` pada respons DELETE; hasil PATCH saat episode sudah sama dengan total; anim_current_episode pada POST berstatus completed.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
@@ -234,3 +231,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: backend/.env.example
   - Keputusan baru: process.env hanya dibaca di env.mjs (kecuali migrate.mjs dan tes). index.mjs memakai import() dinamis supaya error konfigurasi tampil bersih dan app.mjs tidak melakukan cek startup. Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama. Tidak ada perubahan API, API.md tidak diubah.
   - Berikutnya: #11 bagian B (isAdult pencarian, strictOptions ke file bersama, status non-429 AniList jadi 502, selidiki PUT teps vs anime_catalog), lalu #3 cookie HttpOnly (termasuk CORS).
+- **2026-11-10** — Backend cleanup kecil, bagian B (katalog dan validator)
+  - Selesai: pencarian AniList memakai isAdult: false. Status gagal AniList selain 429 menjadi 502 (404 hanya lolos pada detail). strictOptions dipindah ke validators/common.mjs (bodyStrictOptions dan queryStrictOptions, pesan lama dipertahankan). Laporan PUT teps vs anime_catalog selesai (kode tidak diubah).
+  - File diubah: backend/src/services/anilist.service.mjs, backend/src/validators/{auth,anim,anilist}.validator.mjs, backend/tests/catalog.test.mjs (hanya menambah tes), API.md
+  - File baru: backend/src/validators/common.mjs
+  - Keputusan baru: requestAniList menerima opsi { allowNotFound } (hanya detail). 404 pada pencarian dan daftar top menjadi 502. Menunggu keputusan pemilik proyek soal PUT teps (opsi A/B/C).
+  - Berikutnya: putuskan opsi A/B/C untuk PUT teps dan katalog; lalu #3 cookie HttpOnly (termasuk CORS).

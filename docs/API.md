@@ -135,15 +135,15 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
   - `page` (opsional, bilangan bulat 1-200, default 1). Daftar top (tanpa `q`) dibatasi maksimal halaman 10.
   - `filter` (opsional, default `all`): `all` `airing` `upcoming` `tv` `movie` `ova` `ona` `special` `popular` `favorited`. Nilai lain 400 "filter tidak valid". Diabaikan jika `q` ada.
 - **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large } } ]`, `meta: { page, perPage, hasNextPage }`
-- **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top. Kunci cache memuat filter dan page. Pencarian (q) belum mengecualikan konten dewasa (rencana).
-- **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 parameter tidak dikenal, 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, 504 AniList timeout
+- **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top dan pencarian.
+- **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 parameter tidak dikenal, 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, atau AniList membalas status gagal selain 429 (pada detail, 404 tetap 404), atau membalas dengan error GraphQL, 504 AniList timeout
 
 #### `GET /catalog/anime/:id`
 
 - **Param:** `id` = ID AniList
 - **Sukses 200:** `data: Media` (detail lengkap dari AniList)
 - **Catatan:** deskripsi bisa berisi HTML, wajib disanitasi di frontend. Detail di-cache 5 menit. Timeout 10 detik. Di halaman 10 daftar top, meta.hasNextPage selalu false.
-- **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 / 502 / 504 sama seperti pencarian, 502 juga jika AniList membalas 200 dengan error GraphQL.
+- **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 / 502 / 504 sama seperti pencarian. 502 AniList tidak bisa dihubungi, atau AniList membalas status gagal selain 429 (pada detail, 404 tetap 404), atau membalas dengan error GraphQL.
 
 ---
 
@@ -196,3 +196,4 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-07: Katalog AniList: tambah query `page`, 48 judul per halaman, field `meta` { page, perPage, hasNextPage }. Daftar top maks 10 halaman. Sebelumnya search 20 hasil dan top 50 hasil tanpa halaman.
 - 2026-11-07: Katalog AniList: tambah query filter (10 kategori) untuk daftar top.
 - 2026-11-09: Kode disesuaikan dengan kontrak: error 4xx kini bernilai status "error" (dulu "fail"), dan POST /auth/register mengembalikan us_id (dulu hilang).
+- 2026-11-10: Katalog AniList: pencarian (q) kini mengecualikan konten dewasa. Status gagal dari AniList selain 429 menjadi 502 (pada detail, 404 tetap 404; pada pencarian dan daftar top, 404 menjadi 502).
