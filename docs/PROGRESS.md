@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8). Tersisa #3.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** #11 bagian B (katalog dan validator), lalu #3 cookie HttpOnly.
+- **Berikutnya:** katalog diisi server dari AniList (opsi C; tiga chat: C1 backend, C2 frontend, C3 rapikan kontrak), lalu #3 cookie HttpOnly (termasuk CORS).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -27,7 +27,7 @@
 - Watchlist memakai anime_catalog + user_anime. Nilai status memakai spasi ('plan to watch', 'on hold', 'rewatching'), bukan underscore seperti draf PRD. API baru menerima 4 status (watching, completed, dropped, plan to watch).
 - Perubahan skema database hanya lewat file migrasi bernomor di backend/src/db/migrations/ (pnpm migrate): tanpa DROP/TRUNCATE, tanpa DELIMITER, idempotent. project_akhir_blk.sql hanya untuk instalasi baru.
 - Skor di API: angka 1-10 dengan maksimal 1 desimal (mis. 8.5). Kolom database DECIMAL(3,1).
-- Katalog (anime_catalog) dibagi antar user: judul, gambar, total episode, dan tipe diisi dari request user pertama yang menambahkan anime itu, dan tidak ditimpa user lain.
+- Katalog (anime_catalog) dibagi antar user dan diisi SERVER dari AniList berdasarkan externalId (keputusan opsi C, 2026-11-10), bukan dari body klien. Total episode untuk aturan completed dan batas episode selalu dari katalog. Berlaku penuh setelah chat C1 selesai; sebelum itu katalog masih diisi dari body user pertama.
 - Katalog: perPage 48 ditentukan server; daftar top (semua filter) maks 10 halaman; filter hanya berlaku tanpa q (klik tab menghapus q, mencari menghapus filter). q, page, dan filter disimpan di URL.
 - Dua perangkat (Windows dan Linux): .env, .env.test, isi database, dan node_modules per perangkat, tidak ikut git. Setelah git pull: pnpm install bila package.json/lockfile berubah; pnpm migrate (backup dulu) bila ada file migrasi baru. Database test (AniWatchList_test) dibuat manual di tiap perangkat.
 - Semua respons error API memakai status "error" (bukan "fail"). POST /auth/register mengembalikan us_id.
@@ -102,13 +102,13 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
 - Daftar filter katalog ada di dua tempat (validator backend dan frontend/src/utils/catalogFilters.js). Jaga tetap sama.
 - Setelah #6, cek apakah db-project-test.sql masih relevan (tabel animes lama tidak dipakai lagi), dan hapus tabel animes lama lewat tugas tersendiri setelah verifikasi.
-- Data katalog diisi dari body request user pertama. Idealnya diisi server dari AniList.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 13).
 - Auth masih memakai sp_insert_user. Tugas #13 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
 - auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
-- PUT /anime/:anim_id TIDAK mengubah anime_catalog.total_episodes (terverifikasi: anim.model.mjs, anim.controller.mjs, dan SHOW TRIGGERS kosong di AniWatchList). Risiko yang ada: eps bisa melebihi total katalog dan completed bisa dipalsukan lewat teps dari klien; polusi katalog terjadi di POST (user pertama menentukan data). Keputusan perbaikan (A/B/C) menunggu pemilik proyek.
-- Perilaku belum tercatat di API.md: hasNextPage selalu false di halaman 10 daftar top; respons 200 AniList dengan `errors` GraphQL menjadi 502; isi `data` pada respons DELETE; hasil PATCH saat episode sudah sama dengan total; anim_current_episode pada POST berstatus completed.
+- Katalog masih diisi dari body request user pertama dan PUT memakai teps dari klien (eps bisa melebihi total katalog, completed bisa dipalsukan). Diputuskan opsi C: server mengisi katalog dari AniList (chat C1, C2, C3). Temuan: PUT TIDAK mengubah anime_catalog.total_episodes.
+- Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total; anim_current_episode pada POST berstatus completed.
+- Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -122,10 +122,11 @@ Status hasil pemeriksaan kode, bukan asumsi.
 8. Pagination katalog. (selesai)
 9. Filter kategori di Home (10 tab). (selesai)
 10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).(selesai)
-11. Backend cleanup kecil (dilindungi tes #8): isAdult untuk pencarian, strictOptions ke file bersama, JWT_SECRET lewat env.mjs dan divalidasi saat startup, tes koneksi MySQL saat startup.
-12. Phase 0 #3 (cookie HttpOnly + perlindungan CSRF).
-13. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
-14. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
+11. Backend cleanup kecil, bagian A dan B. (selesai)
+12. Katalog diisi server dari AniList (opsi C): C1 backend (+ migrasi 003, field lama diabaikan), C2 frontend (berhenti mengirim title, imgUrl, totalEps, type, teps), C3 backend (hapus field lama dari schema).
+13. Phase 0 #3 (cookie HttpOnly + CSRF + CORS).
+14. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
+15. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -219,7 +220,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: semua respons error memakai status "error". Fallback new_us_id sementara, hapus setelah SHOW CREATE PROCEDURE di database asli terverifikasi.
   - Berikutnya: #8 bagian B (tes watchlist + katalog, AniList di-mock), lalu centang "Backend Test Runner" di PRD 2.1, lalu #3 cookie HttpOnly.
 - **2026-11-09** — Phase 0 #8 bagian B (tes watchlist + katalog)
-  - Selesai: tests/watchlist.test.mjs (~93 tes: auth, POST, GET, PUT, PATCH, DELETE, kepemilikan, katalog dibagi) dan tests/catalog.test.mjs (~51 tes: validasi query, bentuk respons, pemetaan 10 filter, cache, error 429/502/504, detail). AniList di-mock lewat vi.stubGlobal("fetch") per tes. Temuan it.fails: tidak ada. pnpm test hijau (Windows). Item #8 SELESAI jika pnpm test hijau dua kali.
+  - Selesai: tests/watchlist.test.mjs (~93 tes: auth, POST, GET, PUT, PATCH, DELETE, kepemilikan, katalog dibagi) dan tests/catalog.test.mjs (~51 tes: validasi query, bentuk respons, pemetaan 10 filter, cache, error 429/502/504, detail). AniList di-mock lewat vi.stubGlobal("fetch") per tes. Temuan it.fails: tidak ada. pnpm test hijau (Windows).
   - File diubah: backend/src/services/anilist.service.mjs (hanya menambah export clearCacheForTests, perilaku tidak berubah)
   - File baru: backend/tests/watchlist.test.mjs, backend/tests/catalog.test.mjs
   - Keputusan baru: cache AniList direset tiap tes lewat clearCacheForTests (khusus tes). Tes watchlist memakai teps = total katalog agar tidak bergantung pada perilaku PUT yang belum terdokumentasi.
