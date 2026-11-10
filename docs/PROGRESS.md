@@ -107,7 +107,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 13).
 - Auth masih memakai sp_insert_user. Tugas #13 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
 - auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
-- PUT /anime/:anim_id TIDAK mengubah anime_catalog.total_episodes (hasil baca anim.model.mjs; controller dan trigger belum diperiksa). Risiko yang ada: eps bisa melebihi total katalog dan completed bisa dipalsukan lewat teps dari klien; polusi katalog terjadi di POST (user pertama menentukan data). Keputusan perbaikan (A/B/C) menunggu pemilik proyek.
+- PUT /anime/:anim_id TIDAK mengubah anime_catalog.total_episodes (terverifikasi: anim.model.mjs, anim.controller.mjs, dan SHOW TRIGGERS kosong di AniWatchList). Risiko yang ada: eps bisa melebihi total katalog dan completed bisa dipalsukan lewat teps dari klien; polusi katalog terjadi di POST (user pertama menentukan data). Keputusan perbaikan (A/B/C) menunggu pemilik proyek.
 - Perilaku belum tercatat di API.md: hasNextPage selalu false di halaman 10 daftar top; respons 200 AniList dengan `errors` GraphQL menjadi 502; isi `data` pada respons DELETE; hasil PATCH saat episode sudah sama dengan total; anim_current_episode pada POST berstatus completed.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
