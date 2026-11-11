@@ -5,11 +5,16 @@ info:
 
 http:
   method: POST
-  url: "{{link}}/{{api_auth_link}}/login"
+  url: "{{base_url}}/auth/login"
   body:
     type: json
-    data: '{"email":"testing@gmail.com","password":"testing123"}'
+    data: '{"email":"khukoroshi@gmail.com","password":"Khuk0r0SH!"}'
   auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.setEnvVar("token", res.body.data.token);
 
 settings:
   encodeUrl: true

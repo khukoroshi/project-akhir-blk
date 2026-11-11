@@ -5,10 +5,10 @@ info:
 
 http:
   method: DELETE
-  url: "{{link}}/{{api_anim_link}}/11"
+  url: "{{base_url}}/anime/{{anime_id}}"
   auth:
     type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwibmFtZSI6InRlc3RpbmciLCJlbWFpbCI6InRlc3RpbmdAZ21haWwuY29tIiwiaWF0IjoxNzkzOTQ3NTE0LCJleHAiOjE3OTQ1NTIzMTR9.lNDqXqhRE0mkMbFNaVP7qcPeLkEI3HTne6ZeEYwscEM
+    token: "{{token}}"
 
 settings:
   encodeUrl: true

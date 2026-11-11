@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{link}}/{{api_auth_link}}/profile"
+  url: "{{base_url}}/auth/profile"
   auth:
     type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJ0ZXN0aW5nM0BnbWFpbC5jb20iLCJpYXQiOjE3ODk2MTcyMTQsImV4cCI6MTc5MDIyMjAxNH0.diylJD9IJ7d0ZBzt1XywXAow32A5vQGcyu59sxkO7O0
+    token: "{{token}}"
 
 settings:
   encodeUrl: true

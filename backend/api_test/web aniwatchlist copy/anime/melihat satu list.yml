@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{link}}/{{api_anim_link}}/abc"
+  url: "{{base_url}}/anime/{{anime_id}}"
   auth:
     type: bearer
-    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6ImtodWtvcm9zaGkiLCJlbWFpbCI6ImtodWtvcm9zaGlAZ21haWwuY29tIiwiaWF0IjoxNzkzOTQ3MDc1LCJleHAiOjE3OTQ1NTE4NzV9.u8YxK9YvjUToWYUJz8mi8YZ1tN0hYgLF3tu3JcwwZZM
+    token: "{{token}}"
 
 settings:
   encodeUrl: true

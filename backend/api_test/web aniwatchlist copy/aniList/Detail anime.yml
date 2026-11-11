@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{link}}/{{api_catalog_link}}/anime?q=naruto"
+  url: "{{base_url}}/catalog/anime?q=naruto"
   params:
     - name: q
       value: naruto

@@ -1,7 +1,7 @@
 info:
   name: log & res
   type: folder
-  seq: 2
+  seq: 1
 
 request:
   auth: inherit
