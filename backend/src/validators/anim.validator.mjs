@@ -17,8 +17,15 @@ const strictOptions = {
   },
 };
 
+// "<label> wajib diisi" when missing, otherwise the given type message
+const required = (label, message) => ({
+  error: (issue) =>
+    issue.input === undefined ? `${label} wajib diisi` : message,
+});
+
 const STATUSES = ["watching", "completed", "dropped", "plan to watch"];
 const TIERS = ["S", "A", "B", "C", "D"];
+
 const scoreMsg = "score harus angka 1-10 (maksimal 1 angka desimal)";
 
 const statusField = z.enum(STATUSES, {
