@@ -6,7 +6,6 @@ import Input from "../../common/Input";
 function EditAnimeModal({ anime, onClose, onSave }) {
   const [form, setForm] = useState({
     eps: anime.anim_current_episode ?? 0,
-    teps: anime.anim_total_episode ?? 0,
     status: anime.anim_status ?? "watching",
     tier: anime.anim_tier ?? "",
     score: anime.anim_score ?? "",
@@ -34,14 +33,13 @@ function EditAnimeModal({ anime, onClose, onSave }) {
     try {
       await onSave(anime.anim_id, {
         eps: Number(form.eps),
-        teps: anime.anim_total_episode ?? 0,
         status: form.status,
         tier: form.tier || null,
         score: form.score === "" ? null : Number(form.score),
         notes: form.notes || null,
       });
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setSaving(false);
     }

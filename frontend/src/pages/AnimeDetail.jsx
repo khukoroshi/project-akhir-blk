@@ -50,28 +50,21 @@ function AnimeDetail() {
     setAddMessage("");
 
     try {
-      const title =
-        anime.title?.english ||
+      const displayTitle =
         anime.title?.romaji ||
+        anime.title?.english ||
         anime.title?.native ||
-        "Unknown";
+        "Anime";
 
-      const response = await api.post("/anime", {
+      await api.post("/anime", {
         externalId: anime.id,
-        externalSource: "anilist",
-        title,
-        imgUrl: anime.coverImage?.extraLarge || anime.coverImage?.large || null,
-        totalEps: anime.episodes || 0,
-        type: anime.format || "TV",
         status: "watching",
         tier: null,
         score: null,
         notes: null,
       });
-      console.log("Anime berhasil ditambahkan:", response.data);
-      setAddMessage("Anime berhasil ditambahkan ke My List!");
+      setAddMessage(`${displayTitle} berhasil ditambahkan ke My List!`);
     } catch (err) {
-      console.error("Gagal menambahkan anime:", err);
       setAddMessage(err.response?.data?.message || "Gagal menambahkan anime.");
     } finally {
       setAdding(false);

@@ -249,3 +249,20 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: gambar katalog memakai coverImage.large (frontend lama mengirim extraLarge), baris lama berganti ke large saat disegarkan. externalId maks 2147483647. Panggilan AniList dilakukan di luar transaksi DB. createWatchList tidak lagi memakai transaksi (hanya satu INSERT).
   - Batasan: katalog hanya disegarkan saat ada yang menambahkan anime itu (tidak ada penyegaran terjadwal, MyList tidak memicu penyegaran). Semua baris lama synced_at NULL, jadi disegarkan pada POST berikutnya. User terautentikasi bisa memicu panggilan AniList lewat externalId sembarang (dibatasi cache 5 menit, rate limiter belum ada).
   - Berikutnya: C2 (frontend berhenti mengirim title, imgUrl, totalEps, type, teps), lalu C3 (hapus field lama dari schema dan dari tes), lalu #3 cookie HttpOnly.
+- **2026-11-11** — C2 (frontend berhenti mengirim field lama)
+  - Selesai: handleAddToList hanya mengirim externalId, status, tier, score, notes. EditAnimeModal berhenti mengirim teps (state dan body). Error server di modal edit dibaca dari err.response?.data?.message. Pesan 404/409/429/502/504 di Add to list memakai setAddMessage yang sudah ada. console.log/error di handleAddToList dihapus.
+  - File diubah: frontend/src/pages/AnimeDetail.jsx, frontend/src/components/features/anime/EditAnimeModal.jsx
+  - Keputusan baru: externalSource tidak dikirim (default server "anilist"). Total episode di UI tetap dari anim_total_episode (hanya tampilan dan batas max input).
+  - Belum diverifikasi: hasil grep field lama di file frontend lain; cek komponen induk onSave agar pesan server tidak hilang.
+  - Berikutnya: C3 (hapus title, imgUrl, totalEps, type, teps dari schema backend dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
+- **2026-11-11** — C2 (verifikasi tambahan)
+  - Selesai: AnimeList.jsx, AnimeTable.jsx, AnimeTableRow.jsx, AnimeCard.jsx, MyList.jsx, DaftarAnime.jsx diperiksa. Tidak ada yang mengirim title, imgUrl, totalEps, type, atau teps. Alur pesan error PUT terverifikasi (AnimeList melempar Error dengan pesan server, modal menampilkannya lewat err.message).
+  - File diubah: tidak ada tambahan.
+  - Keputusan baru: tidak ada.
+  - Belum diverifikasi: CardImage.jsx dan AnimeSection.jsx (kemungkinan hanya tampilan). Cek akhir lewat tab Network di browser.
+  - Berikutnya: C3 (hapus title, imgUrl, totalEps, type, teps dari schema backend dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
+- **2026-11-11** — C2 (pesan sukses Add to list)
+  - Selesai: pesan sukses di handleAddToList memuat judul anime (romaji, cadangan english, native, "Anime"). Hanya teks tampilan, tidak ada perubahan request.
+  - File diubah: frontend/src/pages/AnimeDetail.jsx
+  - Keputusan baru: judul di pesan memakai romaji, sedangkan judul di MyList dari server (english dulu). Bisa berbeda untuk anime tertentu.
+  - Berikutnya: C3 (hapus title, imgUrl, totalEps, type, teps dari schema backend dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
