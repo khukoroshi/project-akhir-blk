@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-10.
+> Terakhir diperbarui: 2026-11-11.
 
 ## 1. Konvensi Umum
 
@@ -89,7 +89,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 | Field            | Tipe                                                  | Wajib | Aturan Zod / Default                                                                                                                      |
 | ---------------- | ----------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `externalId`     | number                                                | ya    | bilangan bulat positif, maks 2147483647                                                                                                   |
-| `title`          | string                                                | ya    | **DEPRECATED, diabaikan.** Masih divalidasi seperti sebelumnya. Dihapus di C3.                                                            |
+| `title`          | string                                                | ya    | **DEPRECATED, diabaikan.** Jika dikirim, divalidasi (trim, 1-255). Dihapus di C3.                                                         |
 | `externalSource` | string                                                | tidak | hanya `"anilist"`, default `"anilist"`                                                                                                    |
 | `imgUrl`         | string                                                | tidak | **DEPRECATED, diabaikan.** URL http/https maks 500, atau null                                                                             |
 | `totalEps`       | number                                                | tidak | **DEPRECATED, diabaikan.** bilangan bulat >= 0, default 0                                                                                 |

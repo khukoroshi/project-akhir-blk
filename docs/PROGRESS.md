@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8). Tersisa #3.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** katalog diisi server dari AniList (opsi C; tiga chat: C1 backend, C2 frontend, C3 rapikan kontrak), lalu #3 cookie HttpOnly (termasuk CORS).
+- **Berikutnya:** C2 (frontend berhenti mengirim title, imgUrl, totalEps, type, teps), lalu C3 (hapus field lama dari schema dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -27,7 +27,7 @@
 - Watchlist memakai anime_catalog + user_anime. Nilai status memakai spasi ('plan to watch', 'on hold', 'rewatching'), bukan underscore seperti draf PRD. API baru menerima 4 status (watching, completed, dropped, plan to watch).
 - Perubahan skema database hanya lewat file migrasi bernomor di backend/src/db/migrations/ (pnpm migrate): tanpa DROP/TRUNCATE, tanpa DELIMITER, idempotent. project_akhir_blk.sql hanya untuk instalasi baru.
 - Skor di API: angka 1-10 dengan maksimal 1 desimal (mis. 8.5). Kolom database DECIMAL(3,1).
-- Katalog (anime_catalog) dibagi antar user dan diisi SERVER dari AniList berdasarkan externalId (keputusan opsi C, 2026-11-10), bukan dari body klien. Total episode untuk aturan completed dan batas episode selalu dari katalog. Berlaku penuh setelah chat C1 selesai; sebelum itu katalog masih diisi dari body user pertama.
+- Katalog (anime_catalog) dibagi antar user dan diisi SERVER dari AniList berdasarkan externalId (opsi C, berlaku sejak C1). Total episode untuk aturan completed dan batas episode selalu dari katalog. Gambar katalog = coverImage.large. Field lama di body (title, imgUrl, totalEps, type, teps) masih diterima tetapi diabaikan sampai C3.
 - Katalog: perPage 48 ditentukan server; daftar top (semua filter) maks 10 halaman; filter hanya berlaku tanpa q (klik tab menghapus q, mencari menghapus filter). q, page, dan filter disimpan di URL.
 - Dua perangkat (Windows dan Linux): .env, .env.test, isi database, dan node_modules per perangkat, tidak ikut git. Setelah git pull: pnpm install bila package.json/lockfile berubah; pnpm migrate (backup dulu) bila ada file migrasi baru. Database test (AniWatchList_test) dibuat manual di tiap perangkat.
 - Semua respons error API memakai status "error" (bukan "fail"). POST /auth/register mengembalikan us_id.
@@ -36,12 +36,12 @@
 ## 4. Struktur Saat Ini (belum sesuai target)
 
 **Backend** (berlapis per jenis file, BUKAN modular):
-`src/{config, controllers, db (migrate.mjs, migrations/), middlewares, models, routes, services, utils, validators ({auth,anim,anilist}.validator.mjs)}`
+`src/{config, controllers, db (migrate.mjs, migrations/), middlewares, models, routes, services, utils, validators ({auth,anim,anilist}.validator.mjs)}, services/catalog.service.mjs`
 
 - Fitur yang ada: `auth`, `anim` (watchlist), `anilist` (katalog), `user` (service/model saja, tanpa route).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
-- `Test backend`: backend/vitest.config.mjs, backend/tests/ (base-schema.sql, global-setup.mjs, setup.mjs, auth.test.mjs, support/), tests/{watchlist,catalog}.test.mjs.
+- `Test backend`: backend/vitest.config.mjs, backend/tests/ (base-schema.sql, global-setup.mjs, setup.mjs, auth.test.mjs, support/), tests/{watchlist,catalog}.test.mjs, tests/support/anilist.mjs.
 
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, layouts, pages, services, utils}`
@@ -76,7 +76,8 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 - sp_insert_anime dan sp_update_anime masih ada di database tetapi tidak dipakai kode.
 - Instalasi baru: jalankan `project_akhir_blk.sql`, lalu `pnpm migrate`. Backup sebelum migrasi: `mysqldump`.
 - Tabel komunitas PRD (posts, comments, dst.) belum ada.
-- File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`, `migrations/002_sync_leftover_animes.sql`.
+- `anime_catalog` punya kolom `synced_at` (kapan terakhir disegarkan dari AniList).
+- File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`, `migrations/002_sync_leftover_animes.sql`, `migrations/003_add_synced_at_to_anime_catalog.sql`.
 - Database test terpisah `AniWatchList_test` (dibuat manual di tiap perangkat). JANGAN menjalankan project_akhir_blk.sql mentah di dalamnya; skema dasar test ada di backend/tests/base-schema.sql.
 
 ## 7. Status Checklist Phase 0
@@ -106,9 +107,11 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 13).
 - Auth masih memakai sp_insert_user. Tugas #13 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
 - auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
-- Katalog masih diisi dari body request user pertama dan PUT memakai teps dari klien (eps bisa melebihi total katalog, completed bisa dipalsukan). Diputuskan opsi C: server mengisi katalog dari AniList (chat C1, C2, C3). Temuan: PUT TIDAK mengubah anime_catalog.total_episodes.
-- Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total; anim_current_episode pada POST berstatus completed.
+- Field lama di body (title, imgUrl, totalEps, type di POST; teps di PUT) masih diterima dan diabaikan. Dihapus di C3 setelah frontend (C2) berhenti mengirimnya.
+- Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total.
 - Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama.
+- Katalog hanya disegarkan saat ada yang menambahkan anime itu (tidak ada penyegaran terjadwal, MyList tidak memicu penyegaran).
+- Rate limiter belum ada. User terautentikasi bisa memicu panggilan AniList lewat externalId sembarang di POST /anime (dibatasi cache 5 menit). Login juga belum dilindungi dari tebak password berulang.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -123,10 +126,11 @@ Status hasil pemeriksaan kode, bukan asumsi.
 9. Filter kategori di Home (10 tab). (selesai)
 10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).(selesai)
 11. Backend cleanup kecil, bagian A dan B. (selesai)
-12. Katalog diisi server dari AniList (opsi C): C1 backend (+ migrasi 003, field lama diabaikan), C2 frontend (berhenti mengirim title, imgUrl, totalEps, type, teps), C3 backend (hapus field lama dari schema).
+12. Katalog diisi server dari AniList (opsi C): C1 backend (selesai); C2 frontend (berhenti mengirim title, imgUrl, totalEps, type, teps); C3 backend (hapus field lama dari schema dan tes).
 13. Phase 0 #3 (cookie HttpOnly + CSRF + CORS).
-14. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
-15. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
+14. Rate limiter (login, katalog, POST /anime).
+15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
+16. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
