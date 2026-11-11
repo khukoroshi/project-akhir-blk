@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8). Tersisa #3.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** C2 (frontend berhenti mengirim title, imgUrl, totalEps, type, teps), lalu C3 (hapus field lama dari schema dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
+- **Berikutnya:** C3 (hapus field lama dari schema dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -126,7 +126,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 9. Filter kategori di Home (10 tab). (selesai)
 10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).(selesai)
 11. Backend cleanup kecil, bagian A dan B. (selesai)
-12. Katalog diisi server dari AniList (opsi C): C1 backend (selesai); C2 frontend (berhenti mengirim title, imgUrl, totalEps, type, teps); C3 backend (hapus field lama dari schema dan tes).
+12. C1 dan C2 (selesai); C3 backend (hapus field lama dari schema dan tes)
 13. Phase 0 #3 (cookie HttpOnly + CSRF + CORS).
 14. Rate limiter (login, katalog, POST /anime).
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
@@ -250,19 +250,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Batasan: katalog hanya disegarkan saat ada yang menambahkan anime itu (tidak ada penyegaran terjadwal, MyList tidak memicu penyegaran). Semua baris lama synced_at NULL, jadi disegarkan pada POST berikutnya. User terautentikasi bisa memicu panggilan AniList lewat externalId sembarang (dibatasi cache 5 menit, rate limiter belum ada).
   - Berikutnya: C2 (frontend berhenti mengirim title, imgUrl, totalEps, type, teps), lalu C3 (hapus field lama dari schema dan dari tes), lalu #3 cookie HttpOnly.
 - **2026-11-11** — C2 (frontend berhenti mengirim field lama)
-  - Selesai: handleAddToList hanya mengirim externalId, status, tier, score, notes. EditAnimeModal berhenti mengirim teps (state dan body). Error server di modal edit dibaca dari err.response?.data?.message. Pesan 404/409/429/502/504 di Add to list memakai setAddMessage yang sudah ada. console.log/error di handleAddToList dihapus.
+  - Selesai: handleAddToList hanya mengirim externalId, status, tier, score, notes (externalSource tidak dikirim, default server "anilist"). EditAnimeModal tidak lagi mengirim teps. Pesan error server ditampilkan (404/409/429/502/504 untuk Add to list lewat setAddMessage; 400 melebihi total untuk edit, lewat err.message). console.log/error di handleAddToList dihapus. Pesan sukses Add to list memuat judul anime. AnimeList, AnimeTable, AnimeTableRow, AnimeCard, MyList, DaftarAnime diperiksa: tidak ada yang mengirim field lama.
   - File diubah: frontend/src/pages/AnimeDetail.jsx, frontend/src/components/features/anime/EditAnimeModal.jsx
-  - Keputusan baru: externalSource tidak dikirim (default server "anilist"). Total episode di UI tetap dari anim_total_episode (hanya tampilan dan batas max input).
-  - Belum diverifikasi: hasil grep field lama di file frontend lain; cek komponen induk onSave agar pesan server tidak hilang.
-  - Berikutnya: C3 (hapus title, imgUrl, totalEps, type, teps dari schema backend dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
-- **2026-11-11** — C2 (verifikasi tambahan)
-  - Selesai: AnimeList.jsx, AnimeTable.jsx, AnimeTableRow.jsx, AnimeCard.jsx, MyList.jsx, DaftarAnime.jsx diperiksa. Tidak ada yang mengirim title, imgUrl, totalEps, type, atau teps. Alur pesan error PUT terverifikasi (AnimeList melempar Error dengan pesan server, modal menampilkannya lewat err.message).
-  - File diubah: tidak ada tambahan.
-  - Keputusan baru: tidak ada.
-  - Belum diverifikasi: CardImage.jsx dan AnimeSection.jsx (kemungkinan hanya tampilan). Cek akhir lewat tab Network di browser.
-  - Berikutnya: C3 (hapus title, imgUrl, totalEps, type, teps dari schema backend dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
-- **2026-11-11** — C2 (pesan sukses Add to list)
-  - Selesai: pesan sukses di handleAddToList memuat judul anime (romaji, cadangan english, native, "Anime"). Hanya teks tampilan, tidak ada perubahan request.
-  - File diubah: frontend/src/pages/AnimeDetail.jsx
-  - Keputusan baru: judul di pesan memakai romaji, sedangkan judul di MyList dari server (english dulu). Bisa berbeda untuk anime tertentu.
+  - Keputusan baru: total episode di UI tetap dari anim_total_episode (tampilan dan batas max input).
+  - Belum diverifikasi: CardImage.jsx dan AnimeSection.jsx; cek akhir lewat tab Network.
   - Berikutnya: C3 (hapus title, imgUrl, totalEps, type, teps dari schema backend dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
