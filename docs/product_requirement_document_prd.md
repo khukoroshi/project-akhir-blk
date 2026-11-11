@@ -56,7 +56,7 @@ The current `animes` table blends master anime data with user progress. We decou
 
 **Catatan skema aktual:** tabel `users` mempertahankan nama kolom lama (`us_id`, `us_name`, `us_email`, `us_password`, `us_created_at`). Pada draf SQL di bawah, setiap `users(id)` dibaca sebagai `users(us_id)`, dan kolom foreign key ke users wajib bertipe `INT UNSIGNED`. Skema `anime_catalog` dan `user_anime` yang sebenarnya ada di `backend/src/db/migrations/001_create_anime_catalog_and_user_anime.sql` dan menggantikan draf di bawah. Perbedaannya:
 
-- `anime_catalog`: `external_id` INT UNSIGNED, kolom tambahan `anim_type` (TV, Movie, OVA, ONA, Special, TV Short, Music).
+- `anime_catalog`: `external_id` INT UNSIGNED, kolom tambahan `anim_type` (TV, Movie, OVA, ONA, Special, TV Short, Music), kolom `synced_at` (penyegaran dari AniList), diisi server dari AniList, bukan dari klien.
 - `user_anime`: status memakai spasi (`'plan to watch'`, `'on hold'`), `score` DECIMAL(3,1) dengan CHECK 1-10 dan boleh NULL, `tier` ENUM('S','A','B','C','D'), ada kolom `created_at`, dan `id` sama dengan `anim_id` lama.
 
 ```
