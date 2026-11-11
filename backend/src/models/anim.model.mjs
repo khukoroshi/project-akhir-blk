@@ -37,8 +37,7 @@ const Anime = {
   },
 
   // Tambah anime baru ke watchlist (menggunakan Stored Procedure)
-  // Catalog data comes from AniList (see catalog.service). The old body fields
-  // title, imgUrl, totalEps, type are deprecated and ignored.
+  // Catalog data (title, cover, total episodes, type) is filled from AniList.
   createWatchList: async (usId, data) => {
     const {
       externalId,
@@ -69,7 +68,7 @@ const Anime = {
 
   // Update detail anime menggunakan Stored Procedure
   updateWatchList: async (animId, usId, data) => {
-    const { eps, status, tier, score, notes } = data; // teps is deprecated, ignored
+    const { eps, status, tier, score, notes } = data;
 
     const current = await Anime.getAnimeById(animId, usId);
     if (!current) return null;
@@ -120,7 +119,6 @@ const Anime = {
     const newEps = currentAnime.anim_current_episode + 1;
     return await Anime.updateWatchList(animId, usId, {
       eps: newEps,
-      // teps: currentAnime.anim_total_episode ?? 0,
       status: currentAnime.anim_status,
       tier: currentAnime.anim_tier ?? null,
       score: currentAnime.anim_score ?? null,

@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8). Tersisa #3.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** C3 (hapus field lama dari schema dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
+- **Berikutnya:** #3 cookie HttpOnly (termasuk CORS).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -27,7 +27,7 @@
 - Watchlist memakai anime_catalog + user_anime. Nilai status memakai spasi ('plan to watch', 'on hold', 'rewatching'), bukan underscore seperti draf PRD. API baru menerima 4 status (watching, completed, dropped, plan to watch).
 - Perubahan skema database hanya lewat file migrasi bernomor di backend/src/db/migrations/ (pnpm migrate): tanpa DROP/TRUNCATE, tanpa DELIMITER, idempotent. project_akhir_blk.sql hanya untuk instalasi baru.
 - Skor di API: angka 1-10 dengan maksimal 1 desimal (mis. 8.5). Kolom database DECIMAL(3,1).
-- Katalog (anime_catalog) dibagi antar user dan diisi SERVER dari AniList berdasarkan externalId (opsi C, berlaku sejak C1). Total episode untuk aturan completed dan batas episode selalu dari katalog. Gambar katalog = coverImage.large. Field lama di body (title, imgUrl, totalEps, type, teps) masih diterima tetapi diabaikan sampai C3.
+- Katalog (anime_catalog) dibagi antar user dan diisi SERVER dari AniList berdasarkan externalId (opsi C, berlaku sejak C1). Total episode untuk aturan completed dan batas episode selalu dari katalog. Gambar katalog = coverImage.large. Field lama di body (title, imgUrl, totalEps, type di POST; teps di PUT) ditolak 400 sejak C3.
 - Katalog: perPage 48 ditentukan server; daftar top (semua filter) maks 10 halaman; filter hanya berlaku tanpa q (klik tab menghapus q, mencari menghapus filter). q, page, dan filter disimpan di URL.
 - Dua perangkat (Windows dan Linux): .env, .env.test, isi database, dan node_modules per perangkat, tidak ikut git. Setelah git pull: pnpm install bila package.json/lockfile berubah; pnpm migrate (backup dulu) bila ada file migrasi baru. Database test (AniWatchList_test) dibuat manual di tiap perangkat.
 - Semua respons error API memakai status "error" (bukan "fail"). POST /auth/register mengembalikan us_id.
@@ -107,7 +107,6 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 13).
 - Auth masih memakai sp_insert_user. Tugas #13 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
 - auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
-- Field lama di body (title, imgUrl, totalEps, type di POST; teps di PUT) masih diterima dan diabaikan. Dihapus di C3 setelah frontend (C2) berhenti mengirimnya.
 - Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total.
 - Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama.
 - Katalog hanya disegarkan saat ada yang menambahkan anime itu (tidak ada penyegaran terjadwal, MyList tidak memicu penyegaran).
@@ -126,7 +125,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 9. Filter kategori di Home (10 tab). (selesai)
 10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).(selesai)
 11. Backend cleanup kecil, bagian A dan B. (selesai)
-12. C1 dan C2 (selesai); C3 backend (hapus field lama dari schema dan tes)
+12. C1, C2, C3 (selesai).
 13. Phase 0 #3 (cookie HttpOnly + CSRF + CORS).
 14. Rate limiter (login, katalog, POST /anime).
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
@@ -255,3 +254,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: total episode di UI tetap dari anim_total_episode (tampilan dan batas max input).
   - Belum diverifikasi: CardImage.jsx dan AnimeSection.jsx; cek akhir lewat tab Network.
   - Berikutnya: C3 (hapus title, imgUrl, totalEps, type, teps dari schema backend dan tes), lalu #3 cookie HttpOnly (termasuk CORS).
+- **2026-11-11** — C3 (backend, rapikan kontrak)
+  - Selesai: title, imgUrl, totalEps, type dihapus dari schema POST dan teps dari schema PUT; normalisasi type dibuang. Schema tetap strict: field lama ditolak 400 dengan pesan "Field '<nama>' tidak dikenal. Katalog diisi server dari AniList." Komentar deprecated di model dibersihkan. Tes lama yang memakai field lama dihapus atau diubah; tes penolakan (POST, PUT, beberapa field sekaligus) dan POST hanya { externalId } ditambah.
+  - File diubah: backend/src/validators/anim.validator.mjs, backend/src/models/anim.model.mjs (komentar saja), backend/tests/watchlist.test.mjs, API.md
+  - Keputusan baru: pesan khusus field lama dibuat lokal di anim.validator.mjs (membungkus bodyStrictOptions), common.mjs tidak berubah. Controller tidak perlu diubah.
+  - Berikutnya: #3 cookie HttpOnly + CSRF + CORS, lalu rate limiter.

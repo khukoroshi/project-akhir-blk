@@ -1,18 +1,24 @@
 import { z } from "zod";
-import { bodyStrictOptions as strictOptions } from "./common.mjs";
+import { bodyStrictOptions } from "./common.mjs";
 
-// "<label> wajib diisi" when missing, otherwise the given type message
-const required = (label, message) => ({
-  error: (issue) =>
-    issue.input === undefined ? `${label} wajib diisi` : message,
-});
+// Fields the client used to send before the server filled the catalog (C3).
+const LEGACY_FIELDS = ["title", "imgUrl", "totalEps", "type", "teps"];
+
+const strictOptions = {
+  error: (issue) => {
+    if (issue.code === "unrecognized_keys") {
+      const legacy = issue.keys.filter((key) => LEGACY_FIELDS.includes(key));
+      if (legacy.length > 0) {
+        const names = legacy.map((key) => `'${key}'`).join(", ");
+        return `Field ${names} tidak dikenal. Katalog diisi server dari AniList.`;
+      }
+    }
+    return bodyStrictOptions.error(issue);
+  },
+};
 
 const STATUSES = ["watching", "completed", "dropped", "plan to watch"];
 const TIERS = ["S", "A", "B", "C", "D"];
-const TYPES = ["TV", "Movie", "OVA", "ONA", "Special", "TV Short", "Music"];
-const TYPE_MAP = Object.fromEntries(TYPES.map((t) => [t.toLowerCase(), t]));
-
-const typeMsg = `type harus salah satu dari: ${TYPES.join(", ")}`;
 const scoreMsg = "score harus angka 1-10 (maksimal 1 angka desimal)";
 
 const statusField = z.enum(STATUSES, {
@@ -57,43 +63,9 @@ export const createAnimeSchema = z.strictObject(
       .int(required("externalId", "externalId harus bilangan bulat positif"))
       .positive("externalId harus bilangan bulat positif")
       .max(2_147_483_647, "externalId terlalu besar"),
-    // DEPRECATED (C1): title, imgUrl, totalEps, type are optional and ignored.
-    // The server fills the catalog from AniList. Removed in C3.
-    title: z
-      .string(required("Judul anime (title)", "title harus berupa teks"))
-      .trim()
-      .min(1, "Judul anime (title) wajib diisi")
-      .max(255, "title maksimal 255 karakter")
-      .optional(),
     externalSource: z
       .literal("anilist", { error: 'externalSource hanya boleh "anilist"' })
       .default("anilist"),
-    imgUrl: z
-      .url({
-        protocol: /^https?$/,
-        error: "imgUrl harus berupa URL http/https yang valid",
-      })
-      .max(500, "imgUrl maksimal 500 karakter")
-      .nullish()
-      .default(null),
-    totalEps: z
-      .int({ error: epsMsg("totalEps") })
-      .min(0, epsMsg("totalEps"))
-      .default(0),
-    // Case-insensitive: AniList sends "MOVIE", DB enum expects "Movie"
-    type: z
-      .string({ error: typeMsg })
-      .transform(
-        (v) =>
-          TYPE_MAP[
-            v
-              .trim()
-              .toLowerCase()
-              .replace(/[_\s]+/g, " ")
-          ],
-      )
-      .pipe(z.enum(TYPES, { error: typeMsg }))
-      .default("TV"),
     status: statusField.default("watching"),
     tier: tierField,
     score: scoreField,
@@ -108,11 +80,6 @@ export const createAnimeSchema = z.strictObject(
 export const updateAnimeSchema = z.strictObject(
   {
     eps: z.int(required("eps", epsMsg("eps"))).min(0, epsMsg("eps")),
-    // DEPRECATED (C1): optional and ignored. Removed in C3.
-    teps: z
-      .int({ error: epsMsg("teps") })
-      .min(0, epsMsg("teps"))
-      .optional(),
     status: statusField,
     tier: tierField,
     score: scoreField,
