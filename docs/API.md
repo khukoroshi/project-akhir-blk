@@ -86,32 +86,29 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 - **Body:**
 
-| Field            | Tipe                                                  | Wajib | Aturan Zod / Default                                                                                           |
-| ---------------- | ----------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------- |
-| `externalId`     | number                                                | ya    | bilangan bulat positif                                                                                         |
-| `title`          | string                                                | ya    | trim, 1-255 karakter                                                                                           |
-| `externalSource` | string                                                | tidak | hanya `"anilist"`, default `"anilist"`                                                                         |
-| `imgUrl`         | string                                                | tidak | URL http/https maks 500, atau null                                                                             |
-| `totalEps`       | number                                                | tidak | bilangan bulat >= 0, default 0                                                                                 |
-| `type`           | `TV` `Movie` `OVA` `ONA` `Special` `TV Short` `Music` | tidak | tidak peka huruf besar/kecil, garis bawah dianggap spasi (MOVIE -> Movie, TV_SHORT -> TV Short), default `TV`. |
-| `status`         | `watching` `completed` `dropped` `plan to watch`      | tidak | default `watching`                                                                                             |
-| `tier`           | `S` `A` `B` `C` `D`                                   | tidak | `S`-`D` atau null                                                                                              |
-| `score`          | number                                                | tidak | angka 1-10, maksimal 1 desimal (8 atau 8.5), atau null                                                         |
-| `notes`          | string                                                | tidak | maks 2000 karakter atau null                                                                                   |
+| Field            | Tipe                                                  | Wajib | Aturan Zod / Default                                                                                                                      |
+| ---------------- | ----------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `externalId`     | number                                                | ya    | bilangan bulat positif, maks 2147483647                                                                                                   |
+| `title`          | string                                                | ya    | **DEPRECATED, diabaikan.** Masih divalidasi seperti sebelumnya. Dihapus di C3.                                                            |
+| `externalSource` | string                                                | tidak | hanya `"anilist"`, default `"anilist"`                                                                                                    |
+| `imgUrl`         | string                                                | tidak | **DEPRECATED, diabaikan.** URL http/https maks 500, atau null                                                                             |
+| `totalEps`       | number                                                | tidak | **DEPRECATED, diabaikan.** bilangan bulat >= 0, default 0                                                                                 |
+| `type`           | `TV` `Movie` `OVA` `ONA` `Special` `TV Short` `Music` | tidak | **DEPRECATED, diabaikan.** tidak peka huruf besar/kecil, garis bawah dianggap spasi (MOVIE -> Movie, TV_SHORT -> TV Short), default `TV`. |
+| `status`         | `watching` `completed` `dropped` `plan to watch`      | tidak | default `watching`                                                                                                                        |
+| `tier`           | `S` `A` `B` `C` `D`                                   | tidak | `S`-`D` atau null                                                                                                                         |
+| `score`          | number                                                | tidak | angka 1-10, maksimal 1 desimal (8 atau 8.5), atau null                                                                                    |
+| `notes`          | string                                                | tidak | maks 2000 karakter atau null                                                                                                              |
 
 - **Sukses 201:** `data: Anime`
-- **Error:** 400 validasi gagal (pesan error pertama), 409 anime sudah ada di watchlist
-- **Catatan:** data katalog (judul, gambar, total episode, tipe) diisi dari request user pertama yang menambahkan anime itu, dan tidak ditimpa request user lain. Frontend sebaiknya mengirim data AniList yang akurat.
+- **Error:** 400 validasi gagal, 404 anime tidak ada di AniList, 409 anime sudah ada di watchlist, 429 / 502 / 504 AniList membatasi, gagal, atau timeout (hanya jika baris katalog belum ada)
+- **Catatan:** katalog (judul, gambar `coverImage.large`, total episode, tipe) diisi SERVER dari AniList berdasarkan `externalId`, bukan dari body. Cukup kirim `{ "externalId": 1535 }`. Format AniList dipetakan ke `type` (TV_SHORT -> TV Short, MOVIE -> Movie, format kosong -> TV). Total episode kosong menjadi 0. Baris katalog yang kosong atau lebih tua dari 7 hari disegarkan dari AniList saat ada yang menambahkan anime itu. Jika penyegaran gagal dan baris sudah ada, baris lama dipakai tanpa error. Status completed memakai total dari katalog sebagai episode.
 
 #### `PUT /anime/:anim_id`
 
-- **Body:** `{ eps, teps, status, tier, score, notes }`
-  - `eps` dan `teps`: wajib bilangan bulat >= 0.
-  - `status`: wajib (`watching`, `completed`, `dropped`, `plan to watch`).
-  - `tier`, `score`, `notes`: opsional/default null (tier: S-D/null, score: 1-10, maks 1 desimal/null, notes: maks 2000/null).
-- **Aturan:** jika `teps` > 0 maka `eps` <= `teps`. Jika `status` = `completed` dan `teps` > 0, `eps` otomatis diisi `teps`. Jika `teps` = 0 (total tidak diketahui), `eps` memakai nilai yang dikirim.
+- **Body:** `{ eps, status, tier, score, notes }`. `teps` **DEPRECATED, opsional, diabaikan** (dihapus di C3). Semua field lain tidak berubah.
+- **Aturan:** total episode diambil dari katalog (bukan dari klien). Jika total > 0 dan `eps` > total: 400 "Episode (X) tidak boleh melebihi total episode (Y)". Jika total > 0 dan `status` = `completed`: `eps` = total. Jika total > 0 dan `eps` >= total: status menjadi `completed`. Jika total = 0 (tidak diketahui): `eps` memakai nilai yang dikirim.
 - **Sukses 200:** `data: Anime`
-- **Error:** 400 validasi gagal, 404 tidak ditemukan
+- **Error:** 400 validasi gagal atau eps melebihi total katalog, 404 tidak ditemukan
 - **Catatan:** Semua field tetap dikirim sekaligus (bukan partial update). `tier`/`score`/`notes` yang tidak dikirim menjadi null.
 
 #### `PATCH /anime/:anim_id/increment`
@@ -197,3 +194,4 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-07: Katalog AniList: tambah query filter (10 kategori) untuk daftar top.
 - 2026-11-09: Kode disesuaikan dengan kontrak: error 4xx kini bernilai status "error" (dulu "fail"), dan POST /auth/register mengembalikan us_id (dulu hilang).
 - 2026-11-10: Katalog AniList: pencarian (q) kini mengecualikan konten dewasa. Status gagal dari AniList selain 429 menjadi 502 (pada detail, 404 tetap 404; pada pencarian dan daftar top, 404 menjadi 502).
+- 2026-11-11: POST /anime: katalog diisi server dari AniList; title, imgUrl, totalEps, type deprecated dan diabaikan; externalId maks 2147483647; error baru 404/429/502/504 dari AniList. PUT /anime/:anim_id: teps deprecated dan diabaikan, total episode dari katalog, eps melebihi total katalog 400.

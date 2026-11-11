@@ -238,3 +238,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: backend/src/validators/common.mjs
   - Keputusan baru: requestAniList menerima opsi { allowNotFound } (hanya detail). 404 pada pencarian dan daftar top menjadi 502. Menunggu keputusan pemilik proyek soal PUT teps (opsi A/B/C).
   - Berikutnya: putuskan opsi A/B/C untuk PUT teps dan katalog; lalu #3 cookie HttpOnly (termasuk CORS).
+- **2026-11-11** — Katalog diisi server dari AniList, C1 (backend)
+  - Selesai: POST /anime mengisi anime_catalog dari AniList lewat getAnimeDetail (title english/romaji/native/"Unknown", cover large, episodes ?? 0, format -> type). Penyegaran best effort bila synced_at NULL atau > 7 hari, upsert aman untuk penambahan bersamaan. PUT memakai total dari katalog (eps > total -> 400, completed -> eps = total, total 0 -> eps dari klien). Field lama (title, imgUrl, totalEps, type, teps) opsional dan diabaikan. Migrasi 003 menambah synced_at. Tes watchlist disesuaikan dan ditambah, helper stub AniList dibuat.
+  - File diubah: backend/src/models/anim.model.mjs, backend/src/validators/anim.validator.mjs, backend/tests/watchlist.test.mjs, API.md
+  - File baru: backend/src/services/catalog.service.mjs, backend/src/db/migrations/003_add_synced_at_to_anime_catalog.sql, backend/tests/support/anilist.mjs
+  - Keputusan baru: gambar katalog memakai coverImage.large (frontend lama mengirim extraLarge), baris lama berganti ke large saat disegarkan. externalId maks 2147483647. Panggilan AniList dilakukan di luar transaksi DB. createWatchList tidak lagi memakai transaksi (hanya satu INSERT).
+  - Batasan: katalog hanya disegarkan saat ada yang menambahkan anime itu (tidak ada penyegaran terjadwal, MyList tidak memicu penyegaran). Semua baris lama synced_at NULL, jadi disegarkan pada POST berikutnya. User terautentikasi bisa memicu panggilan AniList lewat externalId sembarang (dibatasi cache 5 menit, rate limiter belum ada).
+  - Berikutnya: C2 (frontend berhenti mengirim title, imgUrl, totalEps, type, teps), lalu C3 (hapus field lama dari schema dan dari tes), lalu #3 cookie HttpOnly.

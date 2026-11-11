@@ -55,12 +55,16 @@ export const createAnimeSchema = z.strictObject(
   {
     externalId: z
       .int(required("externalId", "externalId harus bilangan bulat positif"))
-      .positive("externalId harus bilangan bulat positif"),
+      .positive("externalId harus bilangan bulat positif")
+      .max(2_147_483_647, "externalId terlalu besar"),
+    // DEPRECATED (C1): title, imgUrl, totalEps, type are optional and ignored.
+    // The server fills the catalog from AniList. Removed in C3.
     title: z
       .string(required("Judul anime (title)", "title harus berupa teks"))
       .trim()
       .min(1, "Judul anime (title) wajib diisi")
-      .max(255, "title maksimal 255 karakter"),
+      .max(255, "title maksimal 255 karakter")
+      .optional(),
     externalSource: z
       .literal("anilist", { error: 'externalSource hanya boleh "anilist"' })
       .default("anilist"),
@@ -99,19 +103,20 @@ export const createAnimeSchema = z.strictObject(
 );
 
 // ---------- PUT /anime/:anim_id (all fields sent at once) ----------
-export const updateAnimeSchema = z
-  .strictObject(
-    {
-      eps: z.int(required("eps", epsMsg("eps"))).min(0, epsMsg("eps")),
-      teps: z.int(required("teps", epsMsg("teps"))).min(0, epsMsg("teps")),
-      status: statusField,
-      tier: tierField,
-      score: scoreField,
-      notes: notesField,
-    },
-    strictOptions,
-  )
-  .refine((d) => d.teps === 0 || d.eps <= d.teps, {
-    path: ["eps"],
-    error: "eps tidak boleh melebihi teps",
-  });
+// ---------- PUT /anime/:anim_id (all fields sent at once) ----------
+// The eps <= total rule is checked in the model against the catalog total.
+export const updateAnimeSchema = z.strictObject(
+  {
+    eps: z.int(required("eps", epsMsg("eps"))).min(0, epsMsg("eps")),
+    // DEPRECATED (C1): optional and ignored. Removed in C3.
+    teps: z
+      .int({ error: epsMsg("teps") })
+      .min(0, epsMsg("teps"))
+      .optional(),
+    status: statusField,
+    tier: tierField,
+    score: scoreField,
+    notes: notesField,
+  },
+  strictOptions,
+);

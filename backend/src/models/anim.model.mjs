@@ -1,4 +1,6 @@
 import db from "../config/db.mjs";
+import AppError from "../utils/appError.mjs";
+import { ensureCatalogEntry } from "../services/catalog.service.mjs";
 
 // Aliases keep the response shape identical to the old `animes` table.
 const SELECT_ANIME = `
@@ -35,76 +37,56 @@ const Anime = {
   },
 
   // Tambah anime baru ke watchlist (menggunakan Stored Procedure)
+  // Catalog data comes from AniList (see catalog.service). The old body fields
+  // title, imgUrl, totalEps, type are deprecated and ignored.
   createWatchList: async (usId, data) => {
     const {
       externalId,
       externalSource = "anilist",
-      title,
-      imgUrl = null,
-      totalEps = 0,
-      type = "TV",
       status = "watching",
       tier = null,
       score = null,
       notes = null,
     } = data;
 
-    const conn = await db.getConnection();
-    try {
-      await conn.beginTransaction();
+    const catalog = await ensureCatalogEntry(externalId, externalSource);
 
-      // 1. Upsert catalog. Existing rows are NOT overwritten (shared data).
-      await conn.execute(
-        `INSERT INTO anime_catalog
-           (external_id, source, title, cover_image, total_episodes, anim_type)
-         VALUES (?, ?, ?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE id = id`,
-        [externalId, externalSource, title, imgUrl, totalEps, type],
-      );
+    // Business rule: completed + known total => episodes watched = total.
+    const episodesWatched =
+      status === "completed" && catalog.total_episodes > 0
+        ? catalog.total_episodes
+        : 0;
 
-      const [[catalog]] = await conn.execute(
-        "SELECT id, total_episodes FROM anime_catalog WHERE external_id = ? AND source = ?",
-        [externalId, externalSource],
-      );
+    const [result] = await db.execute(
+      `INSERT INTO user_anime
+         (user_id, anime_id, status, episodes_watched, score, tier, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [usId, catalog.id, status, episodesWatched, score, tier, notes],
+    );
 
-      // 2. Business rule: completed + known total => episodes watched = total.
-      const episodesWatched =
-        status === "completed" && catalog.total_episodes > 0
-          ? catalog.total_episodes
-          : 0;
-
-      // 3. Per-user row. Duplicate => ER_DUP_ENTRY (controller returns 409).
-      const [result] = await conn.execute(
-        `INSERT INTO user_anime
-           (user_id, anime_id, status, episodes_watched, score, tier, notes)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [usId, catalog.id, status, episodesWatched, score, tier, notes],
-      );
-
-      await conn.commit();
-      return await Anime.getAnimeById(result.insertId, usId);
-    } catch (error) {
-      await conn.rollback();
-      throw error;
-    } finally {
-      conn.release();
-    }
+    return await Anime.getAnimeById(result.insertId, usId);
   },
+
   // Update detail anime menggunakan Stored Procedure
   updateWatchList: async (animId, usId, data) => {
-    const { eps, teps, status, tier, score, notes } = data;
+    const { eps, status, tier, score, notes } = data; // teps is deprecated, ignored
 
     const current = await Anime.getAnimeById(animId, usId);
     if (!current) return null;
 
-    let epsReal = eps;
-    if (status === "completed" && teps > 0) {
-      epsReal = teps;
+    // The total always comes from the shared catalog, never from the client.
+    const total = current.anim_total_episode;
+
+    if (total > 0 && eps > total) {
+      throw new AppError(
+        `Episode (${eps}) tidak boleh melebihi total episode (${total})`,
+        400,
+      );
     }
 
-    // Auto-complete uses the total stored in the catalog (same as the old procedure).
+    const epsReal = status === "completed" && total > 0 ? total : eps;
+
     let finalStatus = status;
-    const total = current.anim_total_episode;
     if (total > 0 && epsReal >= total) {
       finalStatus = "completed";
     }
@@ -138,7 +120,7 @@ const Anime = {
     const newEps = currentAnime.anim_current_episode + 1;
     return await Anime.updateWatchList(animId, usId, {
       eps: newEps,
-      teps: currentAnime.anim_total_episode ?? 0,
+      // teps: currentAnime.anim_total_episode ?? 0,
       status: currentAnime.anim_status,
       tier: currentAnime.anim_tier ?? null,
       score: currentAnime.anim_score ?? null,

@@ -1,9 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import db from "../src/config/db.mjs";
+import { makeMedia, stubAniListDetail } from "./support/anilist.mjs";
 import { api, authHeader, createUserAndLogin } from "./support/helpers.mjs";
 
 const ANIME = "/api/anime";
 const USER_B = { name: "penguji-b", email: "penguji-b@example.com" };
+
+let anilist;
+beforeEach(() => {
+  anilist = stubAniListDetail();
+});
 
 const ANIME_KEYS = [
   "anim_id",
@@ -37,7 +43,6 @@ const send = (method, path, token, body) => {
 
 const validBody = (overrides = {}) => ({
   externalId: 1535,
-  title: "Death Note",
   ...overrides,
 });
 
@@ -73,6 +78,21 @@ const countCatalog = async () => {
   return total;
 };
 
+const catalogRow = async (externalId) => {
+  const [[row]] = await db.query(
+    "SELECT * FROM anime_catalog WHERE external_id = ?",
+    [externalId],
+  );
+  return row;
+};
+
+// expr is a constant SQL expression from the test, e.g. "NOW() - INTERVAL 8 DAY"
+const setSyncedAt = (externalId, expr) =>
+  db.query(
+    `UPDATE anime_catalog SET synced_at = ${expr} WHERE external_id = ?`,
+    [externalId],
+  );
+
 const twoUsers = async () => {
   const a = await createUserAndLogin();
   const b = await createUserAndLogin(USER_B);
@@ -99,7 +119,14 @@ describe("autentikasi watchlist", () => {
 });
 
 describe("POST /api/anime", () => {
-  it("201: sukses minimal, bentuk objek Anime lengkap dan nilai default", async () => {
+  it("201: hanya { externalId }, bentuk objek Anime lengkap dan nilai default", async () => {
+    anilist.set(
+      1535,
+      makeMedia(1535, {
+        title: { romaji: "Death Note", english: null, native: null },
+        episodes: 37,
+      }),
+    );
     const { user, token } = await createUserAndLogin();
 
     const res = await send("post", ANIME, token, validBody());
@@ -113,9 +140,9 @@ describe("POST /api/anime", () => {
       external_id: 1535,
       external_source: "anilist",
       anim_title: "Death Note",
-      anim_img_url: null,
+      anim_img_url: "https://img.example.com/1535-large.jpg",
       anim_current_episode: 0,
-      anim_total_episode: 0,
+      anim_total_episode: 37,
       anim_type: "TV",
       anim_status: "watching",
       anim_tier: null,
@@ -125,20 +152,6 @@ describe("POST /api/anime", () => {
     expect(typeof res.body.data.anim_created_at).toBe("string");
     expect(res.body.data.anim_created_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(Number.isNaN(Date.parse(res.body.data.anim_created_at))).toBe(false);
-  });
-
-  it("201: title di-trim", async () => {
-    const { token } = await createUserAndLogin();
-
-    const res = await send(
-      "post",
-      ANIME,
-      token,
-      validBody({ title: "  Naruto  " }),
-    );
-
-    expect(res.status).toBe(201);
-    expect(res.body.data.anim_title).toBe("Naruto");
   });
 
   it("201: title 255 karakter diterima", async () => {
@@ -152,22 +165,6 @@ describe("POST /api/anime", () => {
     );
 
     expect(res.status).toBe(201);
-  });
-
-  it.each([
-    ["MOVIE", "Movie"],
-    ["movie", "Movie"],
-    ["TV_SHORT", "TV Short"],
-    ["music", "Music"],
-    ["tv", "TV"],
-    ["Special", "Special"],
-  ])("201: type %s dinormalisasi menjadi %s", async (input, expected) => {
-    const { token } = await createUserAndLogin();
-
-    const res = await send("post", ANIME, token, validBody({ type: input }));
-
-    expect(res.status).toBe(201);
-    expect(res.body.data.anim_type).toBe(expected);
   });
 
   it.each([1, 8, 8.5, 10])(
@@ -195,7 +192,8 @@ describe("POST /api/anime", () => {
     },
   );
 
-  it("201: semua field diisi", async () => {
+  it("201: semua field diisi (field katalog di body diabaikan)", async () => {
+    anilist.set(1535, makeMedia(1535, { episodes: 37 }));
     const { token } = await createUserAndLogin();
 
     const res = await send(
@@ -204,8 +202,8 @@ describe("POST /api/anime", () => {
       token,
       validBody({
         imgUrl: "https://cdn.example.com/dn.jpg",
-        totalEps: 37,
-        type: "TV",
+        totalEps: 99,
+        type: "Movie",
         status: "plan to watch",
         tier: "A",
         score: 8.5,
@@ -215,7 +213,7 @@ describe("POST /api/anime", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.data).toMatchObject({
-      anim_img_url: "https://cdn.example.com/dn.jpg",
+      anim_img_url: "https://img.example.com/1535-large.jpg",
       anim_total_episode: 37,
       anim_type: "TV",
       anim_status: "plan to watch",
@@ -237,7 +235,7 @@ describe("POST /api/anime", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.data).toMatchObject({
-      anim_img_url: null,
+      anim_img_url: "https://img.example.com/1535-large.jpg",
       anim_tier: null,
       anim_score: null,
       anim_personal_notes: null,
@@ -262,7 +260,7 @@ describe("POST /api/anime", () => {
     ["externalId desimal", { externalId: 1.5 }],
     ["externalId string angka", { externalId: "1535" }],
     ["externalId bukan angka", { externalId: "abc" }],
-    ["title tidak dikirim", { title: undefined }],
+    ["externalId terlalu besar", { externalId: 2147483648 }],
     ["title kosong", { title: "" }],
     ["title hanya spasi", { title: "   " }],
     ["title 256 karakter", { title: "a".repeat(256) }],
@@ -428,15 +426,16 @@ describe("PUT /api/anime/:anim_id", () => {
     expect(res.body.data.anim_current_episode).toBe(12);
   });
 
-  it("200: completed dengan teps 0 mempertahankan eps yang dikirim", async () => {
+  it("200: completed dengan total katalog 0 mempertahankan eps yang dikirim", async () => {
+    anilist.set(1535, makeMedia(1535, { episodes: null }));
     const { token } = await createUserAndLogin();
-    const created = await addAnime(token, { totalEps: 0 });
+    const created = await addAnime(token);
 
     const res = await send(
       "put",
       `${ANIME}/${created.anim_id}`,
       token,
-      putBody({ eps: 7, teps: 0, status: "completed" }),
+      putBody({ eps: 7, teps: undefined, status: "completed" }),
     );
 
     expect(res.status).toBe(200);
@@ -468,15 +467,15 @@ describe("PUT /api/anime/:anim_id", () => {
     });
   });
 
-  it("400: eps melebihi teps (teps > 0), data tidak berubah", async () => {
+  it("400: eps melebihi total katalog walau teps palsu besar, data tidak berubah", async () => {
     const { token } = await createUserAndLogin();
-    const created = await addAnime(token, { totalEps: 12 });
+    const created = await addAnime(token); // catalog total = 12
 
     const res = await send(
       "put",
       `${ANIME}/${created.anim_id}`,
       token,
-      putBody({ eps: 13, teps: 12 }),
+      putBody({ eps: 13, teps: 100 }),
     );
 
     expectError(res, 400);
@@ -486,7 +485,6 @@ describe("PUT /api/anime/:anim_id", () => {
 
   it.each([
     ["eps tidak dikirim", { eps: undefined }],
-    ["teps tidak dikirim", { teps: undefined }],
     ["status hilang", { status: undefined }],
     ["eps negatif", { eps: -1 }],
     ["teps desimal", { teps: 1.5 }],
@@ -552,8 +550,9 @@ describe("PATCH /api/anime/:anim_id/increment", () => {
   });
 
   it("anime completed dengan total 0 tidak menghasilkan 500", async () => {
+    anilist.set(1535, makeMedia(1535, { episodes: null }));
     const { token } = await createUserAndLogin();
-    const created = await addAnime(token, { totalEps: 0, status: "completed" });
+    const created = await addAnime(token, { status: "completed" });
 
     const res = await send(
       "patch",
@@ -649,13 +648,20 @@ describe("kepemilikan data", () => {
 });
 
 describe("katalog anime dibagi antar user", () => {
-  it("user B melihat data katalog dari user A, tanpa menimpanya", async () => {
+  it("user A dan B melihat data AniList yang sama, body tidak berpengaruh", async () => {
+    anilist.set(
+      777,
+      makeMedia(777, {
+        title: { english: "Dari AniList", romaji: null, native: null },
+        episodes: 12,
+      }),
+    );
     const { a, b } = await twoUsers();
 
     const addedByA = await addAnime(a.token, {
       externalId: 777,
       title: "A",
-      totalEps: 12,
+      totalEps: 99,
       imgUrl: "https://cdn.example.com/a.jpg",
     });
     const addedByB = await addAnime(b.token, {
@@ -665,15 +671,275 @@ describe("katalog anime dibagi antar user", () => {
       imgUrl: "https://cdn.example.com/b.jpg",
     });
 
-    expect(addedByB.anim_title).toBe("A");
-    expect(addedByB.anim_total_episode).toBe(12);
-    expect(addedByB.anim_img_url).toBe("https://cdn.example.com/a.jpg");
+    for (const added of [addedByA, addedByB]) {
+      expect(added.anim_title).toBe("Dari AniList");
+      expect(added.anim_total_episode).toBe(12);
+      expect(added.anim_img_url).toBe("https://img.example.com/777-large.jpg");
+    }
     expect(addedByB.us_id).toBe(b.user.id);
     expect(addedByB.anim_id).not.toBe(addedByA.anim_id);
-
-    const readByA = await getOne(a.token, addedByA.anim_id);
-    expect(readByA.body.data.anim_title).toBe("A");
     expect(await countCatalog()).toBe(1);
     expect(await countWatchlist()).toBe(2);
+  });
+});
+
+describe("katalog diisi server dari AniList (C1)", () => {
+  it("201: katalog diisi dari AniList, bukan dari body", async () => {
+    anilist.set(
+      1535,
+      makeMedia(1535, {
+        title: { english: "Death Note", romaji: "Desu Nōto", native: null },
+        episodes: 37,
+        format: "TV",
+      }),
+    );
+    const { token } = await createUserAndLogin();
+
+    const res = await send("post", ANIME, token, { externalId: 1535 });
+
+    expect(res.status).toBe(201);
+    const row = await catalogRow(1535);
+    expect(row).toMatchObject({
+      title: "Death Note",
+      cover_image: "https://img.example.com/1535-large.jpg",
+      total_episodes: 37,
+      anim_type: "TV",
+    });
+    expect(row.synced_at).not.toBeNull();
+    expect(anilist.calls).toEqual([1535]);
+  });
+
+  it("201: body dengan title, imgUrl, totalEps, type palsu diabaikan", async () => {
+    anilist.set(1535, makeMedia(1535, { episodes: 37 }));
+    const { token } = await createUserAndLogin();
+
+    const res = await send(
+      "post",
+      ANIME,
+      token,
+      validBody({
+        title: "JUDUL PALSU",
+        imgUrl: "https://evil.example.com/x.png",
+        totalEps: 999,
+        type: "Movie",
+      }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.data).toMatchObject({
+      anim_title: "Anime 1535",
+      anim_img_url: "https://img.example.com/1535-large.jpg",
+      anim_total_episode: 37,
+      anim_type: "TV",
+    });
+    const row = await catalogRow(1535);
+    expect(row.title).toBe("Anime 1535");
+  });
+
+  it.each([
+    ["TV", "TV"],
+    ["TV_SHORT", "TV Short"],
+    ["MOVIE", "Movie"],
+    ["SPECIAL", "Special"],
+    ["OVA", "OVA"],
+    ["ONA", "ONA"],
+    ["MUSIC", "Music"],
+    [null, "TV"],
+  ])("201: format AniList %s menjadi type %s", async (format, expected) => {
+    anilist.set(1535, makeMedia(1535, { format }));
+    const { token } = await createUserAndLogin();
+
+    const res = await send("post", ANIME, token, validBody());
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.anim_type).toBe(expected);
+  });
+
+  it.each([
+    [{ english: "E", romaji: "R", native: "N" }, "E"],
+    [{ english: null, romaji: "R", native: "N" }, "R"],
+    [{ english: null, romaji: null, native: "N" }, "N"],
+    [{ english: null, romaji: null, native: null }, "Unknown"],
+  ])("201: urutan judul %j menjadi %s", async (title, expected) => {
+    anilist.set(1535, makeMedia(1535, { title }));
+    const { token } = await createUserAndLogin();
+
+    const res = await send("post", ANIME, token, validBody());
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.anim_title).toBe(expected);
+  });
+
+  it("201: episodes null di AniList menjadi total 0", async () => {
+    anilist.set(1535, makeMedia(1535, { episodes: null }));
+    const { token } = await createUserAndLogin();
+
+    const res = await send("post", ANIME, token, validBody());
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.anim_total_episode).toBe(0);
+  });
+
+  it("201: completed memakai total katalog sebagai eps", async () => {
+    anilist.set(1535, makeMedia(1535, { episodes: 37 }));
+    const { token } = await createUserAndLogin();
+
+    const res = await send(
+      "post",
+      ANIME,
+      token,
+      validBody({ status: "completed" }),
+    );
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.anim_current_episode).toBe(37);
+  });
+
+  it("404: anime tidak ada di AniList, tidak ada data tersimpan", async () => {
+    anilist.set(1535, "not-found");
+    const { token } = await createUserAndLogin();
+
+    const res = await send("post", ANIME, token, validBody());
+
+    expectError(res, 404);
+    expect(await countCatalog()).toBe(0);
+    expect(await countWatchlist()).toBe(0);
+  });
+
+  it("502: AniList mati dan katalog belum ada, tidak ada data tersimpan", async () => {
+    anilist.set(1535, "down");
+    const { token } = await createUserAndLogin();
+
+    const res = await send("post", ANIME, token, validBody());
+
+    expectError(res, 502);
+    expect(await countCatalog()).toBe(0);
+    expect(await countWatchlist()).toBe(0);
+  });
+
+  it("201: AniList mati tetapi katalog usang sudah ada, memakai baris lama", async () => {
+    anilist.set(1535, makeMedia(1535, { episodes: 37 }));
+    const { a, b } = await twoUsers();
+    await addAnime(a.token);
+    await setSyncedAt(1535, "NOW() - INTERVAL 8 DAY");
+    anilist.clearCache();
+    anilist.set(1535, "down");
+
+    const res = await send("post", ANIME, b.token, validBody());
+
+    expect(res.status).toBe(201);
+    expect(res.body.data).toMatchObject({
+      anim_title: "Anime 1535",
+      anim_total_episode: 37,
+    });
+    expect(anilist.calls).toHaveLength(2); // refresh was attempted
+  });
+
+  it.each([
+    ["baru saja", "NOW()"],
+    ["6 hari lalu", "NOW() - INTERVAL 6 DAY"],
+  ])("katalog segar (%s) tidak memanggil AniList", async (_label, expr) => {
+    const { a, b } = await twoUsers();
+    await addAnime(a.token);
+    await setSyncedAt(1535, expr);
+    anilist.clearCache(); // otherwise the 5-minute cache would hide a call
+
+    const res = await send("post", ANIME, b.token, validBody());
+
+    expect(res.status).toBe(201);
+    expect(anilist.calls).toHaveLength(1); // only A's first add
+  });
+
+  it.each([
+    ["synced_at NULL", "NULL"],
+    ["8 hari lalu", "NOW() - INTERVAL 8 DAY"],
+  ])(
+    "katalog usang (%s) memanggil AniList dan disegarkan",
+    async (_label, expr) => {
+      const { a, b } = await twoUsers();
+      await addAnime(a.token);
+      await setSyncedAt(1535, expr);
+      anilist.clearCache();
+      anilist.set(
+        1535,
+        makeMedia(1535, {
+          title: { english: "Judul Baru", romaji: null, native: null },
+          episodes: 24,
+        }),
+      );
+
+      const res = await send("post", ANIME, b.token, validBody());
+
+      expect(res.status).toBe(201);
+      expect(anilist.calls).toHaveLength(2);
+      expect(res.body.data).toMatchObject({
+        anim_title: "Judul Baru",
+        anim_total_episode: 24,
+      });
+      const row = await catalogRow(1535);
+      expect(row.title).toBe("Judul Baru");
+      expect(row.synced_at).not.toBeNull();
+      expect(await countCatalog()).toBe(1);
+    },
+  );
+
+  it("201: dua user menambah anime baru yang sama bersamaan", async () => {
+    const { a, b } = await twoUsers();
+
+    const [resA, resB] = await Promise.all([
+      send("post", ANIME, a.token, validBody({ externalId: 900 })),
+      send("post", ANIME, b.token, validBody({ externalId: 900 })),
+    ]);
+
+    expect([resA.status, resB.status]).toEqual([201, 201]);
+    expect(await countCatalog()).toBe(1);
+    expect(await countWatchlist()).toBe(2);
+  });
+
+  it("200: PUT tanpa teps diterima", async () => {
+    const { token } = await createUserAndLogin();
+    const created = await addAnime(token);
+
+    const res = await send("put", `${ANIME}/${created.anim_id}`, token, {
+      eps: 3,
+      status: "watching",
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.anim_current_episode).toBe(3);
+  });
+
+  it.each([5, 0, 999])(
+    "200: PUT completed memakai total katalog walau teps palsu %s",
+    async (teps) => {
+      const { token } = await createUserAndLogin();
+      const created = await addAnime(token); // catalog total = 12
+
+      const res = await send(
+        "put",
+        `${ANIME}/${created.anim_id}`,
+        token,
+        putBody({ eps: 3, teps, status: "completed" }),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.anim_status).toBe("completed");
+      expect(res.body.data.anim_current_episode).toBe(12);
+    },
+  );
+
+  it("200: teps palsu lebih kecil dari eps tidak lagi menyebabkan 400", async () => {
+    const { token } = await createUserAndLogin();
+    const created = await addAnime(token); // catalog total = 12
+
+    const res = await send(
+      "put",
+      `${ANIME}/${created.anim_id}`,
+      token,
+      putBody({ eps: 5, teps: 3 }),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.anim_current_episode).toBe(5);
   });
 });
