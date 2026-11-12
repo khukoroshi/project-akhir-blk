@@ -12,6 +12,9 @@ router.post("/register", validate(registerSchema), authController.register);
 // Route untuk Login User
 router.post("/login", validate(loginSchema), authController.login);
 
+// Route untuk Logout (hapus cookie, tidak butuh token valid)
+router.post("/logout", authController.logout);
+
 // Route Terproteksi untuk Mengambil Profil User
 router.get("/profile", protect, authController.getProfile);
 

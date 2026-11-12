@@ -1,4 +1,5 @@
 import * as authService from "../services/auth.service.mjs";
+import { setAuthCookies, clearAuthCookies } from "../utils/authCookies.mjs";
 
 // Controller untuk Register
 export const register = async (req, res, next) => {
@@ -22,6 +23,7 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     const result = await authService.loginUser(email, password);
+    setAuthCookies(res, result.token);
 
     res.status(200).json({
       status: "success",
@@ -46,4 +48,10 @@ export const getProfile = (req, res) => {
       userInfo: req.user,
     },
   });
+};
+
+// Controller untuk Logout (tanpa input, jadi tanpa schema Zod)
+export const logout = (req, res) => {
+  clearAuthCookies(res);
+  res.status(200).json({ status: "success", message: "Logout berhasil" });
 };

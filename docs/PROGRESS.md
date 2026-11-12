@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8). Tersisa #3.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** #3 cookie HttpOnly (termasuk CORS).
+- **Berikutnya:** 13A backend cookie HttpOnly + CSRF + CORS, lalu 13B frontend, 13C backend, lalu rate limiter.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -104,8 +104,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Daftar filter katalog ada di dua tempat (validator backend dan frontend/src/utils/catalogFilters.js). Jaga tetap sama.
 - Setelah #6, cek apakah db-project-test.sql masih relevan (tabel animes lama tidak dipakai lagi), dan hapus tabel animes lama lewat tugas tersendiri setelah verifikasi.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
-- backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 13).
-- Auth masih memakai sp_insert_user. Tugas #13 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
+- backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 15).
+- Auth masih memakai sp_insert_user. Tugas #15 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
 - auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
 - Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total.
 - Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama.
@@ -126,7 +126,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).(selesai)
 11. Backend cleanup kecil, bagian A dan B. (selesai)
 12. C1, C2, C3 (selesai).
-13. Phase 0 #3 (cookie HttpOnly + CSRF + CORS).
+13. Phase 0 #3 (cookie HttpOnly + CSRF + CORS), tiga chat: 13A backend (cookie dan CSRF ditambah, Bearer masih diterima), 13B frontend (pakai cookie, hapus token dari localStorage), 13C backend (hapus Bearer dan token di body login).
 14. Rate limiter (login, katalog, POST /anime).
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
 16. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.

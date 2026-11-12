@@ -1,5 +1,6 @@
 import express from "express";
-import cors from "cors";
+import cookieParser from "cookie-parser";
+import corsMiddleware from "./config/cors.mjs";
 import errorHandler from "./middlewares/error.middleware.mjs";
 import AppError from "./utils/appError.mjs";
 import authRoutes from "./routes/auth.routes.mjs";
@@ -8,7 +9,8 @@ import anilistRoutes from "./routes/anilist.routes.mjs";
 
 const app = express();
 
-app.use(cors());
+app.use(corsMiddleware);
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);

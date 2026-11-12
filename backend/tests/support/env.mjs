@@ -14,6 +14,9 @@ const REQUIRED_KEYS = [
   "MYSQL_PASSWORD",
   "MYSQL_DATABASE",
   "JWT_SECRET",
+  "CORS_ORIGINS",
+  "COOKIE_SECURE",
+  "COOKIE_SAMESITE",
 ];
 
 // Keep in sync with backend/src/config/env.mjs
@@ -50,6 +53,11 @@ export const assertSafeTestEnv = (env) => {
   if (env.JWT_SECRET.length < MIN_JWT_SECRET_LENGTH) {
     throw new Error(
       `TES DIHENTIKAN: JWT_SECRET di .env.test minimal ${MIN_JWT_SECRET_LENGTH} karakter.`,
+    );
+  }
+  if (env.COOKIE_SECURE !== "false" || env.COOKIE_SAMESITE !== "lax") {
+    throw new Error(
+      "TES DIHENTIKAN: .env.test harus COOKIE_SECURE=false dan COOKIE_SAMESITE=lax.",
     );
   }
   assertSafeDatabaseName(env.MYSQL_DATABASE);
