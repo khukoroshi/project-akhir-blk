@@ -3,14 +3,15 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-11.
+> Terakhir diperbarui: 2026-11-12.
 
 ## 1. Konvensi Umum
 
 - **Base URL:** dari `VITE_API_URL` di frontend (contoh lokal: `http://localhost:3000/api`)
 - **Format body:** JSON (`Content-Type: application/json`)
-- **Auth saat ini:** header `Authorization: Bearer <token>` (JWT, kedaluwarsa default 7 hari)
-- **Auth target (PRD):** cookie HttpOnly. Saat migrasi, bagian Auth di file ini wajib diperbarui.
+- **Auth saat ini:** salah satu dari (a) header `Authorization: Bearer <token>`, atau (b) cookie HttpOnly `access_token` yang diatur oleh `POST /auth/login`. Jika header Authorization ada, header itu yang dipakai (cookie diabaikan). **Bearer hanya sementara**, akan dihapus di tahap 13C.
+- **CSRF:** untuk POST/PUT/PATCH/DELETE yang diautentikasi lewat COOKIE, wajib header `X-CSRF-Token` berisi nilai cookie `csrf_token` (cookie ini bisa dibaca JavaScript). Tidak cocok atau hilang: 403 "Token CSRF tidak valid". Dikecualikan: request ber-Bearer, GET, dan endpoint tanpa sesi (register, login, logout).
+- **CORS:** hanya origin di `CORS_ORIGINS` yang diizinkan (dengan credentials). Frontend wajib mengirim request dengan `withCredentials: true`. Header yang diizinkan: Authorization, Content-Type, X-CSRF-Token.
 - **Validasi saat ini:** Zod (strict) di endpoint auth, watchlist, dan katalog (query). Target: semua endpoint baru wajib Zod.
 
 **Response sukses**
@@ -29,7 +30,7 @@ Endpoint daftar menambah `"results": <jumlah>`.
 
 Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
-**Kode status yang dipakai:** 200, 201, 400, 401, 404, 409, 429, 500, 502, 504.
+**Kode status yang dipakai:** 200, 201, 400, 401, 403, 404, 409, 429, 500, 502, 504.
 
 ---
 
@@ -57,6 +58,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - **Auth:** tidak
 - **Body:** `email` (format valid, trim, huruf kecil), `password` (wajib terisi). Field lain ditolak (strict).
 - **Sukses 200:** `data: { user: { id, name, email }, token }`
+- **Cookie:** respons mengatur dua cookie (Path=/, Max-Age = masa berlaku JWT, Secure dan SameSite dari env): `access_token` (JWT, HttpOnly) dan `csrf_token` (string acak 64 hex, TIDAK HttpOnly). Body respons tidak berubah (token masih dikembalikan, sementara).
 - **Error:** 400 validasi gagal, 401 email atau password salah
 
 #### `GET /auth/profile`
@@ -64,6 +66,14 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - **Auth:** ya
 - **Sukses 200:** `data: { userInfo: { id, name, email, iat, exp } }` (isi payload JWT)
 - **Error:** 401 token tidak ada atau tidak valid
+
+#### `POST /auth/logout`
+
+- **Auth:** tidak (token tidak diperiksa)
+- **Body:** tidak ada
+- **Sukses 200:** `message: "Logout berhasil"`. Menghapus cookie `access_token` dan `csrf_token`.
+- **Error:** tidak ada (selalu 200)
+- **Catatan:** tidak butuh CSRF. Hanya menghapus cookie di browser, token Bearer yang sudah terbit tetap berlaku sampai kedaluwarsa.
 
 ### Watchlist (semua endpoint di bawah wajib auth)
 
@@ -144,7 +154,6 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 | Method | Path (PRD)            | Fase | Catatan                         |
 | ------ | --------------------- | ---- | ------------------------------- |
-| POST   | `/auth/logout`        | 1    | hapus cookie                    |
 | GET    | `/auth/me`            | 1    | pengganti `/auth/profile`?      |
 | GET    | `/users/:username`    | 2    | profil publik + statistik       |
 | PUT    | `/users/profile`      | 2    | ubah bio, nama tampilan, avatar |
@@ -192,3 +201,4 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-10: Katalog AniList: pencarian (q) kini mengecualikan konten dewasa. Status gagal dari AniList selain 429 menjadi 502 (pada detail, 404 tetap 404; pada pencarian dan daftar top, 404 menjadi 502).
 - 2026-11-11: POST /anime: katalog diisi server dari AniList; title, imgUrl, totalEps, type deprecated dan diabaikan; externalId maks 2147483647; error baru 404/429/502/504 dari AniList. PUT /anime/:anim_id: teps deprecated dan diabaikan, total episode dari katalog, eps melebihi total katalog 400.
 - 2026-11-11: POST /anime dan PUT /anime/:anim_id: title, imgUrl, totalEps, type (POST) dan teps (PUT) tidak lagi deprecated tetapi ditolak 400 dengan pesan yang menyebut nama field.
+- 2026-11-12: Auth cookie (13A, tahap tambah): login mengatur cookie access_token (HttpOnly) dan csrf_token; endpoint terproteksi menerima Bearer ATAU cookie; request ber-cookie yang mengubah data wajib header X-CSRF-Token (403 jika salah); POST /auth/logout baru; CORS memakai daftar origin dengan credentials. Bearer masih diterima sementara.
