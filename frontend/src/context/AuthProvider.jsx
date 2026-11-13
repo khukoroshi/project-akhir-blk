@@ -1,54 +1,98 @@
-import { useEffect, useState } from "react";
-import api from "../services/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import api, { hasCsrfCookie, setUnauthorizedHandler } from "../services/api";
 import { AuthContext } from "./AuthContext";
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
+  // Pengunjung anonim (tanpa cookie csrf_token) tidak perlu menunggu apa pun.
+  const [loading, setLoading] = useState(() => hasCsrfCookie());
+
+  /*
+   * Cek sesi awal. Sisa key "token" lama dihapus sekali saat dimuat
+   * (sesi lama pindah ke cookie, user lama cukup login ulang).
+   */
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    localStorage.removeItem("token");
 
-    if (!token) {
-      setLoading(false);
+    if (!hasCsrfCookie()) {
       return;
     }
 
-    const fetchProfile = async () => {
+    let ignore = false;
+
+    const checkSession = async () => {
       try {
-        const response = await api.get("/auth/profile");
+        const response = await api.get("/auth/profile", {
+          skipUnauthorizedHandler: true,
+        });
 
-        setUser(response.data.data.userInfo);
+        const { id, name, email } = response.data.data.userInfo;
+
+        if (!ignore) {
+          setUser({ id, name, email });
+        }
       } catch (error) {
-        console.error("Gagal mengambil profile:", error);
+        if (ignore) return;
 
-        localStorage.removeItem("token");
         setUser(null);
+
+        if (error.response?.status === 401) {
+          // 401 saat cek sesi itu normal. Cookie csrf_token yang tersisa
+          // dibersihkan lewat logout agar pengecekan ini tidak diulang.
+          api.post("/auth/logout").catch(() => {});
+        } else {
+          console.error("Gagal memeriksa sesi:", error.message);
+        }
       } finally {
-        setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchProfile();
+    checkSession();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
-  const login = (token, user) => {
-    localStorage.setItem("token", token);
-    setUser(user);
-  };
+  /*
+   * 401 dari request biasa: kosongkan user, lalu ProtectedRoute
+   * yang mengalihkan ke /login (tanpa reload halaman).
+   */
+  useEffect(() => {
+    setUnauthorizedHandler(() => setUser(null));
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-  };
+    return () => setUnauthorizedHandler(null);
+  }, []);
 
-  const value = {
-    user,
-    loading,
-    isAuthenticated: !!user,
-    login,
-    logout,
-  };
+  const login = useCallback((userData) => {
+    setUser(userData);
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // Abaikan error jaringan, state tetap dikosongkan.
+    } finally {
+      setUser(null);
+    }
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      isAuthenticated: Boolean(user),
+      login,
+      logout,
+    }),
+    [user, loading, login, logout],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

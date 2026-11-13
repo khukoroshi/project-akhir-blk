@@ -32,9 +32,9 @@ function LoginForm() {
         password,
       });
 
-      const { token, user } = response.data.data;
+      const { user } = response.data.data;
 
-      login(token, user);
+      login(user);
 
       navigate("/");
     } catch (err) {
