@@ -30,7 +30,7 @@ Before implementing community features, the following foundational issues in `pr
 
 - [x] **Dual `AuthProvider` Bug:** Remove duplicate `AuthProvider` wrapping in `App.jsx`. Retain single wrapper at `main.jsx`.
 - [x] **Hardcoded API URLs:** Replace hardcoded `"http://localhost:3000/api"` in `frontend/src/services/api.js` with Vite environment variable `import.meta.env.VITE_API_URL`.
-- [ ] **JWT Storage & Auth:** Transition JWT storage from `localStorage` to **HttpOnly, Secure, SameSite Cookies** with CSRF protection mechanisms.
+- [x] **JWT Storage & Auth:** Transition JWT storage from `localStorage` to **HttpOnly, Secure, SameSite Cookies** with CSRF protection mechanisms.
 - [x] **Backend Input Validation:** Introduce **Zod** or **Joi** middleware across all POST/PUT routes (validate email formats, string lengths, score boundaries 1-10, episode counts, and enum statuses).
 - [x] **HTML Sanitization:** Replace raw `dangerouslySetInnerHTML` in `AnimeDetail.jsx` with `DOMPurify.sanitize()` or direct plain-text rendering to mitigate XSS risks from external AniList API payloads.
 - [x] **Database Migration Safety:** Remove `DROP DATABASE` directives from `project_akhir_blk.sql`. Implement a structured SQL migration script workflow (Schema Creation -> Data Migration -> Seeders).

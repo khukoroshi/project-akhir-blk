@@ -224,7 +224,7 @@ describe("GET /api/auth/profile", () => {
       process.env.JWT_SECRET,
       { expiresIn: -10 },
     );
-    const res = await withSession(api().get(PROFILE), forged); // dan: expired
+    const res = await withSession(api().get(PROFILE), expired);
     expectError(res, 401);
   });
 });

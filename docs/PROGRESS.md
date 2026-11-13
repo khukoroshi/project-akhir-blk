@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 (perbaikan fondasi), sebagian selesai (#1, #2, #4, #5, #6, #7, hapus Jikan, UX katalog, #8, #3 bagian 13A). Tersisa 13B dan 13C.
+- **Phase aktif:** Phase 0 selesai seluruhnya.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 13C backend, lalu rate limiter.
+- **Berikutnya:** rate limiter.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -32,7 +32,7 @@
 - Dua perangkat (Windows dan Linux): .env, .env.test, isi database, dan node_modules per perangkat, tidak ikut git. Setelah git pull: pnpm install bila package.json/lockfile berubah; pnpm migrate (backup dulu) bila ada file migrasi baru. Database test (AniWatchList_test) dibuat manual di tiap perangkat.
 - Semua respons error API memakai status "error" (bukan "fail"). POST /auth/register mengembalikan us_id.
 - Tes backend: black box lewat Supertest berdasarkan API.md; hanya jalan di database berakhiran \_test; tidak boleh memanggil internet (AniList di-mock). Temuan yang belum diputuskan ditandai it.fails, bukan diperbaiki diam-diam.
-- Auth cookie: access_token (JWT, HttpOnly) dan csrf_token (bisa dibaca JS, double-submit lewat header X-CSRF-Token). SameSite=Lax; frontend dan backend harus satu situs (localhost:5173 dan localhost:3000 sama-situs; di produksi satu domain induk, kalau tidak pakai none + Secure). CSRF dicek di dalam middleware protect (route baru otomatis terlindungi); register, login, logout bebas CSRF.
+- Auth cookie: access_token (JWT, HttpOnly) dan csrf_token (bisa dibaca JS, double-submit lewat header X-CSRF-Token). SameSite=Lax; frontend dan backend harus satu situs (localhost:5173 dan localhost:3000 sama-situs; di produksi satu domain induk, kalau tidak pakai none + Secure). CSRF dicek di dalam middleware protect (route baru otomatis terlindungi); register, login, logout bebas CSRF, Bearer dihapus; hanya cookie. CSRF wajib untuk semua mutasi terautentikasi.
 
 ## 4. Struktur Saat Ini (belum sesuai target)
 
@@ -56,7 +56,7 @@
 | Method | Path                            | Auth  | Keterangan                                                             |
 | ------ | ------------------------------- | ----- | ---------------------------------------------------------------------- |
 | POST   | `/api/auth/register`            | tidak | daftar                                                                 |
-| POST   | `/api/auth/login`               | tidak | token JWT dikirim di body response                                     |
+| POST   | `/api/auth/login`               | tidak | user di body, JWT hanya di cookie                                      |
 | GET    | `/api/auth/profile`             | ya    | profil dari JWT                                                        |
 | GET    | `/api/anime`                    | ya    | seluruh watchlist user                                                 |
 | GET    | `/api/anime/:anim_id`           | ya    | satu item watchlist                                                    |
@@ -85,16 +85,16 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 
 Status hasil pemeriksaan kode, bukan asumsi.
 
-| #   | Item                   | Status       | Temuan                                                                                                                                                                                                                                               |
-| --- | ---------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | AuthProvider ganda     | [x] SELESAI  | Tersisa satu di `main.jsx`.                                                                                                                                                                                                                          |
-| 2   | URL API hardcode       | [x] SELESAI  | `api.js` memakai `VITE_API_URL`. `.env.example` terisi.                                                                                                                                                                                              |
-| 3   | JWT di cookie HttpOnly | [~] SEBAGIAN | 13A dan 13B selesai: backend mengatur cookie dan CSRF; frontend memakai cookie (withCredentials, X-CSRF-Token dari cookie csrf_token, tanpa token di localStorage). Bearer masih diterima backend. 13C (hapus Bearer dan token di body login) belum. |
-| 4   | Validasi Zod           | [x] SELESAI  | Auth dan watchlist (param, POST, PUT) divalidasi strict di `validators/`.                                                                                                                                                                            |
-| 5   | Sanitasi HTML          | [x] SELESAI  | DOMPurify, whitelist tag dasar, tanpa atribut.                                                                                                                                                                                                       |
-| 6   | Migrasi DB aman        | [x] SELESAI  | Kode watchlist memakai anime_catalog + user_anime. Tabel animes lama jadi cadangan.                                                                                                                                                                  |
-| 7   | standarkan AniList     | [x] SELESAI  | Timeout 10 detik, cache memori 5 menit, pesan error 429/502/504.                                                                                                                                                                                     |
-| 8   | Test runner            | [x] SELESAI  | Vitest + Supertest, database test AniWatchList_test, ~28 tes auth, ~93 tes watchlist, ~51 tes katalog (AniList di-mock). Tidak ada tes it.fails tersisa.                                                                                             |
+| #   | Item                   | Status      | Temuan                                                                                                                                                   |
+| --- | ---------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | AuthProvider ganda     | [x] SELESAI | Tersisa satu di `main.jsx`.                                                                                                                              |
+| 2   | URL API hardcode       | [x] SELESAI | `api.js` memakai `VITE_API_URL`. `.env.example` terisi.                                                                                                  |
+| 3   | JWT di cookie HttpOnly | [x] SELESAI | 13A, 13B, 13C selesai: cookie HttpOnly + CSRF, tanpa Bearer, tanpa token di body                                                                         |
+| 4   | Validasi Zod           | [x] SELESAI | Auth dan watchlist (param, POST, PUT) divalidasi strict di `validators/`.                                                                                |
+| 5   | Sanitasi HTML          | [x] SELESAI | DOMPurify, whitelist tag dasar, tanpa atribut.                                                                                                           |
+| 6   | Migrasi DB aman        | [x] SELESAI | Kode watchlist memakai anime_catalog + user_anime. Tabel animes lama jadi cadangan.                                                                      |
+| 7   | standarkan AniList     | [x] SELESAI | Timeout 10 detik, cache memori 5 menit, pesan error 429/502/504.                                                                                         |
+| 8   | Test runner            | [x] SELESAI | Vitest + Supertest, database test AniWatchList_test, ~28 tes auth, ~93 tes watchlist, ~51 tes katalog (AniList di-mock). Tidak ada tes it.fails tersisa. |
 
 ## 8. Utang Teknis & Kebersihan
 
@@ -128,7 +128,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 10. Phase 0 #8 (test runner). Bagian A: selesai (28 tes auth lolos). Bagian B: tes watchlist + katalog (AniList di-mock).(selesai)
 11. Backend cleanup kecil, bagian A dan B. (selesai)
 12. C1, C2, C3 (selesai).
-13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).
+13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
 14. Rate limiter (login, katalog, POST /anime).
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
 16. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
@@ -274,3 +274,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: cek sesi awal memakai opsi skipUnauthorizedHandler (401 normal, tanpa console.error); 401 saat cek sesi memanggil POST /auth/logout untuk membersihkan cookie sisa. Context menyediakan user, isAuthenticated, loading, login, logout.
   - Berikutnya: 13C backend (hapus Bearer dan token di body login; perbarui API.md), lalu rate limiter.
   - Diverifikasi: grep localStorage/sessionStorage/Authorization di frontend/src bersih. Sisa localStorage hanya key "theme" (ThemeProvider) dan penghapusan key "token" lama (AuthProvider).
+- **2026-11-13** — Phase 0 #3, bagian 13C (backend hapus Bearer)
+  - Selesai: auth.middleware hanya membaca cookie access_token (header Authorization diabaikan). CSRF dicek untuk semua mutasi terautentikasi (pengecualian Bearer dihapus). Authorization dihapus dari CORS allowedHeaders. Login hanya mengembalikan { user }. Helper tes withSession menjadi satu-satunya tempat logika cookie + X-CSRF-Token. Item #3 SELESAI, Phase 0 selesai.
+  - Filediubah: backend/src/middlewares/auth.middleware.mjs, backend/src/middlewares/csrf.middleware.mjs (komentar), backend/src/config/cors.mjs, backend/src/controllers/auth.controller.mjs, backend/tests/support/helpers.mjs, backend/tests/{auth,auth-cookie,watchlist}.test.mjs, API.md
+  - Keputusan baru: pesan 401 "belum login" tidak lagi menyebut token. Token tes = nilai cookie access_token; helper menyimpan pasangan csrf di Map. Logout tetap tanpa revokasi (utang teknis).
+  - Wajib dilakukan sendiri: di produksi set COOKIE_SECURE=true (dan frontend/backend satu domain induk). Perbarui koleksi backend/api_test (Bruno) ke cookie bila masih memakai Bearer.
+  - Berikutnya: rate limiter (login, katalog, POST /anime), lalu hapus tabel animes lama dan 2 procedure, lalu refactor ke modules/.
