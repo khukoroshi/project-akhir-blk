@@ -13,6 +13,8 @@ const safeEqual = (a, b) =>
 
 // Double-submit check: header X-CSRF-Token must equal the csrf_token cookie.
 // Called by `protect` only when the session comes from the cookie.
+// Double-submit check: header X-CSRF-Token must equal the csrf_token cookie.
+// Called by `protect` for every authenticated request.
 export const csrfProtect = (req, res, next) => {
   if (SAFE_METHODS.has(req.method)) return next();
 

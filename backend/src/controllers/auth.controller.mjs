@@ -30,7 +30,6 @@ export const login = async (req, res, next) => {
       message: "Login berhasil",
       data: {
         user: result.user,
-        token: result.token,
       },
     });
   } catch (error) {

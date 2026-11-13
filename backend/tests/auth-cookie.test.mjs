@@ -3,13 +3,19 @@ import jwt from "jsonwebtoken";
 import request from "supertest";
 import app from "../src/app.mjs";
 import env from "../src/config/env.mjs";
-import { api, authHeader, defaultCredentials } from "./support/helpers.mjs";
+import {
+  api,
+  cookieValue,
+  defaultCredentials,
+  findCookie,
+} from "./support/helpers.mjs";
 
 const REGISTER = "/api/auth/register";
 const LOGIN = "/api/auth/login";
 const LOGOUT = "/api/auth/logout";
 const PROFILE = "/api/auth/profile";
 const ALLOWED_ORIGIN = env.cors.origins[0];
+const bearer = (t) => ({ Authorization: `Bearer ${t}` });
 
 const findCookie = (res, name) =>
   (res.headers["set-cookie"] ?? []).find((c) => c.startsWith(`${name}=`));
@@ -26,7 +32,7 @@ const loginWithAgent = async () => {
   return {
     agent,
     res,
-    token: res.body.data.token,
+    token: cookieValue(findCookie(res, "access_token")),
     csrf: cookieValue(findCookie(res, "csrf_token")),
   };
 };
@@ -71,7 +77,9 @@ describe("POST /api/auth/login: cookie", () => {
       expect(cookie).not.toMatch(/;\s*Secure/i); // .env.test: COOKIE_SECURE=false
     }
 
-    expect(cookieValue(access)).toBe(token);
+    expect(jwt.verify(token, env.jwt.secret)).toMatchObject({
+      email: defaultCredentials.email,
+    });
     expect(cookieValue(csrf)).toMatch(/^[0-9a-f]{64}$/);
 
     const { iat, exp } = jwt.decode(token);
@@ -80,12 +88,13 @@ describe("POST /api/auth/login: cookie", () => {
     }
   });
 
-  it("body respons tetap memuat user dan token", async () => {
-    const { res } = await loginWithAgent();
+  it("body respons hanya memuat user, tanpa token", async () => {
+    const { res, token } = await loginWithAgent();
+    expect(Object.keys(res.body.data)).toEqual(["user"]);
     expect(res.body.data.user).toMatchObject({
       email: defaultCredentials.email,
     });
-    expect(res.body.data.token.split(".")).toHaveLength(3);
+    expect(JSON.stringify(res.body)).not.toContain(token);
   });
 
   it("login ulang dengan cookie lama tidak butuh CSRF", async () => {
@@ -120,7 +129,7 @@ describe("autentikasi lewat cookie", () => {
   });
 
   it.each(MUTATING)(
-    "401: $name tanpa cookie dan tanpa Bearer (bukan 403)",
+    "401: $name tanpa cookie (bukan 403)",
     async ({ method, url, body }) => {
       const res = await call(api(), method, url, body);
       expect(res.status).toBe(401);
@@ -175,28 +184,35 @@ describe("CSRF untuk request ber-cookie", () => {
   });
 });
 
-describe("Bearer lama tetap berfungsi", () => {
+describe("Bearer tidak lagi diterima", () => {
   it.each(MUTATING)(
-    "lolos: $name dengan Bearer tanpa CSRF",
+    "401: $name dengan Bearer valid tanpa cookie",
     async ({ method, url, body }) => {
       const { token } = await loginWithAgent();
-      const res = await call(api(), method, url, body).set(authHeader(token));
-      expectPassedGuards(res);
+      const res = await call(api(), method, url, body).set(bearer(token));
+      expect(res.status).toBe(401);
     },
   );
 
-  it("header Authorization didahulukan: Bearer rusak + cookie valid = 401", async () => {
+  it("401: GET profil dengan Bearer valid tanpa cookie", async () => {
+    const { token } = await loginWithAgent();
+    const res = await api().get(PROFILE).set(bearer(token));
+    expect(res.status).toBe(401);
+  });
+
+  it("header Authorization diabaikan: Bearer rusak + cookie valid = 200", async () => {
     const { agent } = await loginWithAgent();
     const res = await agent
       .get(PROFILE)
       .set("Authorization", "Bearer bukan.token.valid");
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
   });
 
-  it("Bearer valid + cookie tidak memicu CSRF", async () => {
+  it("Bearer valid + cookie tidak membebaskan CSRF: DELETE tanpa header = 403", async () => {
     const { agent, token } = await loginWithAgent();
-    const res = await agent.delete("/api/anime/999999").set(authHeader(token));
-    expectPassedGuards(res);
+    const res = await agent.delete("/api/anime/999999").set(bearer(token));
+    expect(res.status).toBe(403);
+    expect(res.body.message).toBe("Token CSRF tidak valid");
   });
 });
 
@@ -256,6 +272,9 @@ describe("CORS", () => {
       .set("Access-Control-Request-Headers", "x-csrf-token,content-type");
 
     expect(res.status).toBe(204);
+    expect(res.headers["access-control-allow-headers"]).not.toMatch(
+      /Authorization/i,
+    );
     expect(res.headers["access-control-allow-origin"]).toBe(ALLOWED_ORIGIN);
     expect(res.headers["access-control-allow-credentials"]).toBe("true");
     expect(res.headers["access-control-allow-headers"]).toMatch(

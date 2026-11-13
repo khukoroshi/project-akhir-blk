@@ -3,9 +3,9 @@ import jwt from "jsonwebtoken";
 import db from "../src/config/db.mjs";
 import {
   api,
-  authHeader,
   createUserAndLogin,
   defaultCredentials,
+  withSession,
 } from "./support/helpers.mjs";
 
 const REGISTER = "/api/auth/register";
@@ -113,7 +113,7 @@ describe("POST /api/auth/register", () => {
 describe("POST /api/auth/login", () => {
   const registerFirst = () => api().post(REGISTER).send(defaultCredentials);
 
-  it("200: mengembalikan user dan token", async () => {
+  it("200: mengembalikan user saja, token tidak ada di body", async () => {
     await registerFirst();
 
     const res = await api().post(LOGIN).send({
@@ -123,13 +123,13 @@ describe("POST /api/auth/login", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe("success");
+    expect(Object.keys(res.body.data)).toEqual(["user"]);
     expect(res.body.data.user).toMatchObject({
       id: expect.any(Number),
       name: defaultCredentials.name,
       email: defaultCredentials.email,
     });
-    expect(typeof res.body.data.token).toBe("string");
-    expect(res.body.data.token.split(".")).toHaveLength(3);
+    expect(JSON.stringify(res.body)).not.toMatch(/eyJ/); // no JWT anywhere
   });
 
   it("200: email tidak peka huruf besar/kecil", async () => {
@@ -184,7 +184,7 @@ describe("GET /api/auth/profile", () => {
   it("200: token valid mengembalikan isi payload JWT", async () => {
     const { user, token } = await createUserAndLogin();
 
-    const res = await api().get(PROFILE).set(authHeader(token));
+    const res = await withSession(api().get(PROFILE), token);
 
     expect(res.status).toBe(200);
     expect(res.body.data.userInfo).toMatchObject({
@@ -202,11 +202,10 @@ describe("GET /api/auth/profile", () => {
   });
 
   it.each([
-    ["token rusak", "Bearer bukan.token.valid"],
-    ["Bearer tanpa token", "Bearer "],
-    ["skema bukan Bearer", "Basic abc123"],
-  ])("401: %s", async (_label, header) => {
-    const res = await api().get(PROFILE).set("Authorization", header);
+    ["cookie rusak", "bukan.token.valid"],
+    ["cookie kosong", ""],
+  ])("401: %s", async (_label, value) => {
+    const res = await api().get(PROFILE).set("Cookie", `access_token=${value}`);
     expectError(res, 401);
   });
 
@@ -215,7 +214,7 @@ describe("GET /api/auth/profile", () => {
       { id: 1, name: "x", email: "x@example.com" },
       "secret-orang-lain",
     );
-    const res = await api().get(PROFILE).set(authHeader(forged));
+    const res = await withSession(api().get(PROFILE), forged); // dan: expired
     expectError(res, 401);
   });
 
@@ -225,7 +224,7 @@ describe("GET /api/auth/profile", () => {
       process.env.JWT_SECRET,
       { expiresIn: -10 },
     );
-    const res = await api().get(PROFILE).set(authHeader(expired));
+    const res = await withSession(api().get(PROFILE), forged); // dan: expired
     expectError(res, 401);
   });
 });

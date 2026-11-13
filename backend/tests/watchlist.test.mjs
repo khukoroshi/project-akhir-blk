@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import db from "../src/config/db.mjs";
 import { makeMedia, stubAniListDetail } from "./support/anilist.mjs";
-import { api, authHeader, createUserAndLogin } from "./support/helpers.mjs";
+import { api, createUserAndLogin, withSession } from "./support/helpers.mjs";
 
 const ANIME = "/api/anime";
 const USER_B = { name: "penguji-b", email: "penguji-b@example.com" };
@@ -35,9 +35,10 @@ const expectError = (res, status) => {
 };
 
 // method: "get" | "post" | "put" | "patch" | "delete". token is optional.
+// helper send(): token = access_token cookie value, optional
 const send = (method, path, token, body) => {
   let req = api()[method](path);
-  if (token) req = req.set(authHeader(token));
+  if (token) req = withSession(req, token);
   return body === undefined ? req : req.send(body);
 };
 

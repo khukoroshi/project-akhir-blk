@@ -6,7 +6,7 @@ const corsMiddleware = cors({
   origin: env.cors.origins,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Authorization", "Content-Type", "X-CSRF-Token"],
+  allowedHeaders: ["Content-Type", "X-CSRF-Token"],
   maxAge: 600,
 });
 
