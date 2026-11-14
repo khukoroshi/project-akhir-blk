@@ -15,21 +15,24 @@ import {
   updateAnimeSchema,
 } from "../validators/anim.validator.mjs";
 
-const router = express.Router();
-const validateAnimId = validate(animIdParamSchema, "params");
+export const createAnimRoutes = ({ createAnime }) => {
+  const router = express.Router();
+  const validateAnimId = validate(animIdParamSchema, "params");
 
-router.use(protect);
+  router.use(protect);
 
-router.get("/", getAllAnime);
-router.get("/:anim_id", validateAnimId, cariAnimeById);
-router.post("/", validate(createAnimeSchema), createWatchList);
-router.put(
-  "/:anim_id",
-  validateAnimId,
-  validate(updateAnimeSchema),
-  updateWatchList,
-);
-router.patch("/:anim_id/increment", validateAnimId, incrementEpisode);
-router.delete("/:anim_id", validateAnimId, deleteWatchList);
+  router.get("/", getAllAnime);
+  router.get("/:anim_id", validateAnimId, cariAnimeById);
+  router.post("/", createAnime, validate(createAnimeSchema), createWatchList); // <- createAnime ditambah
+  // put, patch, delete: tidak berubah
+  router.put(
+    "/:anim_id",
+    validateAnimId,
+    validate(updateAnimeSchema),
+    updateWatchList,
+  );
+  router.patch("/:anim_id/increment", validateAnimId, incrementEpisode);
+  router.delete("/:anim_id", validateAnimId, deleteWatchList);
 
-export default router;
+  return router;
+};

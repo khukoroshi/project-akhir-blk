@@ -3,6 +3,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
+// Rate limiting is off for regular tests. rateLimit.test.mjs builds its own app.
+// dotenv never overrides existing values, so this wins over any .env file.
+process.env.RATE_LIMIT_ENABLED = "false";
+delete process.env.TRUST_PROXY;
+
 const ENV_FILE = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../.env.test",

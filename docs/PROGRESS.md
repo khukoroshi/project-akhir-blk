@@ -8,13 +8,12 @@
 
 - **Phase aktif:** Phase 0 selesai seluruhnya.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** rate limiter.
+- **Berikutnya:** hapus tabel animes lama dan 2 procedure.
 
 ## 2. Stack Aktual (sesuai repo)
 
 - **Frontend:** React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), React Router 7, Axios, React Compiler. Package manager: pnpm.
-- **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`, `cookie-parser`. Dev: `nodemon`, Vitest, Supertest.
-- **Belum terpasang:** rate limiter.
+- **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`, `cookie-parser`. Dev: `nodemon`, Vitest, Supertest, `express-rate-limit`.
 - **API anime eksternal:** AniList (GraphQL) saja. Jikan dibuang.
 
 ## 3. Keputusan Final
@@ -38,12 +37,12 @@
 ## 4. Struktur Saat Ini (belum sesuai target)
 
 **Backend** (berlapis per jenis file, BUKAN modular):
-`src/{config (cors.mjs), controllers, db (migrate.mjs, migrations/), middlewares (csrf.middleware.mjs), models, routes, services (catalog.service.mjs), utils (authCookies.mjs), validators ({auth,anim,anilist}.validator.mjs)}`
+`src/{config (cors.mjs, rateLimit.mjs), controllers, db (migrate.mjs, migrations/), middlewares (csrf.middleware.mjs), models, routes, services (catalog.service.mjs), utils (authCookies.mjs), validators ({auth,anim,anilist}.validator.mjs)}`
 
 - Fitur yang ada: `auth`, `anim` (watchlist), `anilist` (katalog), `user` (service/model saja, tanpa route).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
-- `Tes backend`: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog}.test.mjs).
+- `Tes backend`: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit}.test.mjs).
 
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, layouts, pages, services, utils}`
@@ -111,11 +110,11 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total.
 - Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama.
 - Katalog hanya disegarkan saat ada yang menambahkan anime itu (tidak ada penyegaran terjadwal, MyList tidak memicu penyegaran).
-- Rate limiter belum ada. User terautentikasi bisa memicu panggilan AniList lewat externalId sembarang di POST /anime (dibatasi cache 5 menit). Login juga belum dilindungi dari tebak password berulang.
 - Variabel CORS_ORIGINS, COOKIE_SECURE, COOKIE_SAMESITE wajib ada di .env dan .env.test di tiap perangkat (cek Linux).
 - Logout hanya menghapus cookie, tidak ada revokasi token: JWT yang bocor berlaku sampai kedaluwarsa (7 hari).
 - Koleksi Bruno (backend/api_test) harus memakai cookie + header X-CSRF-Token. Perbarui jika masih Bearer.
 - Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
+- Pembatas laju memakai memori proses; pindah ke Redis bila multi-instance. TRUST_PROXY wajib diisi di produksi di belakang proxy.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -132,9 +131,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 11. Backend cleanup kecil, bagian A dan B. (selesai)
 12. C1, C2, C3 (selesai).
 13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
-14. Rate limiter (login, katalog, POST /anime).
-15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
-16. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
+14. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
+15. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -283,3 +281,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: pesan 401 "belum login" tidak lagi menyebut token. Token tes = nilai cookie access_token; helper menyimpan pasangan csrf di Map. Logout tetap tanpa revokasi (utang teknis).
   - Wajib dilakukan sendiri: di produksi set COOKIE_SECURE=true (dan frontend/backend satu domain induk). Perbarui koleksi backend/api_test (Bruno) ke cookie bila masih memakai Bearer.
   - Berikutnya: rate limiter (login, katalog, POST /anime), lalu hapus tabel animes lama dan 2 procedure, lalu refactor ke modules/.
+- **2026-11-14** — Rate limiter (langkah 14)
+  - Selesai: express-rate-limit terpasang. Pembatas: global /api, login (per IP+email dan per IP, hanya gagal dihitung, dipasang sebelum validasi dan bcrypt), register, katalog, POST /anime (per user). Respons 429 lewat AppError (bahasa Indonesia, menyebut menit) + Retry-After; standardHeaders aktif, legacyHeaders mati. env: RATE*LIMIT_ENABLED, TRUST_PROXY (angka 1-10, "true" ditolak), RATE_LIMIT*<NAMA>\_MAX/\_WINDOW_MIN. Tes: rateLimit.test.mjs; pembatas mati di semua tes lain.
+  - File diubah: backend/src/app.mjs (jadi createApp(), default export tetap), backend/src/routes/anim.routes.mjs (createAnimRoutes), backend/src/config/env.mjs, backend/.env.example, backend/tests/support/env.mjs, backend/package.json, pnpm-lock.yaml, API.md
+  - File baru: backend/src/config/rateLimit.mjs, backend/tests/rateLimit.test.mjs
+  - Keputusan baru: state pembatas di memori proses (hilang saat restart, tidak dibagi antar instance; pindah ke store Redis jika multi-instance). Kunci per-user memakai req.user.id (verifikasi cocok dengan auth.middleware). Produksi di belakang proxy wajib isi TRUST_PROXY sesuai jumlah proxy, kalau tidak semua pengguna tampak satu IP. JSON rusak ditolak sebelum pembatas login (tetap kena batas global).
+  - Wajib dilakukan sendiri: pada Windows dan Linux jalankan pnpm install. TRUST_PROXY di server produksi.
+  - Berikutnya: langkah 14 diganti: hapus tabel animes lama dan 2 stored procedure (langkah 15 lama), lalu refactor ke modules/.

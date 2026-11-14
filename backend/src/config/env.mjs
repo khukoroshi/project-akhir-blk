@@ -80,6 +80,65 @@ const cookieSecure = parseCookieSecure(
   nodeEnv === "production",
 );
 
+const parseBoolean = (name, raw, fallback) => {
+  if (raw === undefined || raw.trim() === "") return fallback;
+  const value = raw.trim().toLowerCase();
+  if (value === "true") return true;
+  if (value === "false") return false;
+  throw new Error(
+    `Konfigurasi tidak valid: ${name} harus "true" atau "false".`,
+  );
+};
+
+const parsePositiveInt = (name, raw, fallback, max = 1_000_000) => {
+  if (raw === undefined || raw.trim() === "") return fallback;
+  const value = Number(raw.trim());
+  if (!Number.isInteger(value) || value < 1 || value > max) {
+    throw new Error(
+      `Konfigurasi tidak valid: ${name} harus bilangan bulat 1-${max}.`,
+    );
+  }
+  return value;
+};
+
+const parseTrustProxy = (raw) => {
+  if (raw === undefined || raw.trim() === "") return undefined;
+  const value = raw.trim();
+  if (!/^\d+$/.test(value) || Number(value) < 1 || Number(value) > 10) {
+    throw new Error(
+      'Konfigurasi tidak valid: TRUST_PROXY harus angka jumlah proxy (1-10), bukan "true". Kosongkan jika tidak memakai proxy.',
+    );
+  }
+  return Number(value);
+};
+
+const RATE_LIMIT_DEFAULTS = {
+  global: { env: "GLOBAL", max: 600, windowMin: 15 },
+  loginEmail: { env: "LOGIN_EMAIL", max: 5, windowMin: 15 },
+  loginIp: { env: "LOGIN_IP", max: 30, windowMin: 15 },
+  register: { env: "REGISTER", max: 10, windowMin: 60 },
+  catalog: { env: "CATALOG", max: 60, windowMin: 1 },
+  createAnime: { env: "CREATE_ANIME", max: 30, windowMin: 15 },
+};
+
+const rateLimitLimits = Object.fromEntries(
+  Object.entries(RATE_LIMIT_DEFAULTS).map(([name, d]) => {
+    const prefix = `RATE_LIMIT_${d.env}`;
+    const limit = parsePositiveInt(
+      `${prefix}_MAX`,
+      process.env[`${prefix}_MAX`],
+      d.max,
+    );
+    const windowMin = parsePositiveInt(
+      `${prefix}_WINDOW_MIN`,
+      process.env[`${prefix}_WINDOW_MIN`],
+      d.windowMin,
+      1440,
+    );
+    return [name, { limit, windowMs: windowMin * 60 * 1000 }];
+  }),
+);
+
 const env = {
   port: process.env.PORT || 3000,
   nodeEnv: process.env.NODE_ENV || "development",
@@ -98,6 +157,15 @@ const env = {
   cookie: {
     secure: cookieSecure,
     sameSite: parseCookieSameSite(process.env.COOKIE_SAMESITE, cookieSecure),
+  },
+  trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
+  rateLimit: {
+    enabled: parseBoolean(
+      "RATE_LIMIT_ENABLED",
+      process.env.RATE_LIMIT_ENABLED,
+      true,
+    ),
+    limits: rateLimitLimits,
   },
 };
 

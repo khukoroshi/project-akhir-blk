@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-13.
+> Terakhir diperbarui: 2026-11-14.
 
 ## 1. Konvensi Umum
 
@@ -30,7 +30,22 @@ Endpoint daftar menambah `"results": <jumlah>`.
 
 Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
-**Kode status yang dipakai:** 200, 201, 400, 401, 403, 404, 409, 429, 500, 502, 504.
+**Kode status yang dipakai:** 00, 201, 400, 401, 403, 404, 409, 429, 500, 502, 504. (sudah ada 429; tambahkan di Bagian 2, kolom Error, untuk POST /auth/login, POST /auth/register, POST /anime, dan dua endpoint katalog): “429 dari pembatas laju server, selain dari AniList (untuk POST /anime dan katalog)”. Pada katalog, 429 kini punya dua sumber: pembatas server (ada header Retry-After) dan AniList (pesan memuat waktu tunggu).
+
+**Pembatasan laju (rate limit)**
+
+Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "error", "message": "Terlalu banyak ... Coba lagi dalam N menit." }`, dan header `Retry-After` (detik). Header standar `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` ikut dikirim. Batas dihitung per jendela waktu dan nilainya bisa diubah lewat env server (nilai di bawah adalah default).
+
+| Endpoint                                       | Batas          | Kunci       | Catatan                         |
+| ---------------------------------------------- | -------------- | ----------- | ------------------------------- |
+| Semua `/api/*`                                 | 600 / 15 menit | IP          | batas global                    |
+| `POST /auth/login`                             | 5 / 15 menit   | IP + email  | hanya percobaan gagal dihitung  |
+| `POST /auth/login`                             | 30 / 15 menit  | IP          | hanya percobaan gagal dihitung  |
+| `POST /auth/register`                          | 10 / 60 menit  | IP          | semua percobaan dihitung        |
+| `GET /catalog/anime`, `GET /catalog/anime/:id` | 60 / 1 menit   | IP          | satu batas untuk kedua endpoint |
+| `POST /anime`                                  | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung |
+
+Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, password benar pun ditolak 429. Frontend sebaiknya menampilkan `message` dan jangan mengulang request sebelum `Retry-After` lewat.
 
 ---
 
@@ -203,3 +218,4 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 - 2026-11-11: POST /anime dan PUT /anime/:anim_id: title, imgUrl, totalEps, type (POST) dan teps (PUT) tidak lagi deprecated tetapi ditolak 400 dengan pesan yang menyebut nama field.
 - 2026-11-12: Auth cookie (13A, tahap tambah): login mengatur cookie access_token (HttpOnly) dan csrf_token; endpoint terproteksi menerima Bearer ATAU cookie; request ber-cookie yang mengubah data wajib header X-CSRF-Token (403 jika salah); POST /auth/logout baru; CORS memakai daftar origin dengan credentials. Bearer masih diterima sementara.
 - 2026-11-13: Auth cookie (13C, tahap hapus): Bearer dihapus (header Authorization diabaikan, tanpa cookie: 401); CSRF wajib untuk semua mutasi terautentikasi; login tidak lagi mengembalikan token di body (hanya `data: { user }`); Authorization dihapus dari header CORS yang diizinkan.
+- 2026-11-14: Pembatasan laju: 429 dari server (global 600/15 mnt, login gagal 5/15 mnt per IP+email dan 30/15 mnt per IP, register 10/60 mnt, katalog 60/mnt, POST /anime 30/15 mnt per user), header Retry-After dan RateLimit-\*. Perilaku endpoint lain tidak berubah.
