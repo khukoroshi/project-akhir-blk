@@ -36,6 +36,7 @@ Before implementing community features, the following foundational issues in `pr
 - [x] **Database Migration Safety:** Remove `DROP DATABASE` directives from `project_akhir_blk.sql`. Implement a structured SQL migration script workflow (Schema Creation -> Data Migration -> Seeders).
 - [x] **AniList API Integration:** AniList is the single external anime API. Remove all Jikan code (controller, service, routes). Standardize the AniList handler with request timeouts, rate-limit handling, and search query caching.
 - [x] **Backend Test Runner:** Configure Vitest/Supertest inside `backend/package.json`.
+- [ ] **Rate Limiting:** Batasi laju request di login (per IP+email dan per IP, hanya percobaan gagal yang dihitung), register, katalog, dan POST /anime (per user). Respons 429 berbahasa Indonesia dengan header Retry-After.
 
 ---
 
@@ -231,7 +232,7 @@ frontend/src/
 - `POST /api/auth/register` — Create user account
 - `POST /api/auth/login` — Authenticate & set HttpOnly cookie
 - `POST /api/auth/logout` — Clear auth cookie
-- `GET /api/auth/me` — Fetch active session user profile
+- `GET /api/auth/profile` — Fetch active session user profile
 
 ### Profiles & Social Relationships
 
@@ -241,10 +242,13 @@ frontend/src/
 
 ### Anime Catalog & Watchlist
 
-- `GET /api/anime/search?q=...` — Proxy search through AniList API + cache
-- `GET /api/anime/:id` — Details from catalog + external metadata
-- `GET /api/watchlist` — Fetch personal watchlist
-- `POST /api/watchlist` — Add or update anime progress in user watchlist
+- `GET /api/catalog/anime?q=&page=&filter=` — Katalog AniList (pencarian, daftar top, filter) + cache
+- `GET /api/catalog/anime/:id` — Detail dari AniList + cache
+- `GET /api/anime` — Fetch personal watchlist
+- `POST /api/anime` — Add watchlist
+- `PUT /api/anime/:anim_id`
+- `PATCH /api/anime/:anim_id/increment`
+- `DELETE /api/anime/:anim_id`
 
 ### Community Feed & Discussions
 
@@ -256,20 +260,21 @@ frontend/src/
 
 ### Reviews
 
-- `GET /api/anime/:id/reviews` — Get user reviews for a specific anime
+- `GET /api/catalog/anime/:id/reviews` — (id = ID AniList) Get user reviews for a specific anime
 - `POST /api/reviews` — Write/Edit long-form anime review
 
 ---
 
 ## 6. Development Roadmap & Implementation Steps
 
-### Phase 1: Security, Hygiene & Database Refactoring
+### Phase 1: Security, Hygiene & Database Refactoring (butir 1-5 selesai 2026-11-13)
 
 1. Fix duplicate `AuthProvider` in frontend.
 2. Setup environment variables (`VITE_API_URL`, DB secrets).
 3. Implement Zod request validation middleware on Express routes.
 4. Execute DB migration scripts to separate `anime_catalog` from `user_anime`.
 5. Implement HttpOnly Cookie authentication flow.
+6. Rate limiting pada login, register, katalog, dan POST /anime.
 
 ### Phase 2: User Profiles & Social Graph
 

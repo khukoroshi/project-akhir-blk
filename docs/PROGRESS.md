@@ -33,16 +33,17 @@
 - Semua respons error API memakai status "error" (bukan "fail"). POST /auth/register mengembalikan us_id.
 - Tes backend: black box lewat Supertest berdasarkan API.md; hanya jalan di database berakhiran \_test; tidak boleh memanggil internet (AniList di-mock). Temuan yang belum diputuskan ditandai it.fails, bukan diperbaiki diam-diam.
 - Auth cookie: access_token (JWT, HttpOnly) dan csrf_token (bisa dibaca JS, double-submit lewat header X-CSRF-Token). SameSite=Lax; frontend dan backend harus satu situs (localhost:5173 dan localhost:3000 sama-situs; di produksi satu domain induk, kalau tidak pakai none + Secure). CSRF dicek di dalam middleware protect (route baru otomatis terlindungi); register, login, logout bebas CSRF, Bearer dihapus; hanya cookie. CSRF wajib untuk semua mutasi terautentikasi.
+- Path API dipertahankan (/anime, /catalog/anime, /auth/profile); PRD disesuaikan dengan kode.
 
 ## 4. Struktur Saat Ini (belum sesuai target)
 
 **Backend** (berlapis per jenis file, BUKAN modular):
-`src/{config, controllers, db (migrate.mjs, migrations/), middlewares, models, routes, services, utils, validators ({auth,anim,anilist}.validator.mjs)}, services/catalog.service.mjs, config/cors.mjs, utils/authCookies.mjs, middlewares/csrf.middleware.mjs, dan tests/auth-cookie.test.mjs`
+`src/{config (cors.mjs), controllers, db (migrate.mjs, migrations/), middlewares (csrf.middleware.mjs), models, routes, services (catalog.service.mjs), utils (authCookies.mjs), validators ({auth,anim,anilist}.validator.mjs)}`
 
 - Fitur yang ada: `auth`, `anim` (watchlist), `anilist` (katalog), `user` (service/model saja, tanpa route).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
-- `Test backend`: backend/vitest.config.mjs, backend/tests/ (base-schema.sql, global-setup.mjs, setup.mjs, auth.test.mjs, support/), tests/{watchlist,catalog}.test.mjs, tests/support/anilist.mjs.
+- `Tes backend`: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog}.test.mjs).
 
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, layouts, pages, services, utils}`
@@ -105,7 +106,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Setelah #6, cek apakah db-project-test.sql masih relevan (tabel animes lama tidak dipakai lagi), dan hapus tabel animes lama lewat tugas tersendiri setelah verifikasi.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 15).
-- Auth masih memakai sp_insert_user. Tugas #15 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
+- Auth masih memakai sp_insert_user. Langkah 15 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
 - auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
 - Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total.
 - Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama.
@@ -113,6 +114,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Rate limiter belum ada. User terautentikasi bisa memicu panggilan AniList lewat externalId sembarang di POST /anime (dibatasi cache 5 menit). Login juga belum dilindungi dari tebak password berulang.
 - Variabel CORS_ORIGINS, COOKIE_SECURE, COOKIE_SAMESITE wajib ada di .env dan .env.test di tiap perangkat (cek Linux).
 - Logout hanya menghapus cookie, tidak ada revokasi token: JWT yang bocor berlaku sampai kedaluwarsa (7 hari).
+- Koleksi Bruno (backend/api_test) harus memakai cookie + header X-CSRF-Token. Perbarui jika masih Bearer.
+- Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -267,7 +270,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: backend/src/config/cors.mjs, backend/src/utils/authCookies.mjs, backend/src/middlewares/csrf.middleware.mjs, backend/tests/auth-cookie.test.mjs
   - Keputusan baru: SameSite=Lax dengan deployment frontend dan backend di situs yang sama (localhost:5173 dan localhost:3000 sama-situs; di produksi keduanya harus satu domain induk, kalau tidak pakai none + Secure). CSRF dicek di dalam protect (bukan di route), jadi route baru otomatis terlindungi dan register/login/logout bebas CSRF. Max-Age cookie dihitung dari exp-iat JWT. Logout tanpa schema Zod karena tidak punya input. Tes mutasi ber-cookie membuktikan lolos guard (bukan 401/403), bukan jalur sukses penuh watchlist. .env.test dan .env.test.example wajib memuat CORS_ORIGINS, COOKIE_SECURE=false, COOKIE_SAMESITE=lax (dicek di tests/support/env.mjs).
   - Wajib dilakukan sendiri: tambahkan tiga variabel baru ke .env, .env.test, dan .env.test.example di tiap perangkat (Windows dan Linux).
-  - Berikutnya: 13B frontend (Axios withCredentials, kirim X-CSRF-Token dari cookie csrf_token, hapus token dari localStorage, logout memanggil POST /auth/logout), lalu 13C backend (hapus Bearer dan token di body login), lalu rate limiter. Perbarui bagian 2 PROGRESS (cookie-parser terpasang) dan status #3 jadi "sebagian".
+  - Berikutnya: 13B frontend (Axios withCredentials, kirim X-CSRF-Token dari cookie csrf_token, hapus token dari localStorage, logout memanggil POST /auth/logout), lalu 13C backend (hapus Bearer dan token di body login), lalu rate limiter.
 - **2026-11-13** — Phase 0 #3, bagian 13B (frontend cookie)
   - Selesai: api.js memakai withCredentials, mengirim X-CSRF-Token dari cookie csrf_token untuk POST/PUT/PATCH/DELETE, tanpa Authorization dan tanpa localStorage token. Interceptor 401 memanggil handler dari AuthProvider (tanpa window.location). AuthProvider mengecek GET /auth/profile hanya jika cookie csrf_token ada, menghapus key "token" lama, login(user) tanpa token, logout memanggil POST /auth/logout. .env.example diberi komentar localhost.
   - File diubah: frontend/src/services/api.js, frontend/src/context/AuthProvider.jsx, frontend/src/components/features/aunt/LoginForm.jsx, frontend/.env.example
@@ -276,7 +279,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Diverifikasi: grep localStorage/sessionStorage/Authorization di frontend/src bersih. Sisa localStorage hanya key "theme" (ThemeProvider) dan penghapusan key "token" lama (AuthProvider).
 - **2026-11-13** — Phase 0 #3, bagian 13C (backend hapus Bearer)
   - Selesai: auth.middleware hanya membaca cookie access_token (header Authorization diabaikan). CSRF dicek untuk semua mutasi terautentikasi (pengecualian Bearer dihapus). Authorization dihapus dari CORS allowedHeaders. Login hanya mengembalikan { user }. Helper tes withSession menjadi satu-satunya tempat logika cookie + X-CSRF-Token. Item #3 SELESAI, Phase 0 selesai.
-  - Filediubah: backend/src/middlewares/auth.middleware.mjs, backend/src/middlewares/csrf.middleware.mjs (komentar), backend/src/config/cors.mjs, backend/src/controllers/auth.controller.mjs, backend/tests/support/helpers.mjs, backend/tests/{auth,auth-cookie,watchlist}.test.mjs, API.md
+  - File diubah: backend/src/middlewares/auth.middleware.mjs, backend/src/middlewares/csrf.middleware.mjs (komentar), backend/src/config/cors.mjs, backend/src/controllers/auth.controller.mjs, backend/tests/support/helpers.mjs, backend/tests/{auth,auth-cookie,watchlist}.test.mjs, API.md
   - Keputusan baru: pesan 401 "belum login" tidak lagi menyebut token. Token tes = nilai cookie access_token; helper menyimpan pasangan csrf di Map. Logout tetap tanpa revokasi (utang teknis).
   - Wajib dilakukan sendiri: di produksi set COOKIE_SECURE=true (dan frontend/backend satu domain induk). Perbarui koleksi backend/api_test (Bruno) ke cookie bila masih memakai Bearer.
   - Berikutnya: rate limiter (login, katalog, POST /anime), lalu hapus tabel animes lama dan 2 procedure, lalu refactor ke modules/.
