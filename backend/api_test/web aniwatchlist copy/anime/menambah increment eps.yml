@@ -6,9 +6,12 @@ info:
 http:
   method: PATCH
   url: "{{base_url}}/anime/{{anime_id}}/increment"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf}}"
   auth:
     type: bearer
-    token: "{{token}}"
+    token: ""
 
 settings:
   encodeUrl: true

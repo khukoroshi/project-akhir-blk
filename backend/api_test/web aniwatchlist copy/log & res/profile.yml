@@ -6,9 +6,12 @@ info:
 http:
   method: GET
   url: "{{base_url}}/auth/profile"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf}}"
   auth:
     type: bearer
-    token: "{{token}}"
+    token: ""
 
 settings:
   encodeUrl: true

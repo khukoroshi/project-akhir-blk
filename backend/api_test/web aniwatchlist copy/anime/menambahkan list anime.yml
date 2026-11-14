@@ -6,12 +6,15 @@ info:
 http:
   method: POST
   url: "{{base_url}}/anime"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf}}"
   body:
     type: json
     data: '{ "externalId": 1535, "foo": "bar" }'
   auth:
     type: bearer
-    token: "{{token}}"
+    token: ""
 
 settings:
   encodeUrl: true

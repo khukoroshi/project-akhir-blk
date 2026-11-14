@@ -14,7 +14,10 @@ http:
 runtime:
   scripts:
     - type: after-response
-      code: bru.setEnvVar("token", res.body.data.token);
+      code: |-
+        const cookies = res.getHeader("set-cookie") || [];
+        const hit = cookies.map(c => c.match(/csrf_token=([^;]+)/)).find(Boolean);
+        if (hit) bru.setEnvVar("csrf", hit[1]);
 
 settings:
   encodeUrl: true

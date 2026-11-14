@@ -6,12 +6,15 @@ info:
 http:
   method: PUT
   url: "{{base_url}}/anime/{{anime_id}}"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf}}"
   body:
     type: json
     data: '{ "eps": 3, "status": "watching" }'
   auth:
     type: bearer
-    token: "{{token}}"
+    token: ""
 
 settings:
   encodeUrl: true

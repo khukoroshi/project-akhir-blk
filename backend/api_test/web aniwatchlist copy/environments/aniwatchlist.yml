@@ -3,11 +3,11 @@ variables:
   - name: base_url
     value: http://localhost:3000/api
     description: ""
-  - name: token
-    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6ImtodWtvcm9zaGkiLCJlbWFpbCI6ImtodWtvcm9zaGlAZ21haWwuY29tIiwiaWF0IjoxNzk0NDA5NjYxLCJleHAiOjE3OTUwMTQ0NjF9.dx6FnylQcX6G4CNXeqIUpGO3mpS_f95RtSg8XjT-aRY
-    description: ""
   - name: anime_id
     value:
       type: number
-      data: "18"
+      data: "20"
+    description: ""
+  - name: csrf
+    value: 442a828e65c9254b9dbd1fbd66aedc35db91a623bc9912b4925357b7351313b4
     description: ""
