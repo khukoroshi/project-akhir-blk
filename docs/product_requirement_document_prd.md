@@ -310,8 +310,8 @@ When assisting on this repository, all AI agents must strictly adhere to the fol
 2. **Modular Monolith Integrity:** Always place new backend logic within `backend/src/modules/<feature_name>/` adhering to controller-service-model separation.
 3. **Feature-Based Frontend Design:** Place new React components inside `frontend/src/features/<feature_name>/`.
 4. **Validation First:** Ensure every new POST/PUT endpoint is guarded by a Zod schema before processing logic.
-5. **Database Safety:** Never issue destructible `DROP TABLE` or `DROP DATABASE` queries during schema migrations. Always provide backwards-compatible migration steps. Pengecualian: tabel lama yang sudah dipindahkan (mis. animes_legacy) boleh dihapus SEKALI secara manual di luar runner migrasi, setelah backup dan masa tunggu 30 hari, dan dicatat di PROGRESS.md.
+5. **Database Safety:** Jangan menjalankan DROP TABLE, DROP DATABASE, atau TRUNCATE di migrasi. Tabel lama dipensiunkan dengan RENAME (mis. animes -> animes_legacy). DROP PROCEDURE, FUNCTION, atau VIEW (objek tanpa data) boleh di migrasi. Penghapusan akhir tabel yang sudah di-rename dilakukan SEKALI secara manual di luar runner migrasi, setelah backup dan masa tunggu 30 hari, dan dicatat di PROGRESS.md. Selalu sediakan langkah migrasi yang kompatibel mundur.
 6. **Single External API:** AniList is the only external anime API. Do not add or reintroduce Jikan.
-7. **Skema Lewat Migrasi:** Setiap perubahan skema database ditulis sebagai file bernomor di backend/src/db/migrations/ (tanpa DELIMITER, idempotent, tanpa DROP/TRUNCATE).
+7. **Skema Lewat Migrasi:** Setiap perubahan skema database ditulis sebagai file bernomor di backend/src/db/migrations/ (tanpa DELIMITER, idempotent, tanpa DROP TABLE/TRUNCATE; DROP PROCEDURE boleh).
 8. **Foreign Key ke Users:** Gunakan users(us_id) dengan tipe INT UNSIGNED, bukan users(id).
 9. **Tes Wajib:** Setiap endpoint baru atau perubahan perilaku API wajib disertai tes Supertest di backend/tests/. Tes hanya berjalan di database berakhiran `_test` dan tidak boleh memanggil internet (AniList di-mock).

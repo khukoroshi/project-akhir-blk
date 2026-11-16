@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 selesai seluruhnya.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** langkah 15 (tabel animes lama dan 2 stored procedure), lalu langkah 16 (refactor ke modules/).
+- **Berikutnya:** langkah 16A (refactor ke modules/, tahap 1). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -71,15 +71,10 @@ Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbed
 
 ## 6. Database Saat Ini
 
-- Database `AniWatchList`. Tabel: `users`, `animes` (lama, cadangan, tidak dipakai kode), `anime_catalog`, `user_anime`, `schema_migrations`.
-- `users` tetap memakai nama kolom lama (`us_id`, `us_name`, `us_email`, `us_password`, `us_created_at`). Semua foreign key baru mengarah ke `users.us_id` dan bertipe INT UNSIGNED.
-- `user_anime.id` = `anim_id` lama, jadi ID di URL tidak berubah. `anime_catalog` punya kolom `anim_type` (TV/Movie/OVA/ONA/Special/TV Short/Music).
-- sp_insert_anime dan sp_update_anime masih ada di database tetapi tidak dipakai kode.
-- Instalasi baru: jalankan `project_akhir_blk.sql`, lalu `pnpm migrate`. Backup sebelum migrasi: `mysqldump`.
-- Tabel komunitas PRD (posts, comments, dst.) belum ada.
-- `anime_catalog` punya kolom `synced_at` (kapan terakhir disegarkan dari AniList).
-- File: `backend/src/db/project_akhir_blk.sql`, `db-project-test.sql` (lama), `migrations/001_create_anime_catalog_and_user_anime.sql`, `migrations/002_sync_leftover_animes.sql`, `migrations/003_add_synced_at_to_anime_catalog.sql`.
-- Database test terpisah `AniWatchList_test` (dibuat manual di tiap perangkat). JANGAN menjalankan project_akhir_blk.sql mentah di dalamnya; skema dasar test ada di backend/tests/base-schema.sql.
+- Database `AniWatchList`. Tabel: `users`, `anime_catalog`, `user_anime`, `schema_migrations`, dan `animes_legacy` (cadangan hasil rename migrasi 004, tidak dipakai kode).
+- Stored procedure: hanya `sp_insert_user` (dipakai auth).
+- Migrasi: 001 sampai 004 (004_retire_legacy_animes.sql).
+- DROP MANUAL animes_legacy pada atau setelah 2026-12-16, setelah backup, di luar runner migrasi, lalu catat di sini.
 
 ## 7. Status Checklist Phase 0
 
@@ -102,9 +97,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - `frontend/package.json` bernama `react-starter-kit`, ganti jadi `anisphere-frontend`.
 - Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
 - Daftar filter katalog ada di dua tempat (validator backend dan frontend/src/utils/catalogFilters.js). Jaga tetap sama.
-- project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
-- backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 15).
-- Auth masih memakai sp_insert_user. Langkah 15 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
+- tests/base-schema.sql dan tests/base-legacy-animes.sql menyalin skema users dan animes. Hapus base-legacy-animes.sql saat animes_legacy di-drop; rapikan project_akhir_blk.sql dan migrasi 001/002 jika sudah tidak dibutuhkan.
 - Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total.
 - Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama.
 - Katalog hanya disegarkan saat ada yang menambahkan anime itu (tidak ada penyegaran terjadwal, MyList tidak memicu penyegaran).
@@ -113,6 +106,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Koleksi Bruno (backend/api_test) harus memakai cookie + header X-CSRF-Token. Perbarui jika masih Bearer.
 - Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
 - State pembatas laju di memori proses (per instance); pindah ke store Redis jika multi-instance. Produksi di belakang proxy wajib mengisi TRUST_PROXY sesuai jumlah proxy.
+- DROP manual animes_legacy setelah 30 hari (tanggal: 2026-12-16), setelah backup
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -130,8 +124,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 12. C1, C2, C3 (selesai).
 13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
 14. Rate limiter (login, katalog, POST /anime).(selesai)
-15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
-16. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
+15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
+16. Refactor backend ke modules/ (empat chat): 16A integrasi AniList + modul katalog; 16B modul watchlist; 16C modul auth dan users; 16D hapus folder lama dan tambah aturan tes arsitektur.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
