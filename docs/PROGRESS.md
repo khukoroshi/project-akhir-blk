@@ -8,12 +8,12 @@
 
 - **Phase aktif:** Phase 0 selesai seluruhnya.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** hapus tabel animes lama dan 2 procedure.
+- **Berikutnya:** langkah 15 (tabel animes lama dan 2 stored procedure), lalu langkah 16 (refactor ke modules/).
 
 ## 2. Stack Aktual (sesuai repo)
 
 - **Frontend:** React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), React Router 7, Axios, React Compiler. Package manager: pnpm.
-- **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`, `cookie-parser`. Dev: `nodemon`, Vitest, Supertest, `express-rate-limit`.
+- **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`, `cookie-parser`. Dev: `nodemon`, Vitest, Supertest, `express-rate-limit`, Terpasang tambahan: `express-rate-limit`.
 - **API anime eksternal:** AniList (GraphQL) saja. Jikan dibuang.
 
 ## 3. Keputusan Final
@@ -114,7 +114,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Logout hanya menghapus cookie, tidak ada revokasi token: JWT yang bocor berlaku sampai kedaluwarsa (7 hari).
 - Koleksi Bruno (backend/api_test) harus memakai cookie + header X-CSRF-Token. Perbarui jika masih Bearer.
 - Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
-- Pembatas laju memakai memori proses; pindah ke Redis bila multi-instance. TRUST_PROXY wajib diisi di produksi di belakang proxy.
+- State pembatas laju di memori proses (per instance); pindah ke store Redis jika multi-instance. Produksi di belakang proxy wajib mengisi TRUST_PROXY sesuai jumlah proxy.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -131,8 +131,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
 11. Backend cleanup kecil, bagian A dan B. (selesai)
 12. C1, C2, C3 (selesai).
 13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
-14. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
-15. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
+14. Rate limiter (login, katalog, POST /anime).(selesai)
+15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).
+16. Refactor backend ke `modules/` per fitur, lalu lanjut Phase 2 PRD.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
