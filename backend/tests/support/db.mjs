@@ -11,7 +11,6 @@ export const cleanDatabase = async () => {
     verified = true;
   }
   await db.query("DELETE FROM user_anime");
-  await db.query("DELETE FROM animes");
   await db.query("DELETE FROM anime_catalog");
   await db.query("DELETE FROM users");
 };

@@ -102,11 +102,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - `frontend/package.json` bernama `react-starter-kit`, ganti jadi `anisphere-frontend`.
 - Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
 - Daftar filter katalog ada di dua tempat (validator backend dan frontend/src/utils/catalogFilters.js). Jaga tetap sama.
-- Setelah #6, cek apakah db-project-test.sql masih relevan (tabel animes lama tidak dipakai lagi), dan hapus tabel animes lama lewat tugas tersendiri setelah verifikasi.
 - project_akhir_blk.sql masih membuat animes dan 2 procedure (dibutuhkan migrasi 001 pada instalasi baru). Rapikan saat tabel animes dihapus.
 - backend/tests/base-schema.sql menyalin skema users dan animes dari project_akhir_blk.sql. Hapus saat tabel animes lama dihapus (langkah 15).
 - Auth masih memakai sp_insert_user. Langkah 15 (hapus procedure lama) jangan menghapusnya, hanya sp_insert_anime dan sp_update_anime.
-- auth.service.mjs membaca us_id ?? new_us_id dari sp_insert_user. Hapus fallback new_us_id setelah memastikan procedure di database asli mengembalikan us_id.
 - Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total.
 - Batas minimal JWT_SECRET (16) ada di dua tempat (env.mjs dan tests/support/env.mjs), jaga tetap sama.
 - Katalog hanya disegarkan saat ada yang menambahkan anime itu (tidak ada penyegaran terjadwal, MyList tidak memicu penyegaran).
@@ -289,3 +287,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: state pembatas di memori proses (hilang saat restart, tidak dibagi antar instance; pindah ke store Redis jika multi-instance). Kunci per-user memakai req.user.id (verifikasi cocok dengan auth.middleware). Produksi di belakang proxy wajib isi TRUST_PROXY sesuai jumlah proxy, kalau tidak semua pengguna tampak satu IP. JSON rusak ditolak sebelum pembatas login (tetap kena batas global).
   - Wajib dilakukan sendiri: pada Windows dan Linux jalankan pnpm install. TRUST_PROXY di server produksi.
   - Berikutnya: langkah 14 diganti: hapus tabel animes lama dan 2 stored procedure (langkah 15 lama), lalu refactor ke modules/.
+- **2026-11-16** — Langkah 15: pensiunkan tabel animes lama dan 2 procedure
+  - Selesai: migrasi 004 me-rename animes -> animes_legacy (kondisional) dan drop sp_insert_anime, sp_update_anime. project_akhir_blk.sql: 2 procedure dihapus, tabel animes diberi komentar legacy. Tes db.test.mjs baru. Fallback new_us_id di auth.service.mjs dihapus (terverifikasi: sp_insert_user mengembalikan us_id).
+  - File diubah: backend/src/db/project_akhir_blk.sql, backend/tests/support/db.mjs, backend/tests/base-schema.sql, backend/tests/global-setup.mjs , backend/src/services/auth.service.mjs
+  - File baru: backend/src/db/migrations/004_retire_legacy_animes.sql, backend/tests/base-legacy-animes.sql, backend/tests/db.test.mjs
+  - Keputusan baru: animes_legacy dipertahankan sebagai cadangan. DROP MANUAL animes_legacy setelah 30 hari (tanggal: 2026-12-16), setelah backup, di luar runner migrasi, lalu catat di PROGRESS.md. Definisi animes di tes dipisah ke base-legacy-animes.sql dan hanya dijalankan jika animes_legacy belum ada (menghindari bentrok nama FK fk_anime_user). Aturan PRD 7 perlu diperjelas: DROP PROCEDURE boleh di migrasi, DROP TABLE tidak.
+  - Utang teknis: hapus base-legacy-animes.sql saat animes_legacy di-drop, dan rapikan project_akhir_blk.sql beserta migrasi 001/002 jika sudah tidak dibutuhkan. Perbarui bagian 6 (Database Saat Ini): animes -> animes_legacy, procedure tinggal sp_insert_user.
+  - Berikutnya: langkah 16 (refactor ke modules/), lalu Phase 2.
