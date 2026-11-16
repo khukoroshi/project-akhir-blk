@@ -1,56 +1,23 @@
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\support\anilist.mjs
-  2,43: import { clearCacheForTests } from "../../src/services/anilist.service.mjs";
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\watchlist\watchlist.controller.mjs
+  1,30: import Anime from "../models/anim.model.mjs";
 
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\support\db.mjs
-  1,23: import db from "../../src/config/db.mjs";
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\architecture.test.mjs
+  102,38:     const result = checkFile("models/anim.model.mjs", source);
+  105,45:     expect(result[0]).toContain("src/models/anim.model.mjs:2");
+  111,17:         "models/anim.model.mjs",
 
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\support\env.mjs
-  27,30: // Keep in sync with backend/src/config/env.mjs
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\watchlist\watchlist.routes.mjs
+  9,24: } from "../controllers/anim.controller.mjs";
 
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\support\helpers.mjs
-  2,24: import app from "../../src/app.mjs";
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\app.mjs
+  9,44: import { createAnimRoutes } from "./routes/anim.routes.mjs";
 
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\auth-cookie.test.mjs
-  4,21: import app from "../src/app.mjs";
-  5,21: import env from "../src/config/env.mjs";
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\watchlist\watchlist.routes.mjs
+  16,23: } from "../validators/anim.validator.mjs";
 
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\auth.test.mjs
-  3,20: import db from "../src/config/db.mjs";
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\watchlist\watchlist.routes.mjs
+  18,14: export const createAnimRoutes = ({ createAnime }) => {
 
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\catalog.test.mjs
-  3,40: import { clearCacheForTests } from "../src/services/anilist.service.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\db.test.mjs
-  2,20: import db from "../src/config/db.mjs";
-  3,60: import { createConnectionFromEnv, runMigrations } from "../src/db/migrate.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\global-setup.mjs
-  9,60: import { createConnectionFromEnv, runMigrations } from "../src/db/migrate.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\rateLimit.test.mjs
-  3,21: import env from "../src/config/env.mjs";
-  4,31: import { createApp } from "../src/app.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\setup.mjs
-  3,20: import db from "../src/config/db.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\watchlist.test.mjs
-  2,20: import db from "../src/config/db.mjs";
-
-
-╰─❯ grep -rn "src/" tests
-tests/auth-cookie.test.mjs:4:import app from "../src/app.mjs";
-tests/auth-cookie.test.mjs:5:import env from "../src/config/env.mjs";
-tests/auth.test.mjs:3:import db from "../src/config/db.mjs";
-tests/catalog.test.mjs:3:import { clearCacheForTests } from "../src/services/anilist.service.mjs";
-tests/db.test.mjs:2:import db from "../src/config/db.mjs";
-tests/db.test.mjs:3:import { createConnectionFromEnv, runMigrations } from "../src/db/migrate.mjs";
-tests/global-setup.mjs:9:import { createConnectionFromEnv, runMigrations } from "../src/db/migrate.mjs";
-tests/rateLimit.test.mjs:3:import env from "../src/config/env.mjs";
-tests/rateLimit.test.mjs:4:import { createApp } from "../src/app.mjs";
-tests/setup.mjs:3:import db from "../src/config/db.mjs";
-tests/support/anilist.mjs:2:import { clearCacheForTests } from "../../src/services/anilist.service.mjs";
-tests/support/db.mjs:1:import db from "../../src/config/db.mjs";
-tests/support/env.mjs:27:// Keep in sync with backend/src/config/env.mjs
-tests/support/helpers.mjs:2:import app from "../../src/app.mjs";
-tests/watchlist.test.mjs:2:import db from "../src/config/db.mjs";
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\app.mjs
+  9,10: import { createAnimRoutes } from "./routes/anim.routes.mjs";
+  33,25:   app.use("/api/anime", createAnimRoutes(limiters));

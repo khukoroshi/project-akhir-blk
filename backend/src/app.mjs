@@ -6,7 +6,7 @@ import { createRateLimiters } from "./config/rateLimit.mjs";
 import errorHandler from "./middlewares/error.middleware.mjs";
 import AppError from "./utils/appError.mjs";
 import authRoutes from "./routes/auth.routes.mjs";
-import { createAnimRoutes } from "./routes/anim.routes.mjs";
+import { createWatchlistRoutes } from "./modules/watchlist/index.mjs";
 import { catalogRoutes } from "./modules/anime/index.mjs";
 
 export const createApp = ({
@@ -30,7 +30,7 @@ export const createApp = ({
   app.use("/api/catalog", limiters.catalog);
 
   app.use("/api/auth", authRoutes);
-  app.use("/api/anime", createAnimRoutes(limiters));
+  app.use("/api/anime", createWatchlistRoutes(limiters));
   app.use("/api/catalog", catalogRoutes);
 
   // Endpoint utama

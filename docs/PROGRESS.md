@@ -38,7 +38,7 @@
 ## 4. Struktur Saat Ini (belum sesuai target)
 
 **Backend** (campuran: katalog sudah modular, sisanya masih berlapis per jenis file):
-`src/{config, controllers, db, integrations/anilist (anilist.client.mjs, index.mjs), middlewares, models, modules/anime (anime.{controller,routes,validator}.mjs, catalog.service.mjs, index.mjs), routes, services, utils (termasuk validation.mjs), validators ({auth,anim}.validator.mjs)}`
+`src/{config, controllers, db, integrations/anilist (anilist.client.mjs, index.mjs), middlewares, models, modules/{anime, watchlist (watchlist.{controller,routes,validator,model}.mjs, index.mjs)}, catalog.service.mjs, index.mjs), routes, services, utils (termasuk validation.mjs), validators ({auth,anim}.validator.mjs)}`
 
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
 - Fitur yang ada: `auth`, `anim` (watchlist), `anime` (katalog, sudah modul di modules/anime), `user` (service/model saja, tanpa route).
@@ -294,3 +294,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: src/integrations/anilist/index.mjs, src/modules/anime/index.mjs, tests/architecture.test.mjs
   - Keputusan baru: modul diekspor sebagai instance router (bukan pabrik), sesuai gaya app.mjs. Satu-satunya penggantian nama: anilistRoutes -> catalogRoutes. Tes boleh mengimpor dari integrations/anilist/index.mjs.
   - Berikutnya: 16B (modul watchlist: anim.model/controller/routes/validator ke modules/watchlist, impor katalog tetap lewat modules/anime/index.mjs). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **2026-11-16** — Langkah 16B: refactor ke modules/, tahap 2 (watchlist)
+  - Selesai: controller, model, routes, validator watchlist dipindah ke modules/watchlist/ (git mv) dan semua import diperbaiki. Dibuat modules/watchlist/index.mjs yang hanya mengekspor createWatchlistRoutes. app.mjs memasang router di /api/anime dengan urutan middleware, pembatas laju, dan CSRF yang sama. Watchlist mengimpor katalog hanya lewat modules/anime/index.mjs. Tidak ada perubahan perilaku API, API.md tidak diubah.
+  - File diubah: src/app.mjs, src/modules/watchlist/{watchlist.controller, watchlist.model,watchlist.routes,watchlist.validator}.mjs (hanya import dan satu nama ekspor)
+  - File baru: src/modules/watchlist/index.mjs
+  - Keputusan baru: modul watchlist mengekspor pabrik (bukan instance router) karena pembatas laju per user disuntikkan dari app.mjs. Satu-satunya penggantian nama: createAnimRoutes -> createWatchlistRoutes.
+  - Utang teknis: modules/watchlist belum punya lapisan service (controller masih memanggil model langsung). Nama internal (Anime, getAllAnime, cariAnimeById) masih campur Indonesia/Inggris. Komentar di model masih menyebut Stored Procedure padahal sudah query biasa.
+  - Berikutnya: 16C (modul auth dan users), lalu 16D (hapus folder lama dan tambah aturan tes arsitektur). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.

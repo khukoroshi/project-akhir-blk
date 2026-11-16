@@ -1,5 +1,5 @@
-import Anime from "../models/anim.model.mjs";
-import AppError from "../utils/appError.mjs";
+import Anime from "./watchlist.model.mjs";
+import AppError from "../../utils/appError.mjs";
 
 // 1. Get All Anime milik user yang sedang login
 const getAllAnime = async (req, res, next) => {

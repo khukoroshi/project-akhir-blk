@@ -6,16 +6,16 @@ import {
   updateWatchList,
   incrementEpisode,
   deleteWatchList,
-} from "../controllers/anim.controller.mjs";
-import { protect } from "../middlewares/auth.middleware.mjs";
-import { validate } from "../middlewares/validate.middleware.mjs";
+} from "./watchlist.controller.mjs";
+import { protect } from "../../middlewares/auth.middleware.mjs";
+import { validate } from "../../middlewares/validate.middleware.mjs";
 import {
   animIdParamSchema,
   createAnimeSchema,
   updateAnimeSchema,
-} from "../validators/anim.validator.mjs";
+} from "./watchlist.validator.mjs";
 
-export const createAnimRoutes = ({ createAnime }) => {
+export const createWatchlistRoutes = ({ createAnime }) => {
   const router = express.Router();
   const validateAnimId = validate(animIdParamSchema, "params");
 

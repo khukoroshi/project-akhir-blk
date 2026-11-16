@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { bodyStrictOptions } from "../utils/validation.mjs";
+import { bodyStrictOptions } from "../../utils/validation.mjs";
 
 // Fields the client used to send before the server filled the catalog (C3).
 const LEGACY_FIELDS = ["title", "imgUrl", "totalEps", "type", "teps"];
