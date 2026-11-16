@@ -192,7 +192,7 @@ backend/
 │   ├── modules/             # Feature Modules
 │   │   ├── auth/            # Controllers, Services, Models, Routes, Validators
 │   │   ├── users/           # User profile & social follow
-│   │   ├── anime/           # Catalog caching & API fetching
+│   │   ├── anime/           # Catalog routes & caching (AniList client ada di integrations/).
 │   │   ├── watchlist/       # Personal tracking & status
 │   │   ├── posts/           # Community feed & likes
 │   │   ├── comments/        # Nested commenting logic
@@ -315,3 +315,4 @@ When assisting on this repository, all AI agents must strictly adhere to the fol
 7. **Skema Lewat Migrasi:** Setiap perubahan skema database ditulis sebagai file bernomor di backend/src/db/migrations/ (tanpa DELIMITER, idempotent, tanpa DROP TABLE/TRUNCATE; DROP PROCEDURE boleh).
 8. **Foreign Key ke Users:** Gunakan users(us_id) dengan tipe INT UNSIGNED, bukan users(id).
 9. **Tes Wajib:** Setiap endpoint baru atau perubahan perilaku API wajib disertai tes Supertest di backend/tests/. Tes hanya berjalan di database berakhiran `_test` dan tidak boleh memanggil internet (AniList di-mock).
+10. **Batas Modul:** Kode di luar modules/<nama>/ hanya boleh mengimpor modules/<nama>/index.mjs. integrations/ tidak boleh mengimpor dari modules/. Modul baru memakai pola controller-service-model. Dijaga oleh tests/architecture.test.mjs.

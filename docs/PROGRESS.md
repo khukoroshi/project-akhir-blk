@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 selesai seluruhnya.
+- **Phase aktif:** Phase 0 selesai seluruhnya. Refactor modules/ (langkah 16): 16A selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 16B.
+- **Berikutnya:** 16B (modul watchlist), lalu 16C (auth dan users), 16D (hapus folder lama). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -33,6 +33,7 @@
 - Tes backend: black box lewat Supertest berdasarkan API.md; hanya jalan di database berakhiran \_test; tidak boleh memanggil internet (AniList di-mock). Temuan yang belum diputuskan ditandai it.fails, bukan diperbaiki diam-diam.
 - Auth cookie: access_token (JWT, HttpOnly) dan csrf_token (bisa dibaca JS, double-submit lewat header X-CSRF-Token). SameSite=Lax; frontend dan backend harus satu situs (localhost:5173 dan localhost:3000 sama-situs; di produksi satu domain induk, kalau tidak pakai none + Secure). CSRF dicek di dalam middleware protect (route baru otomatis terlindungi); register, login, logout bebas CSRF, Bearer dihapus; hanya cookie. CSRF wajib untuk semua mutasi terautentikasi.
 - Path API dipertahankan (/anime, /catalog/anime, /auth/profile); PRD disesuaikan dengan kode.
+- Modul backend diekspor lewat modules/<nama>/index.mjs. Kode di luar modul hanya boleh mengimpor index.mjs modul itu; integrations/ tidak boleh mengimpor modules/. Dijaga tests/architecture.test.mjs. Modul baru memakai pola controller-service-model.
 
 ## 4. Struktur Saat Ini (belum sesuai target)
 
@@ -40,10 +41,10 @@
 `src/{config, controllers, db, integrations/anilist (anilist.client.mjs, index.mjs), middlewares, models, modules/anime (anime.{controller,routes,validator}.mjs, catalog.service.mjs, index.mjs), routes, services, utils (termasuk validation.mjs), validators ({auth,anim}.validator.mjs)}`
 
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
-- Fitur yang ada: `auth`, `anim` (watchlist), `anilist` (katalog), `user` (service/model saja, tanpa route).
+- Fitur yang ada: `auth`, `anim` (watchlist), `anime` (katalog, sudah modul di modules/anime), `user` (service/model saja, tanpa route).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
-- `Tes backend`: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit}.test.mjs).
+- Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture}.test.mjs).
 
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, layouts, pages, services, utils}`
@@ -94,7 +95,6 @@ Status hasil pemeriksaan kode, bukan asumsi.
 
 ## 8. Utang Teknis & Kebersihan
 
-- `frontend/penyimpanan.txt` berisi salinan kode lama (scratch), hapus dari repo.
 - `frontend/package.json` bernama `react-starter-kit`, ganti jadi `anisphere-frontend`.
 - Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
 - Daftar filter katalog ada di dua tempat (validator backend dan frontend/src/utils/catalogFilters.js). Jaga tetap sama.
@@ -107,7 +107,6 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Koleksi Bruno (backend/api_test) harus memakai cookie + header X-CSRF-Token. Perbarui jika masih Bearer.
 - Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
 - State pembatas laju di memori proses (per instance); pindah ke store Redis jika multi-instance. Produksi di belakang proxy wajib mengisi TRUST_PROXY sesuai jumlah proxy.
-- DROP manual animes_legacy setelah 30 hari (tanggal: 2026-12-16), setelah backup
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -126,7 +125,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
-16. Refactor backend ke modules/ (empat chat): 16A integrasi AniList + modul katalog; 16B modul watchlist; 16C modul auth dan users; 16D hapus folder lama dan tambah aturan tes arsitektur.
+16. Refactor backend ke modules/ (empat chat): 16A (selesai); 16B modul watchlist; 16C modul auth dan users; 16D hapus folder lama dan tambah aturan tes arsitektur.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 

@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-14.
+> Terakhir diperbarui: 2026-11-16.
 
 ## 1. Konvensi Umum
 
@@ -169,7 +169,6 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 
 | Method | Path (PRD)            | Fase | Catatan                         |
 | ------ | --------------------- | ---- | ------------------------------- |
-| GET    | `/auth/me`            | 1    | pengganti `/auth/profile`?      |
 | GET    | `/users/:username`    | 2    | profil publik + statistik       |
 | PUT    | `/users/profile`      | 2    | ubah bio, nama tampilan, avatar |
 | POST   | `/users/:id/follow`   | 2    | toggle follow                   |
@@ -181,7 +180,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 | GET    | `/anime/:id/reviews`  | 4    | review per anime                |
 | POST   | `/reviews`            | 4    | tulis atau ubah review          |
 
-**Keputusan yang belum diambil:** path watchlist di kode (`/anime`, `/catalog/anime`) berbeda dari PRD (`/watchlist`, `/anime/search`). Pilih satu, lalu samakan kode dan PRD.
+**Keputusan (2026-11-16):** path di kode dipertahankan (`/anime`, `/catalog/anime`, `/auth/profile`); PRD disesuaikan dengan kode.
 
 ---
 
