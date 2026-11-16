@@ -124,9 +124,9 @@ describe("arsitektur: pemeriksa itu sendiri", () => {
     const source = [
       `import {`,
       `  a,`,
-      `} from "../modules/anime/anime.controller.mjs";`,
-      `export { b } from "../modules/anime/catalog.service.mjs";`,
-      `const c = await import("../modules/anime/anime.routes.mjs");`,
+      `} from "./modules/anime/anime.controller.mjs";`,
+      `export { b } from "./modules/anime/catalog.service.mjs";`,
+      `const c = await import("./modules/anime/anime.routes.mjs");`,
     ].join("\n");
 
     const result = checkFile("app.mjs", source);
