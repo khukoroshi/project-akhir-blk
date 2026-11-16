@@ -281,7 +281,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: pesan 401 "belum login" tidak lagi menyebut token. Token tes = nilai cookie access_token; helper menyimpan pasangan csrf di Map. Logout tetap tanpa revokasi (utang teknis).
   - Wajib dilakukan sendiri: di produksi set COOKIE_SECURE=true (dan frontend/backend satu domain induk). Perbarui koleksi backend/api_test (Bruno) ke cookie bila masih memakai Bearer.
   - Berikutnya: rate limiter (login, katalog, POST /anime), lalu hapus tabel animes lama dan 2 procedure, lalu refactor ke modules/.
-- **2026-11-14** — Rate limiter (langkah 14)
+- **2026-11-14** — Rate limiter
   - Selesai: express-rate-limit terpasang. Pembatas: global /api, login (per IP+email dan per IP, hanya gagal dihitung, dipasang sebelum validasi dan bcrypt), register, katalog, POST /anime (per user). Respons 429 lewat AppError (bahasa Indonesia, menyebut menit) + Retry-After; standardHeaders aktif, legacyHeaders mati. env: RATE*LIMIT_ENABLED, TRUST_PROXY (angka 1-10, "true" ditolak), RATE_LIMIT*<NAMA>\_MAX/\_WINDOW_MIN. Tes: rateLimit.test.mjs; pembatas mati di semua tes lain.
   - File diubah: backend/src/app.mjs (jadi createApp(), default export tetap), backend/src/routes/anim.routes.mjs (createAnimRoutes), backend/src/config/env.mjs, backend/.env.example, backend/tests/support/env.mjs, backend/package.json, pnpm-lock.yaml, API.md
   - File baru: backend/src/config/rateLimit.mjs, backend/tests/rateLimit.test.mjs

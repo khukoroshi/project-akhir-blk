@@ -36,7 +36,7 @@ Before implementing community features, the following foundational issues in `pr
 - [x] **Database Migration Safety:** Remove `DROP DATABASE` directives from `project_akhir_blk.sql`. Implement a structured SQL migration script workflow (Schema Creation -> Data Migration -> Seeders).
 - [x] **AniList API Integration:** AniList is the single external anime API. Remove all Jikan code (controller, service, routes). Standardize the AniList handler with request timeouts, rate-limit handling, and search query caching.
 - [x] **Backend Test Runner:** Configure Vitest/Supertest inside `backend/package.json`.
-- [ ] **Rate Limiting:** Batasi laju request di login (per IP+email dan per IP, hanya percobaan gagal yang dihitung), register, katalog, dan POST /anime (per user). Respons 429 berbahasa Indonesia dengan header Retry-After.
+- [x] **Rate Limiting:** Batasi laju request di login (per IP+email dan per IP, hanya percobaan gagal yang dihitung), register, katalog, dan POST /anime (per user). Respons 429 berbahasa Indonesia dengan header Retry-After.
 
 ---
 
