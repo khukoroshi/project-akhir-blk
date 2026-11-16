@@ -1,6 +1,6 @@
 import db from "../config/db.mjs";
 import AppError from "../utils/appError.mjs";
-import { ensureCatalogEntry } from "../services/catalog.service.mjs";
+import { ensureCatalogEntry } from "../modules/anime/index.mjs";
 
 // Aliases keep the response shape identical to the old `animes` table.
 const SELECT_ANIME = `

@@ -1,6 +1,6 @@
-import db from "../config/db.mjs";
-import AppError from "../utils/appError.mjs";
-import { getAnimeDetail } from "./anilist.service.mjs";
+import db from "../../config/db.mjs";
+import AppError from "../../utils/appError.mjs";
+import { getAnimeDetail } from "../../integrations/anilist/index.mjs";
 
 const STALE_AFTER_DAYS = 7;
 

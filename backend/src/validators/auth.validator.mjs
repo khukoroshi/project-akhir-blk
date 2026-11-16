@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { bodyStrictOptions as strictOptions } from "./common.mjs";
+import { bodyStrictOptions as strictOptions } from "../utils/validation.mjs";
 
 const emailField = z
   .string({ error: "Email wajib diisi" })

@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 0 selesai seluruhnya.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** langkah 16A (refactor ke modules/, tahap 1). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **Berikutnya:** 16B.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -36,9 +36,10 @@
 
 ## 4. Struktur Saat Ini (belum sesuai target)
 
-**Backend** (berlapis per jenis file, BUKAN modular):
-`src/{config (cors.mjs, rateLimit.mjs), controllers, db (migrate.mjs, migrations/), middlewares (csrf.middleware.mjs), models, routes, services (catalog.service.mjs), utils (authCookies.mjs), validators ({auth,anim,anilist}.validator.mjs)}`
+**Backend** (campuran: katalog sudah modular, sisanya masih berlapis per jenis file):
+`src/{config, controllers, db, integrations/anilist (anilist.client.mjs, index.mjs), middlewares, models, modules/anime (anime.{controller,routes,validator}.mjs, catalog.service.mjs, index.mjs), routes, services, utils (termasuk validation.mjs), validators ({auth,anim}.validator.mjs)}`
 
+- Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
 - Fitur yang ada: `auth`, `anim` (watchlist), `anilist` (katalog), `user` (service/model saja, tanpa route).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
@@ -288,3 +289,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: animes_legacy dipertahankan sebagai cadangan. DROP MANUAL animes_legacy setelah 30 hari (tanggal: 2026-12-16), setelah backup, di luar runner migrasi, lalu catat di PROGRESS.md. Definisi animes di tes dipisah ke base-legacy-animes.sql dan hanya dijalankan jika animes_legacy belum ada (menghindari bentrok nama FK fk_anime_user). Aturan PRD 7 perlu diperjelas: DROP PROCEDURE boleh di migrasi, DROP TABLE tidak.
   - Utang teknis: hapus base-legacy-animes.sql saat animes_legacy di-drop, dan rapikan project_akhir_blk.sql beserta migrasi 001/002 jika sudah tidak dibutuhkan. Perbarui bagian 6 (Database Saat Ini): animes -> animes_legacy, procedure tinggal sp_insert_user.
   - Berikutnya: langkah 16 (refactor ke modules/), lalu Phase 2.
+- **2026-11-16** — Langkah 16A: refactor ke modules/, tahap 1 (katalog)
+  - Selesai: integrasi AniList dan modul katalog dipindah (git mv) dan semua import diperbaiki. Dibuat integrations/anilist/index.mjs (getAnime, getAnimeDetail, clearCacheForTests) dan modules/anime/index.mjs (catalogRoutes, ensureCatalogEntry). app.mjs memasang catalogRoutes di /api/catalog. Tes arsitektur baru. Tidak ada perubahan perilaku API.
+  - File diubah: src/app.mjs, src/models/anim.model.mjs, src/validators/{auth,anim}.validator.mjs, file yang dipindah (hanya import), tests/catalog.test.mjs, tests/support/anilist.mjs
+  - File baru: src/integrations/anilist/index.mjs, src/modules/anime/index.mjs, tests/architecture.test.mjs
+  - Keputusan baru: modul diekspor sebagai instance router (bukan pabrik), sesuai gaya app.mjs. Satu-satunya penggantian nama: anilistRoutes -> catalogRoutes. Tes boleh mengimpor dari integrations/anilist/index.mjs.
+  - Berikutnya: 16B (modul watchlist: anim.model/controller/routes/validator ke modules/watchlist, impor katalog tetap lewat modules/anime/index.mjs). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.

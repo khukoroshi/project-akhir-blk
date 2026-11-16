@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { clearCacheForTests } from "../../src/services/anilist.service.mjs";
+import { clearCacheForTests } from "../../src/integrations/anilist/index.mjs";
 
 export const makeMedia = (id, overrides = {}) => ({
   id,

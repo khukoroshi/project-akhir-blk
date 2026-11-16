@@ -1,6 +1,6 @@
-import { getAnime, getAnimeDetail } from "../services/anilist.service.mjs";
+import { getAnime, getAnimeDetail } from "../../integrations/anilist/index.mjs";
 
-import AppError from "../utils/appError.mjs";
+import AppError from "../../utils/appError.mjs";
 
 const searchAnime = async (req, res, next) => {
   try {

@@ -7,7 +7,7 @@ import errorHandler from "./middlewares/error.middleware.mjs";
 import AppError from "./utils/appError.mjs";
 import authRoutes from "./routes/auth.routes.mjs";
 import { createAnimRoutes } from "./routes/anim.routes.mjs";
-import anilistRoutes from "./routes/anilist.routes.mjs";
+import { catalogRoutes } from "./modules/anime/index.mjs";
 
 export const createApp = ({
   rateLimit = env.rateLimit,
@@ -27,11 +27,11 @@ export const createApp = ({
   // Without a final handler, they simply call next() to the routers below.
   app.post("/api/auth/login", limiters.loginEmail, limiters.loginIp);
   app.post("/api/auth/register", limiters.register);
-  app.use("/api/catalog", limiters.catalog);
+  app.use("/api/catalog", catalogRoutes);
 
   app.use("/api/auth", authRoutes);
   app.use("/api/anime", createAnimRoutes(limiters));
-  app.use("/api/catalog", anilistRoutes);
+  app.use("/api/catalog", catalogRoutes);
 
   // Endpoint utama
   app.get("/", (req, res) => {

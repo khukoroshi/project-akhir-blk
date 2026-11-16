@@ -1,8 +1,8 @@
 import express from "express";
 
-import { searchAnime, getDetail } from "../controllers/anilist.controller.mjs";
-import { validate } from "../middlewares/validate.middleware.mjs";
-import { catalogQuerySchema } from "../validators/anilist.validator.mjs";
+import { searchAnime, getDetail } from "./anime.controller.mjs";
+import { validate } from "../../middlewares/validate.middleware.mjs";
+import { catalogQuerySchema } from "./anime.validator.mjs";
 
 const router = express.Router();
 

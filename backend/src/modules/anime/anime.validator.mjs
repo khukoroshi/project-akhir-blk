@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { queryStrictOptions as strictOptions } from "./common.mjs";
+import { queryStrictOptions as strictOptions } from "../../utils/validation.mjs";
 
 const MAX_PAGE = 200;
 const MAX_TOP_PAGE = 10;

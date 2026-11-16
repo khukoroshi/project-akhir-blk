@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { api } from "./support/helpers.mjs";
-import { clearCacheForTests } from "../src/services/anilist.service.mjs";
+import { clearCacheForTests } from "../src/integrations/anilist/index.mjs";
 
 const CATALOG = "/api/catalog/anime";
 const CACHE_TTL_MS = 5 * 60 * 1000;
