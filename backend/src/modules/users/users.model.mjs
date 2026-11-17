@@ -1,42 +1,32 @@
-import db from "../config/db.mjs"; // Import koneksi MySQL Anda
+import db from "../../config/db.mjs";
 
 const User = {
-  getProfile: async (usId) => {
-    const query =
-      "SELECT us_id, us_name, us_email, us_created_at FROM users WHERE us_id = ?";
-    const [rows] = await db.execute(query, [usId]);
+  // Existence check only, so it selects a single column.
+  emailExists: async (email) => {
+    const [rows] = await db.execute(
+      "SELECT us_id FROM users WHERE us_email = ?",
+      [email],
+    );
+    return rows.length > 0;
+  },
+
+  findByEmail: async (email) => {
+    const [rows] = await db.execute("SELECT * FROM users WHERE us_email = ?", [
+      email,
+    ]);
+    return rows[0] ?? null;
+  },
+
+  // Raw DB errors (e.g. ER_DUP_ENTRY) are NOT caught here; the caller maps them.
+  create: async ({ name, email, hashedPassword }) => {
+    const [result] = await db.execute("CALL sp_insert_user(?, ?, ?)", [
+      name,
+      email,
+      hashedPassword,
+    ]);
+    // sp_insert_user returns the new row with a us_id column.
+    return result[0][0].us_id;
   },
 };
-// export const getProfile = async (req, res) => {
-//   try {
-//     // Query ke database menggunakan us_id dari token
 
-//     if (rows.length === 0) {
-//       return res.status(404).json({
-//         status: "fail",
-//         message: "User tidak ditemukan",
-//       });
-//     }
-
-//     const user = rows[0];
-
-//     res.status(200).json({
-//       status: "success",
-//       message: "Berhasil mengambil profil user",
-//       data: {
-//         user: {
-//           id: user.us_id,
-//           name: user.us_name,
-//           email: user.us_email,
-//           createdAt: user.us_created_at,
-//         },
-//       },
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       status: "error",
-//       message: error.message,
-//     });
-//   }
-// };
 export default User;

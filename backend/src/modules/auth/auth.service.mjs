@@ -1,9 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import env from "../config/env.mjs";
-
-import db from "../config/db.mjs";
-import AppError from "../utils/appError.mjs";
+import env from "../../config/env.mjs";
+import AppError from "../../utils/appError.mjs";
+import { isEmailTaken, findUserByEmail, createUser } from "../users/index.mjs";
 
 // Fungsi untuk Register
 export const registerUser = async (data) => {
@@ -12,7 +11,7 @@ export const registerUser = async (data) => {
   const queryEmail = "SELECT us_id FROM users WHERE us_email = ?";
   const [existingUser] = await db.execute(queryEmail, [email]);
 
-  if (existingUser.length > 0) {
+  if (await isEmailTaken(email)) {
     throw new AppError("Email sudah digunakan", 400);
   }
 
@@ -20,19 +19,9 @@ export const registerUser = async (data) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  // const [result] = await db.execute("CALL sp_insert_user(?, ?, ?)", [
-  //   name,
-  //   email,
-  //   hashedPassword,
-  // ]);
-  // Ambil new_us_id dari baris pertama hasil Stored Procedure
-  let result;
+  let newUserId;
   try {
-    [result] = await db.execute("CALL sp_insert_user(?, ?, ?)", [
-      name,
-      email,
-      hashedPassword,
-    ]);
+    newUserId = await createUser({ name, email, hashedPassword });
   } catch (error) {
     // Safety net for race conditions: the pre-check above can pass
     // while another request inserts the same value first.
@@ -51,8 +40,6 @@ export const registerUser = async (data) => {
     throw error;
   }
 
-  // sp_insert_user returns the new row with a us_id column.
-  const newUserId = result[0][0].us_id;
   return {
     us_id: newUserId,
     us_name: name,
@@ -63,14 +50,10 @@ export const registerUser = async (data) => {
 // Fungsi untuk Login
 export const loginUser = async (email, password) => {
   // Mencari user berdasarkan email di MySQL
-  const queryUser = "SELECT * FROM users WHERE us_email = ?";
-  const [rows] = await db.execute(queryUser, [email]);
-
-  // Jika user tidak ditemukan
-  if (rows.length === 0) {
+  const user = await findUserByEmail(email);
+  if (!user) {
     throw new AppError("Email atau password salah", 401);
   }
-  const user = rows[0];
   // Cek Password
   const isMatch = await bcrypt.compare(password, user.us_password);
   if (!isMatch) {

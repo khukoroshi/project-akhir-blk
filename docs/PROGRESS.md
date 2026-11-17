@@ -8,7 +8,8 @@
 
 - **Phase aktif:** Phase 0 selesai seluruhnya. Refactor modules/ (langkah 16): 16A dan 16B selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 16C (modul auth dan users), lalu 16D (hapus folder lama dan tambah aturan tes arsitektur). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **Berikutnya:** 16D. Bagian 4, ganti daftar folder backend dengan:
+  src/{config, controllers (kosong), db, integrations/anilist, middlewares, models (kosong), modules/{anime, watchlist, auth (auth.{controller,service,routes,validator}.mjs, index.mjs), users (users.{service,model}.mjs, index.mjs)}, routes (kosong), services (kosong), utils, validators (common.mjs)}
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -108,7 +109,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
 - State pembatas laju di memori proses (per instance); pindah ke store Redis jika multi-instance. Produksi di belakang proxy wajib mengisi TRUST_PROXY sesuai jumlah proxy.
 - modules/watchlist belum punya lapisan service (controller memanggil model langsung); tambahkan saat fitur Phase 2 menyentuh watchlist (mis. statistik profil).
-- Nama internal watchlist (Anime, getAllAnime, cariAnimeById) masih campur Indonesia dan Inggris. Jangan mengganti nama field respons (anim_*), itu kontrak.
+- Nama internal watchlist (Anime, getAllAnime, cariAnimeById) masih campur Indonesia dan Inggris. Jangan mengganti nama field respons (anim\_\*), itu kontrak.
 - Komentar di watchlist.model.mjs masih menyebut Stored Procedure padahal sudah query biasa. Perbaiki sambil lalu.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
@@ -304,3 +305,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: modul watchlist mengekspor pabrik (bukan instance router) karena pembatas laju per user disuntikkan dari app.mjs. Satu-satunya penggantian nama: createAnimRoutes -> createWatchlistRoutes.
   - Utang teknis: modules/watchlist belum punya lapisan service (controller masih memanggil model langsung). Nama internal (Anime, getAllAnime, cariAnimeById) masih campur Indonesia/Inggris. Komentar di model masih menyebut Stored Procedure padahal sudah query biasa.
   - Berikutnya: 16C (modul auth dan users), lalu 16D (hapus folder lama dan tambah aturan tes arsitektur). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **2026-11-17** — Langkah 16C: refactor ke modules/, tahap 3 (auth dan users)
+  - Selesai: auth (controller, service, routes, validator) dan users (service, model) ada di modules/. Dibuat modules/auth/index.mjs (ekspor authRoutes, instance router) dan modules/users/index.mjs (isEmailTaken, findUserByEmail, createUser). Query users dipindah dari auth.service ke users.model; auth hanya mengakses users lewat index.mjs. app.mjs memasang authRoutes di /api/auth, urutan middleware tidak berubah. Tidak ada perubahan perilaku API, API.md tidak diubah.
+  - File diubah: src/app.mjs, src/modules/auth/{auth.controller,auth.service,auth.routes,auth.validator}.mjs (import dan pemanggilan users)
+  - File baru/diisi ulang: src/modules/auth/index.mjs, src/modules/users/{index,users.service,users.model}.mjs
+  - Keputusan baru: pesan error (AppError) dan penanganan ER_DUP_ENTRY tetap di auth.service; users.model melempar error mentah. auth.middleware dan utils/authCookies tetap di luar modules.
+  - Utang teknis: modules/users belum punya controller/routes (Phase 2). Auth belum punya model sendiri (tidak perlu saat ini). User.getProfile lama dihapus (kode mati).
+  - Berikutnya: 16D (hapus folder lama yang kosong, tambah aturan tes arsitektur). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.

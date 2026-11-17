@@ -1,15 +1,5 @@
-// import db from "../config/db.mjs";
+import User from "./users.model.mjs";
 
-// const getAllUsers = async () => {
-//   const [rows] = await db.execute("SELECT * FROM users");
-//   return rows;
-// };
-
-// const createUser = async () => {
-//   const { nama, email, password } = data;
-//     const query = "CALL sp_insert_user(?,?,?)";
-//     const [result] = await db.execute(query, [nama, email, password]);
-//     return result.insertId;
-// };
-
-// export = {getAllUsers, createUser}
+export const isEmailTaken = (email) => User.emailExists(email);
+export const findUserByEmail = (email) => User.findByEmail(email);
+export const createUser = (data) => User.create(data);

@@ -1,5 +1,5 @@
-import * as authService from "../services/auth.service.mjs";
-import { setAuthCookies, clearAuthCookies } from "../utils/authCookies.mjs";
+import * as authService from "./auth.service.mjs";
+import { setAuthCookies, clearAuthCookies } from "../../utils/authCookies.mjs";
 
 // Controller untuk Register
 export const register = async (req, res, next) => {

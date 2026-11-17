@@ -5,7 +5,7 @@ import corsMiddleware from "./config/cors.mjs";
 import { createRateLimiters } from "./config/rateLimit.mjs";
 import errorHandler from "./middlewares/error.middleware.mjs";
 import AppError from "./utils/appError.mjs";
-import authRoutes from "./routes/auth.routes.mjs";
+import { authRoutes } from "./modules/auth/index.mjs";
 import { createWatchlistRoutes } from "./modules/watchlist/index.mjs";
 import { catalogRoutes } from "./modules/anime/index.mjs";
 

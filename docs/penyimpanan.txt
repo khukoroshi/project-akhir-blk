@@ -1,23 +1,11 @@
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\watchlist\watchlist.controller.mjs
-  1,30: import Anime from "../models/anim.model.mjs";
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\auth\auth.routes.mjs
+  2,49: import * as authController from "../controllers/auth.controller.mjs";
 
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\tests\architecture.test.mjs
-  102,38:     const result = checkFile("models/anim.model.mjs", source);
-  105,45:     expect(result[0]).toContain("src/models/anim.model.mjs:2");
-  111,17:         "models/anim.model.mjs",
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\watchlist\watchlist.routes.mjs
-  9,24: } from "../controllers/anim.controller.mjs";
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\auth\auth.controller.mjs
+  1,43: import * as authService from "../services/auth.service.mjs";
 
 C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\app.mjs
-  9,44: import { createAnimRoutes } from "./routes/anim.routes.mjs";
+  8,34: import authRoutes from "./routes/auth.routes.mjs";
 
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\watchlist\watchlist.routes.mjs
-  16,23: } from "../validators/anim.validator.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\watchlist\watchlist.routes.mjs
-  18,14: export const createAnimRoutes = ({ createAnime }) => {
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\app.mjs
-  9,10: import { createAnimRoutes } from "./routes/anim.routes.mjs";
-  33,25:   app.use("/api/anime", createAnimRoutes(limiters));
+C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\auth\auth.routes.mjs
+  5,60: import { registerSchema, loginSchema } from "../validators/auth.validator.mjs";
