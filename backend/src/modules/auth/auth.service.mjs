@@ -8,9 +8,6 @@ import { isEmailTaken, findUserByEmail, createUser } from "../users/index.mjs";
 export const registerUser = async (data) => {
   const { name, email, password } = data;
 
-  const queryEmail = "SELECT us_id FROM users WHERE us_email = ?";
-  const [existingUser] = await db.execute(queryEmail, [email]);
-
   if (await isEmailTaken(email)) {
     throw new AppError("Email sudah digunakan", 400);
   }
@@ -49,11 +46,11 @@ export const registerUser = async (data) => {
 
 // Fungsi untuk Login
 export const loginUser = async (email, password) => {
-  // Mencari user berdasarkan email di MySQL
   const user = await findUserByEmail(email);
   if (!user) {
     throw new AppError("Email atau password salah", 401);
   }
+
   // Cek Password
   const isMatch = await bcrypt.compare(password, user.us_password);
   if (!isMatch) {

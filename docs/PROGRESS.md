@@ -129,7 +129,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
-16. Refactor backend ke modules/ (empat chat): 16A dan 16B (selesai); 16C modul auth dan users; 16D hapus folder lama dan tambah aturan tes arsitektur.
+16. Refactor backend ke modules/ (empat chat): 16A, 16B, 16C (selesai); 16D hapus folder lama dan tambah aturan tes arsitektur.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
