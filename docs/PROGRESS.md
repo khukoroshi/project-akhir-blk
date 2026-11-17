@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 selesai seluruhnya. Refactor modules/ (langkah 16): 16A selesai.
+- **Phase aktif:** Phase 0 selesai seluruhnya. Refactor modules/ (langkah 16): 16A dan 16B selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 16B (modul watchlist), lalu 16C (auth dan users), 16D (hapus folder lama). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **Berikutnya:** 16C (modul auth dan users), lalu 16D (hapus folder lama dan tambah aturan tes arsitektur). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -38,10 +38,10 @@
 ## 4. Struktur Saat Ini (belum sesuai target)
 
 **Backend** (campuran: katalog sudah modular, sisanya masih berlapis per jenis file):
-`src/{config, controllers, db, integrations/anilist (anilist.client.mjs, index.mjs), middlewares, models, modules/{anime, watchlist (watchlist.{controller,routes,validator,model}.mjs, index.mjs)}, catalog.service.mjs, index.mjs), routes, services, utils (termasuk validation.mjs), validators ({auth,anim}.validator.mjs)}`
+`src/{config, controllers (auth), db, integrations/anilist (anilist.client.mjs, index.mjs), middlewares, models (user), modules/{anime (anime.{controller,routes,validator}.mjs, catalog.service.mjs, index.mjs), watchlist (watchlist.{controller,routes,validator,model}.mjs, index.mjs)}, routes (auth), services (auth, user), utils (termasuk validation.mjs), validators (auth.validator.mjs)}`
 
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
-- Fitur yang ada: `auth`, `anim` (watchlist), `anime` (katalog, sudah modul di modules/anime), `user` (service/model saja, tanpa route).
+- Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), `user` (service/model saja, tanpa route).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
 - Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture}.test.mjs).
@@ -107,6 +107,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Koleksi Bruno (backend/api_test) harus memakai cookie + header X-CSRF-Token. Perbarui jika masih Bearer.
 - Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
 - State pembatas laju di memori proses (per instance); pindah ke store Redis jika multi-instance. Produksi di belakang proxy wajib mengisi TRUST_PROXY sesuai jumlah proxy.
+- modules/watchlist belum punya lapisan service (controller memanggil model langsung); tambahkan saat fitur Phase 2 menyentuh watchlist (mis. statistik profil).
+- Nama internal watchlist (Anime, getAllAnime, cariAnimeById) masih campur Indonesia dan Inggris. Jangan mengganti nama field respons (anim_*), itu kontrak.
+- Komentar di watchlist.model.mjs masih menyebut Stored Procedure padahal sudah query biasa. Perbaiki sambil lalu.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -125,16 +128,16 @@ Status hasil pemeriksaan kode, bukan asumsi.
 13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
-16. Refactor backend ke modules/ (empat chat): 16A (selesai); 16B modul watchlist; 16C modul auth dan users; 16D hapus folder lama dan tambah aturan tes arsitektur.
+16. Refactor backend ke modules/ (empat chat): 16A dan 16B (selesai); 16C modul auth dan users; 16D hapus folder lama dan tambah aturan tes arsitektur.
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
 ```
-### [tanggal] — [nama tugas]
-- Selesai: ...
-- File diubah: ...
-- Keputusan baru: ...
-- Berikutnya: ...
+- **[tanggal]** — [nama tugas]
+  - Selesai: ...
+  - File diubah: ...
+  - Keputusan baru: ...
+  - Berikutnya: ...
 ```
 
 ## 11. Log

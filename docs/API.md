@@ -30,7 +30,7 @@ Endpoint daftar menambah `"results": <jumlah>`.
 
 Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
-**Kode status yang dipakai:** 00, 201, 400, 401, 403, 404, 409, 429, 500, 502, 504. (sudah ada 429; tambahkan di Bagian 2, kolom Error, untuk POST /auth/login, POST /auth/register, POST /anime, dan dua endpoint katalog): “429 dari pembatas laju server, selain dari AniList (untuk POST /anime dan katalog)”. Pada katalog, 429 kini punya dua sumber: pembatas server (ada header Retry-After) dan AniList (pesan memuat waktu tunggu).
+**Kode status yang dipakai:** 200, 201, 400, 401, 403, 404, 409, 429, 500, 502, 504.
 
 **Pembatasan laju (rate limit)**
 
@@ -65,7 +65,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 | `password` | string | ya    | 8-72 karakter, wajib ada huruf dan angka  |
 
 - **Sukses 201:** `data: { us_id, us_name, us_email }`
-- **Error:** 400 validasi gagal (pesan error pertama), 400 "Nama sudah digunakan", 400 "Email sudah digunakan", 400 "Nama atau email sudah digunakan" (kunci tidak dikenali)
+- **Error:** 400 validasi gagal (pesan error pertama), 400 "Nama sudah digunakan", 400 "Email sudah digunakan", 400 "Nama atau email sudah digunakan" (kunci tidak dikenali), 429 terlalu banyak percobaan (pembatas laju server)
 - **Catatan:** email disimpan huruf kecil. Nama harus unik di database.
 
 #### `POST /auth/login`
@@ -74,7 +74,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Body:** `email` (format valid, trim, huruf kecil), `password` (wajib terisi). Field lain ditolak (strict).
 - **Sukses 200:** `data: { user: { id, name, email } }`. Token TIDAK dikembalikan di body.
 - **Cookie:** respons mengatur dua cookie (Path=/, Max-Age = masa berlaku JWT, Secure dan SameSite dari env): `access_token` (JWT, HttpOnly) dan `csrf_token` (string acak 64 hex, TIDAK HttpOnly).
-- **Error:** 400 validasi gagal, 401 email atau password salah
+- **Error:** 400 validasi gagal, 401 email atau password salah, 429 terlalu banyak percobaan gagal (pembatas laju server; password benar pun ditolak selama terkunci)
 
 #### `GET /auth/profile`
 
@@ -121,7 +121,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 | `notes`          | string                                           | tidak | maks 2000 karakter atau null                           |
 
 - **Sukses 201:** `data: Anime`
-- **Error:** 400 validasi gagal, 404 anime tidak ada di AniList, 409 anime sudah ada di watchlist, 429 / 502 / 504 AniList membatasi, gagal, atau timeout (hanya jika baris katalog belum ada)
+- **Error:** 429 pembatas laju server (30 per 15 menit per user), atau AniList membatasi, 502 / 504 AniList gagal atau timeout (AniList hanya jika baris katalog belum ada)
 - **Catatan:** katalog (judul, gambar `coverImage.large`, total episode, tipe) diisi SERVER dari AniList berdasarkan `externalId`, bukan dari body. Cukup kirim `{ "externalId": 1535 }`. Format AniList dipetakan ke `type` (TV_SHORT -> TV Short, MOVIE -> Movie, format kosong -> TV). Total episode kosong menjadi 0. Baris katalog yang kosong atau lebih tua dari 7 hari disegarkan dari AniList saat ada yang menambahkan anime itu. Jika penyegaran gagal dan baris sudah ada, baris lama dipakai tanpa error. Status completed memakai total dari katalog sebagai episode. Field title, imgUrl, totalEps, dan type ditolak 400 ("Field 'title' tidak dikenal. Katalog diisi server dari AniList.").
 
 #### `PUT /anime/:anim_id`
@@ -154,31 +154,31 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
   - `filter` (opsional, default `all`): `all` `airing` `upcoming` `tv` `movie` `ova` `ona` `special` `popular` `favorited`. Nilai lain 400 "filter tidak valid". Diabaikan jika `q` ada.
 - **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large } } ]`, `meta: { page, perPage, hasNextPage }`
 - **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top dan pencarian. Di halaman 10 daftar top, meta.hasNextPage selalu false.
-- **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 parameter tidak dikenal, 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, membalas status gagal selain 429 (termasuk 404), atau membalas error GraphQL, 504 AniList timeout
+- **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 parameter tidak dikenal, 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, membalas status gagal selain 429 (termasuk 404), atau membalas error GraphQL, 504 AniList timeout
 
 #### `GET /catalog/anime/:id`
 
 - **Param:** `id` = ID AniList
 - **Sukses 200:** `data: Media` (detail lengkap dari AniList)
 - **Catatan:** deskripsi bisa berisi HTML, wajib disanitasi di frontend. Detail di-cache 5 menit. Timeout 10 detik.
-- **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 / 502 / 504 sama seperti pencarian (502 untuk status gagal selain 429 dan 404)
+- **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 502 / 504 sama seperti pencarian (502 untuk status gagal selain 429 dan 404)
 
 ---
 
 ## 3. Endpoint Rencana (dari PRD, belum ada)
 
-| Method | Path (PRD)            | Fase | Catatan                         |
-| ------ | --------------------- | ---- | ------------------------------- |
-| GET    | `/users/:username`    | 2    | profil publik + statistik       |
-| PUT    | `/users/profile`      | 2    | ubah bio, nama tampilan, avatar |
-| POST   | `/users/:id/follow`   | 2    | toggle follow                   |
-| GET    | `/posts?page=&limit=` | 3    | feed berpaginasi                |
-| POST   | `/posts`              | 3    | buat post                       |
-| POST   | `/posts/:id/like`     | 3    | toggle like                     |
-| GET    | `/posts/:id/comments` | 3    | thread komentar                 |
-| POST   | `/posts/:id/comments` | 3    | komentar atau balasan           |
-| GET    | `/anime/:id/reviews`  | 4    | review per anime                |
-| POST   | `/reviews`            | 4    | tulis atau ubah review          |
+| Method | Path (PRD)                   | Fase | Catatan                            |
+| ------ | ---------------------------- | ---- | ---------------------------------- |
+| GET    | `/users/:username`           | 2    | profil publik + statistik          |
+| PUT    | `/users/profile`             | 2    | ubah bio, nama tampilan, avatar    |
+| POST   | `/users/:id/follow`          | 2    | toggle follow                      |
+| GET    | `/posts?page=&limit=`        | 3    | feed berpaginasi                   |
+| POST   | `/posts`                     | 3    | buat post                          |
+| POST   | `/posts/:id/like`            | 3    | toggle like                        |
+| GET    | `/posts/:id/comments`        | 3    | thread komentar                    |
+| POST   | `/posts/:id/comments`        | 3    | komentar atau balasan              |
+| GET    | `/catalog/anime/:id/reviews` | 4    | review per anime (id = ID AniList) |
+| POST   | `/reviews`                   | 4    | tulis atau ubah review             |
 
 **Keputusan (2026-11-16):** path di kode dipertahankan (`/anime`, `/catalog/anime`, `/auth/profile`); PRD disesuaikan dengan kode.
 
@@ -217,4 +217,4 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - 2026-11-11: POST /anime dan PUT /anime/:anim_id: title, imgUrl, totalEps, type (POST) dan teps (PUT) tidak lagi deprecated tetapi ditolak 400 dengan pesan yang menyebut nama field.
 - 2026-11-12: Auth cookie (13A, tahap tambah): login mengatur cookie access_token (HttpOnly) dan csrf_token; endpoint terproteksi menerima Bearer ATAU cookie; request ber-cookie yang mengubah data wajib header X-CSRF-Token (403 jika salah); POST /auth/logout baru; CORS memakai daftar origin dengan credentials. Bearer masih diterima sementara.
 - 2026-11-13: Auth cookie (13C, tahap hapus): Bearer dihapus (header Authorization diabaikan, tanpa cookie: 401); CSRF wajib untuk semua mutasi terautentikasi; login tidak lagi mengembalikan token di body (hanya `data: { user }`); Authorization dihapus dari header CORS yang diizinkan.
-- 2026-11-14: Pembatasan laju: 429 dari server (global 600/15 mnt, login gagal 5/15 mnt per IP+email dan 30/15 mnt per IP, register 10/60 mnt, katalog 60/mnt, POST /anime 30/15 mnt per user), header Retry-After dan RateLimit-\*. Perilaku endpoint lain tidak berubah.
+- 2026-11-14: Pembatasan laju: 429 dari server (global 600/15 mnt, login gagal 5/15 mnt per IP+email dan 30/15 mnt per IP, register 10/60 mnt, katalog 60/mnt, POST /anime 30/15 mnt per user), header Retry-After dan `RateLimit-\*`. Perilaku endpoint lain tidak berubah.
