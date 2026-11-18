@@ -40,6 +40,65 @@ const findImports = (source) => {
 const moduleOf = (relPath) =>
   relPath.match(/^modules\/([^/]+)(?:\/|$)/)?.[1] ?? null;
 
+// Rule (c): only these folders may sit directly under src/ (plus app.mjs).
+const ALLOWED_TOP_DIRS = new Set([
+  "config",
+  "db",
+  "integrations",
+  "middlewares",
+  "modules",
+  "utils",
+]);
+const ALLOWED_TOP_FILES = new Set(["app.mjs"]);
+
+// entries: [{ name, isDir }] directly under src/
+const checkTopLevel = (entries) =>
+  entries.flatMap(({ name, isDir }) => {
+    if (isDir && !ALLOWED_TOP_DIRS.has(name)) {
+      return [
+        `src/${name}/: folder "${name}" tidak diizinkan di src/. ` +
+          `Kode baru harus berada di modules/<nama>/ ` +
+          `(folder yang diizinkan: ${[...ALLOWED_TOP_DIRS].join(", ")})`,
+      ];
+    }
+    if (!isDir && !ALLOWED_TOP_FILES.has(name)) {
+      return [
+        `src/${name}: file tidak diizinkan langsung di src/ (hanya app.mjs). ` +
+          `Kode baru harus berada di modules/<nama>/`,
+      ];
+    }
+    return [];
+  });
+
+// Rule (d): modulesMap = { moduleName: [fileNames directly inside it] }
+const checkModuleIndexes = (modulesMap) =>
+  Object.entries(modulesMap)
+    .filter(([, files]) => !files.includes("index.mjs"))
+    .map(
+      ([name]) =>
+        `src/modules/${name}/: modul "${name}" wajib punya index.mjs (satu-satunya pintu masuk modul)`,
+    );
+
+const readTopLevel = () =>
+  readdirSync(SRC, { withFileTypes: true }).map((d) => ({
+    name: d.name,
+    isDir: d.isDirectory(),
+  }));
+
+const readModulesMap = () => {
+  const dir = path.join(SRC, "modules");
+  return Object.fromEntries(
+    readdirSync(dir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => [
+        d.name,
+        readdirSync(path.join(dir, d.name), { withFileTypes: true })
+          .filter((f) => f.isFile())
+          .map((f) => f.name),
+      ]),
+  );
+};
+
 // relPath is relative to src/, with forward slashes.
 const checkFile = (relPath, source) => {
   const violations = [];
@@ -51,6 +110,20 @@ const checkFile = (relPath, source) => {
 
     const target = path.posix.normalize(path.posix.join(fromDir, specifier));
     const where = `src/${relPath}:${line}`;
+
+    // Rule (e): no import (static or dynamic) into a forbidden top-level folder.
+    const topFolder = target.split("/")[0];
+    if (
+      target.includes("/") &&
+      topFolder !== ".." &&
+      !ALLOWED_TOP_DIRS.has(topFolder)
+    ) {
+      violations.push(
+        `${where}: impor ke folder "${topFolder}" dilarang. ` +
+          `Kode harus berada di modules/<nama>/ ("${specifier}")`,
+      );
+      continue;
+    }
 
     if (relPath.startsWith("integrations/") && moduleOf(target) !== null) {
       violations.push(
@@ -149,5 +222,104 @@ describe("arsitektur: pemeriksa itu sendiri", () => {
     const source = `// import x from "../modules/anime/anime.controller.mjs";\nimport express from "express";`;
 
     expect(checkFile("app.mjs", source)).toEqual([]);
+  });
+});
+
+describe("arsitektur: struktur folder src/", () => {
+  it("hanya folder yang diizinkan di bawah src/ (aturan c)", () => {
+    const violations = checkTopLevel(readTopLevel());
+
+    expect(
+      violations,
+      `Pelanggaran struktur:\n${violations.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("setiap folder di modules/ punya index.mjs (aturan d)", () => {
+    const violations = checkModuleIndexes(readModulesMap());
+
+    expect(
+      violations,
+      `Pelanggaran struktur:\n${violations.join("\n")}`,
+    ).toEqual([]);
+  });
+});
+
+describe("arsitektur: pemeriksa struktur itu sendiri", () => {
+  it("menolak folder terlarang dan menyebut namanya (aturan c)", () => {
+    const result = checkTopLevel([
+      { name: "modules", isDir: true },
+      { name: "app.mjs", isDir: false },
+      { name: "services", isDir: true },
+      { name: "models", isDir: true },
+    ]);
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toContain('"services"');
+    expect(result[0]).toContain("modules/<nama>/");
+    expect(result[1]).toContain('"models"');
+  });
+
+  it("menolak file lepas selain app.mjs di src/ (aturan c)", () => {
+    const result = checkTopLevel([{ name: "helper.mjs", isDir: false }]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toContain("helper.mjs");
+  });
+
+  it("menerima semua folder yang diizinkan (aturan c)", () => {
+    const names = [
+      "config",
+      "db",
+      "integrations",
+      "middlewares",
+      "modules",
+      "utils",
+    ];
+
+    expect(checkTopLevel(names.map((name) => ({ name, isDir: true })))).toEqual(
+      [],
+    );
+  });
+
+  it("menolak modul tanpa index.mjs (aturan d)", () => {
+    const result = checkModuleIndexes({
+      anime: ["index.mjs", "anime.routes.mjs"],
+      baru: ["baru.service.mjs"],
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toContain('"baru"');
+  });
+
+  it("menolak import statis dan dinamis ke folder terlarang (aturan e)", () => {
+    const source = [
+      `import a from "./services/x.mjs";`,
+      `const b = await import("../models/y.mjs");`,
+    ].join("\n");
+
+    const fromApp = checkFile("app.mjs", source.split("\n")[0]);
+    const fromMiddleware = checkFile(
+      "middlewares/z.mjs",
+      source.split("\n")[1],
+    );
+
+    expect(fromApp).toHaveLength(1);
+    expect(fromApp[0]).toContain('folder "services"');
+    expect(fromApp[0]).toContain("src/app.mjs:1");
+    expect(fromMiddleware).toHaveLength(1);
+    expect(fromMiddleware[0]).toContain('folder "models"');
+  });
+
+  it("menerima import ke folder yang diizinkan (aturan e)", () => {
+    expect(
+      checkFile(
+        "modules/auth/auth.service.mjs",
+        `import { AppError } from "../../utils/appError.mjs";`,
+      ),
+    ).toEqual([]);
+    expect(checkFile("app.mjs", `import env from "./config/env.mjs";`)).toEqual(
+      [],
+    );
   });
 });

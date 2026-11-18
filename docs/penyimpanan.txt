@@ -1,11 +1,38 @@
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\auth\auth.routes.mjs
-  2,49: import * as authController from "../controllers/auth.controller.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\auth\auth.controller.mjs
-  1,43: import * as authService from "../services/auth.service.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\app.mjs
-  8,34: import authRoutes from "./routes/auth.routes.mjs";
-
-C:\Users\mangchubet\Documents\workspace\project-akhir-blk\backend\src\modules\auth\auth.routes.mjs
-  5,60: import { registerSchema, loginSchema } from "../validators/auth.validator.mjs";
+backend/src/app.mjs
+backend/src/config/cors.mjs
+backend/src/config/db.mjs
+backend/src/config/env.mjs
+backend/src/config/rateLimit.mjs
+backend/src/db/migrate.mjs
+backend/src/db/migrations/001_create_anime_catalog_and_user_anime.sql
+backend/src/db/migrations/002_sync_leftover_animes.sql
+backend/src/db/migrations/003_add_synced_at_to_anime_catalog.sql
+backend/src/db/migrations/004_retire_legacy_animes.sql
+backend/src/db/project_akhir_blk.sql
+backend/src/integrations/anilist/anilist.client.mjs
+backend/src/integrations/anilist/index.mjs
+backend/src/middlewares/auth.middleware.mjs
+backend/src/middlewares/csrf.middleware.mjs
+backend/src/middlewares/error.middleware.mjs
+backend/src/middlewares/validate.middleware.mjs
+backend/src/modules/anime/anime.controller.mjs
+backend/src/modules/anime/anime.routes.mjs
+backend/src/modules/anime/anime.validator.mjs
+backend/src/modules/anime/catalog.service.mjs
+backend/src/modules/anime/index.mjs
+backend/src/modules/auth/auth.controller.mjs
+backend/src/modules/auth/auth.routes.mjs
+backend/src/modules/auth/auth.service.mjs
+backend/src/modules/auth/auth.validator.mjs
+backend/src/modules/auth/index.mjs
+backend/src/modules/users/index.mjs
+backend/src/modules/users/users.model.mjs
+backend/src/modules/users/users.service.mjs
+backend/src/modules/watchlist/index.mjs
+backend/src/modules/watchlist/watchlist.controller.mjs
+backend/src/modules/watchlist/watchlist.model.mjs
+backend/src/modules/watchlist/watchlist.routes.mjs
+backend/src/modules/watchlist/watchlist.validator.mjs
+backend/src/utils/appError.mjs
+backend/src/utils/authCookies.mjs
+backend/src/utils/validation.mjs

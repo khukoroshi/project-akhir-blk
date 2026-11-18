@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 selesai seluruhnya. Refactor modules/ (langkah 16): 16A, 16B, 16C selesai.
+- **Phase aktif:** Phase 0 selesai. Refactor modules/ (langkah 16) selesai (16A-16D)..
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 16D (hapus folder lama kosong, tambah aturan tes arsitektur), lalu Phase 2 (profil dan follow). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **Berikutnya:** Phase 2 (profil dan follow)
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -35,7 +35,7 @@
 - Path API dipertahankan (/anime, /catalog/anime, /auth/profile); PRD disesuaikan dengan kode.
 - Modul backend diekspor lewat modules/<nama>/index.mjs. Kode di luar modul hanya boleh mengimpor index.mjs modul itu; integrations/ tidak boleh mengimpor modules/. Dijaga tests/architecture.test.mjs. Modul baru memakai pola controller-service-model.
 
-## 4. Struktur Saat Ini (belum sesuai target)
+## 4. Struktur Saat Ini (sesuai target backend)
 
 **Backend** (modular):
 `src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.*.mjs dan index.mjs), utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
@@ -45,6 +45,7 @@
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
 - Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture}.test.mjs).
+- Folder yang diizinkan di src/: config, db, integrations, middlewares, modules, utils, plus app.mjs (dijaga tests/architecture.test.mjs).
 
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, layouts, pages, services, utils}`
@@ -128,7 +129,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
-16. Refactor backend ke modules/ (empat chat): 16A, 16B, 16C (selesai); 16D hapus folder lama dan tambah aturan tes arsitektur.
+16. Refactor backend ke modules/ (empat chat): 16A, 16B, 16C, 16D (selesai);
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -311,3 +312,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: pesan error (AppError) dan penanganan ER_DUP_ENTRY tetap di auth.service; users.model melempar error mentah. auth.middleware dan utils/authCookies tetap di luar modules.
   - Utang teknis: modules/users belum punya controller/routes (Phase 2). Auth belum punya model sendiri (tidak perlu saat ini). User.getProfile lama dihapus (kode mati).
   - Berikutnya: 16D (hapus folder lama yang kosong, tambah aturan tes arsitektur). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **2026-11-18** — Langkah 16D: kunci struktur modular di tes arsitektur (langkah 16 selesai)
+  - Selesai: tests/architecture.test.mjs ditambah aturan (c) hanya folder config, db, integrations, middlewares, modules, utils (dan file app.mjs) di bawah src/; (d) tiap folder modules/<nama> wajib punya index.mjs; (e) tidak ada import statis/dinamis ke folder terlarang. Pemeriksa struktur berupa fungsi murni (checkTopLevel, checkModuleIndexes) yang punya tes sendiri. Tanpa database dan internet. Tidak ada file yang melanggar. Tidak ada perubahan kode aplikasi atau API.
+  - File diubah: backend/tests/architecture.test.mjs
+  - Keputusan baru: file lepas selain app.mjs di src/ juga dilarang. Folder lama (controllers, models, routes, services, validators) dilarang permanen; kode baru wajib di modules/<nama>/.
+  - Berikutnya: Phase 2 (profil dan follow) di modules/users (tambah controller, routes, validator; ekspor lewat index.mjs). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
