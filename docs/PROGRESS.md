@@ -6,10 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 selesai seluruhnya. Refactor modules/ (langkah 16): 16A dan 16B selesai.
+- **Phase aktif:** Phase 0 selesai seluruhnya. Refactor modules/ (langkah 16): 16A, 16B, 16C selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 16D. Bagian 4, ganti daftar folder backend dengan:
-  src/{config, controllers (kosong), db, integrations/anilist, middlewares, models (kosong), modules/{anime, watchlist, auth (auth.{controller,service,routes,validator}.mjs, index.mjs), users (users.{service,model}.mjs, index.mjs)}, routes (kosong), services (kosong), utils, validators (common.mjs)}
+- **Berikutnya:** 16D (hapus folder lama kosong, tambah aturan tes arsitektur), lalu Phase 2 (profil dan follow). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -38,11 +37,11 @@
 
 ## 4. Struktur Saat Ini (belum sesuai target)
 
-**Backend** (campuran: katalog sudah modular, sisanya masih berlapis per jenis file):
-`src/{config, controllers (auth), db, integrations/anilist (anilist.client.mjs, index.mjs), middlewares, models (user), modules/{anime (anime.{controller,routes,validator}.mjs, catalog.service.mjs, index.mjs), watchlist (watchlist.{controller,routes,validator,model}.mjs, index.mjs)}, routes (auth), services (auth, user), utils (termasuk validation.mjs), validators (auth.validator.mjs)}`
+**Backend** (modular):
+`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.*.mjs dan index.mjs), utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
 
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
-- Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), `user` (service/model saja, tanpa route).
+- Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), users (modul di modules/users: service dan model saja, route menyusul di Phase 2).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
 - Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture}.test.mjs).
@@ -97,7 +96,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 ## 8. Utang Teknis & Kebersihan
 
 - `frontend/package.json` bernama `react-starter-kit`, ganti jadi `anisphere-frontend`.
-- Nama file dan komentar campur Indonesia dan Inggris (`anim`, `aunt`). Rapikan saat refactor modul.
+- Nama file dan komentar campur Indonesia dan Inggris (`aunt`). Rapikan saat refactor modul.
 - Daftar filter katalog ada di dua tempat (validator backend dan frontend/src/utils/catalogFilters.js). Jaga tetap sama.
 - tests/base-schema.sql dan tests/base-legacy-animes.sql menyalin skema users dan animes. Hapus base-legacy-animes.sql saat animes_legacy di-drop; rapikan project_akhir_blk.sql dan migrasi 001/002 jika sudah tidak dibutuhkan.
 - Perilaku belum tercatat di API.md: isi data pada respons DELETE; hasil PATCH saat episode sudah sama dengan total.
@@ -109,7 +108,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
 - State pembatas laju di memori proses (per instance); pindah ke store Redis jika multi-instance. Produksi di belakang proxy wajib mengisi TRUST_PROXY sesuai jumlah proxy.
 - modules/watchlist belum punya lapisan service (controller memanggil model langsung); tambahkan saat fitur Phase 2 menyentuh watchlist (mis. statistik profil).
-- Nama internal watchlist (Anime, getAllAnime, cariAnimeById) masih campur Indonesia dan Inggris. Jangan mengganti nama field respons (anim\_\*), itu kontrak.
+- Nama internal watchlist (Anime, getAllAnime, cariAnimeById) masih campur Indonesia dan Inggris. Jangan mengganti nama field respons `anim_*`, itu kontrak.
 - Komentar di watchlist.model.mjs masih menyebut Stored Procedure padahal sudah query biasa. Perbaiki sambil lalu.
 
 ## 9. Rencana Berikutnya (urutan disarankan)

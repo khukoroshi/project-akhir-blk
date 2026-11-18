@@ -1,7 +1,7 @@
 # Product Requirement Document (PRD) — AniSphere
 
 **Project Name:** AniSphere (Formerly _MyAnimeWatchList_)  
-**Version:** 2.0.2 (Refactoring & Community Integration)  
+**Version:** 2.0.3 (Refactoring & Community Integration)  
 **Status:** Active Draft  
 **Target Architecture:** Modular Monolith (Express.js) + Feature-Based React Frontend
 
