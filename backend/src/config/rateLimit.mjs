@@ -82,5 +82,9 @@ export const createRateLimiters = ({ enabled, limits }) => {
       keyGenerator: userKey,
       subject: "perubahan profil",
     }),
+    follow: make("follow", {
+      keyGenerator: userKey,
+      subject: "permintaan follow",
+    }),
   };
 };

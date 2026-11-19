@@ -1,11 +1,16 @@
 import { Router } from "express";
 import { protect, optionalAuth } from "../../middlewares/auth.middleware.mjs";
 import { validate } from "../../middlewares/validate.middleware.mjs"; // sesuaikan jenis ekspor
-import { getUserProfile, updateMyProfile } from "./users.controller.mjs";
 import {
   updateProfileSchema,
   usernameParamSchema,
 } from "./users.validator.mjs";
+import {
+  getUserProfile,
+  updateMyProfile,
+  followUserHandler,
+  unfollowUserHandler,
+} from "./users.controller.mjs";
 
 // Factory because the per-user limiter is injected from app.mjs.
 export const createUsersRoutes = (limiters) => {
@@ -24,6 +29,23 @@ export const createUsersRoutes = (limiters) => {
     optionalAuth,
     validate(usernameParamSchema, "params"),
     getUserProfile,
+  );
+
+  // Both routes share ONE limiter instance, so follow + unfollow count together.
+  router.post(
+    "/:username/follow",
+    protect,
+    limiters.follow,
+    validate(usernameParamSchema, "params"),
+    followUserHandler,
+  );
+
+  router.delete(
+    "/:username/follow",
+    protect,
+    limiters.follow,
+    validate(usernameParamSchema, "params"),
+    unfollowUserHandler,
   );
 
   return router;

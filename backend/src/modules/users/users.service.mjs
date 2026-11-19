@@ -10,7 +10,12 @@ export const createUser = (data) => User.create(data);
 const buildProfile = async (row, viewerId) => {
   const isSelf = viewerId != null && viewerId === row.us_id;
   const isPrivate = Boolean(row.is_private);
-  const stats = isPrivate && !isSelf ? null : await getUserStats(row.us_id);
+
+  const [stats, counts, isFollowing] = await Promise.all([
+    isPrivate && !isSelf ? null : getUserStats(row.us_id),
+    User.getFollowCounts(row.us_id),
+    viewerId != null && !isSelf ? User.isFollowing(viewerId, row.us_id) : false,
+  ]);
 
   return {
     username: row.us_name,
@@ -19,6 +24,9 @@ const buildProfile = async (row, viewerId) => {
     isPrivate,
     joinedAt: new Date(row.us_created_at).toISOString(),
     isSelf,
+    followersCount: counts.followersCount,
+    followingCount: counts.followingCount,
+    isFollowing,
     stats,
   };
 };
@@ -34,4 +42,27 @@ export const updateOwnProfile = async (userId, input) => {
   const row = await User.findProfileById(userId);
   if (!row) throw new AppError("Pengguna tidak ditemukan", 404);
   return buildProfile(row, userId);
+};
+
+const resolveFollowTarget = async (viewerId, username) => {
+  const target = await User.findIdByUsername(username);
+  if (!target) throw new AppError("Pengguna tidak ditemukan", 404);
+  if (target.us_id === viewerId) {
+    throw new AppError("Tidak bisa mengikuti diri sendiri", 400);
+  }
+  return target;
+};
+
+export const followUser = async (viewerId, username) => {
+  const target = await resolveFollowTarget(viewerId, username);
+  await User.follow(viewerId, target.us_id);
+  const { followersCount } = await User.getFollowCounts(target.us_id);
+  return { username: target.us_name, isFollowing: true, followersCount };
+};
+
+export const unfollowUser = async (viewerId, username) => {
+  const target = await resolveFollowTarget(viewerId, username);
+  await User.unfollow(viewerId, target.us_id);
+  const { followersCount } = await User.getFollowCounts(target.us_id);
+  return { username: target.us_name, isFollowing: false, followersCount };
 };

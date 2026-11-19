@@ -63,6 +63,9 @@ describe("GET /api/users/:username", () => {
       [
         "bio",
         "displayName",
+        "followersCount",
+        "followingCount",
+        "isFollowing",
         "isPrivate",
         "isSelf",
         "joinedAt",
