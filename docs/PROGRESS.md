@@ -6,7 +6,7 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 selesai. Refactor modules/ (langkah 16) selesai (16A-16D)..
+- **Phase aktif:** Phase 0 dan refactor modules/ (langkah 16, 16A sampai 16D) selesai.
 - **Sedang dikerjakan:** -
 - **Berikutnya:** Phase 2 (profil dan follow)
 
@@ -30,7 +30,7 @@
 - Katalog: perPage 48 ditentukan server; daftar top (semua filter) maks 10 halaman; filter hanya berlaku tanpa q (klik tab menghapus q, mencari menghapus filter). q, page, dan filter disimpan di URL.
 - Dua perangkat (Windows dan Linux): .env, .env.test, isi database, dan node_modules per perangkat, tidak ikut git. Setelah git pull: pnpm install bila package.json/lockfile berubah; pnpm migrate (backup dulu) bila ada file migrasi baru. Database test (AniWatchList_test) dibuat manual di tiap perangkat.
 - Semua respons error API memakai status "error" (bukan "fail"). POST /auth/register mengembalikan us_id.
-- Tes backend: black box lewat Supertest berdasarkan API.md; hanya jalan di database berakhiran \_test; tidak boleh memanggil internet (AniList di-mock). Temuan yang belum diputuskan ditandai it.fails, bukan diperbaiki diam-diam.
+- Tes backend: black box lewat Supertest berdasarkan API.md; hanya jalan di database berakhiran `_test`; tidak boleh memanggil internet (AniList di-mock). Temuan yang belum diputuskan ditandai it.fails, bukan diperbaiki diam-diam.
 - Auth cookie: access_token (JWT, HttpOnly) dan csrf_token (bisa dibaca JS, double-submit lewat header X-CSRF-Token). SameSite=Lax; frontend dan backend harus satu situs (localhost:5173 dan localhost:3000 sama-situs; di produksi satu domain induk, kalau tidak pakai none + Secure). CSRF dicek di dalam middleware protect (route baru otomatis terlindungi); register, login, logout bebas CSRF, Bearer dihapus; hanya cookie. CSRF wajib untuk semua mutasi terautentikasi.
 - Path API dipertahankan (/anime, /catalog/anime, /auth/profile); PRD disesuaikan dengan kode.
 - Modul backend diekspor lewat modules/<nama>/index.mjs. Kode di luar modul hanya boleh mengimpor index.mjs modul itu; integrations/ tidak boleh mengimpor modules/. Dijaga tests/architecture.test.mjs. Modul baru memakai pola controller-service-model.
@@ -129,7 +129,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 13. Phase 0 #3: 13A backend (selesai); 13B frontend (selesai); 13C backend (hapus Bearer dan token di body login).(selesai)
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
-16. Refactor backend ke modules/ (empat chat): 16A, 16B, 16C, 16D (selesai);
+16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
+17. Phase 2 (profil dan follow), empat chat: 2A backend (migrasi 005, GET /users/:username, PUT /users/profile, statistik lewat watchlist.service); 2B backend (follow/unfollow, jumlah, isFollowing); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 

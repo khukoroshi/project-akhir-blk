@@ -59,6 +59,7 @@ The current `animes` table blends master anime data with user progress. We decou
 
 - `anime_catalog`: `external_id` INT UNSIGNED, kolom tambahan `anim_type` (TV, Movie, OVA, ONA, Special, TV Short, Music), kolom `synced_at` (penyegaran dari AniList), diisi server dari AniList, bukan dari klien.
 - `user_anime`: status memakai spasi (`'plan to watch'`, `'on hold'`), `score` DECIMAL(3,1) dengan CHECK 1-10 dan boleh NULL, `tier` ENUM('S','A','B','C','D'), ada kolom `created_at`, dan `id` sama dengan `anim_id` lama.
+- `user_profiles` dan `follows`: kolom user memakai `INT UNSIGNED` yang merujuk `users(us_id)`; `follows` punya CHECK (follower_id <> following_id). Avatar dan banner belum bisa diubah (Phase 3).
 
 ```
 [USERS] 1 ─── 1 [USER_PROFILES]
@@ -238,7 +239,8 @@ frontend/src/
 
 - `GET /api/users/:username` — Fetch public profile & tracking stats
 - `PUT /api/users/profile` — Update bio, display name, avatar
-- `POST /api/users/:id/follow` — Follow/Unfollow user
+- `POST /api/users/:username/follow` — Follow (idempotent)
+- `DELETE /api/users/:username/follow` — Unfollow (idempotent)
 
 ### Anime Catalog & Watchlist
 
