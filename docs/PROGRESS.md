@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 0 dan refactor modules/ (langkah 16, 16A sampai 16D) selesai.
+- **Phase aktif:** Phase 2 (profil dan follow): 2A selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** Phase 2 (profil dan follow)
+- **Berikutnya:** 2B (follow/unfollow, jumlah follower/following, isFollowing di GET profil).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -34,17 +34,18 @@
 - Auth cookie: access_token (JWT, HttpOnly) dan csrf_token (bisa dibaca JS, double-submit lewat header X-CSRF-Token). SameSite=Lax; frontend dan backend harus satu situs (localhost:5173 dan localhost:3000 sama-situs; di produksi satu domain induk, kalau tidak pakai none + Secure). CSRF dicek di dalam middleware protect (route baru otomatis terlindungi); register, login, logout bebas CSRF, Bearer dihapus; hanya cookie. CSRF wajib untuk semua mutasi terautentikasi.
 - Path API dipertahankan (/anime, /catalog/anime, /auth/profile); PRD disesuaikan dengan kode.
 - Modul backend diekspor lewat modules/<nama>/index.mjs. Kode di luar modul hanya boleh mengimpor index.mjs modul itu; integrations/ tidak boleh mengimpor modules/. Dijaga tests/architecture.test.mjs. Modul baru memakai pola controller-service-model.
+- Phase 2: URL profil memakai username (us_name). Respons profil camelCase, tidak pernah memuat email, hash password, atau us_id. Profil privat menyembunyikan statistik dari orang lain; follow tanpa persetujuan. Avatar dan banner ditunda ke Phase 3. Follow memakai POST dan DELETE (idempotent), bukan toggle. Daftar followers/following dan pencarian pengguna ditunda; hanya jumlah yang tampil. Statistik dihitung saat diminta, tanpa cache. Kode frontend baru di frontend/src/features/profile/.
 
 ## 4. Struktur Saat Ini (sesuai target backend)
 
 **Backend** (modular):
-`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.*.mjs dan index.mjs), utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
+`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.{controller,service,model,routes,validator}.mjs + index.mjs), modules/watchlist.service.mjs, utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
 
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
 - Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), users (modul di modules/users: service dan model saja, route menyusul di Phase 2).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
-- Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture}.test.mjs).
+- Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture,users}.test.mjs).
 - Folder yang diizinkan di src/: config, db, integrations, middlewares, modules, utils, plus app.mjs (dijaga tests/architecture.test.mjs).
 
 **Frontend:**
@@ -56,27 +57,29 @@
 
 ## 5. Endpoint yang Sudah Ada
 
-| Method | Path                            | Auth  | Keterangan                                                             |
-| ------ | ------------------------------- | ----- | ---------------------------------------------------------------------- |
-| POST   | `/api/auth/register`            | tidak | daftar                                                                 |
-| POST   | `/api/auth/login`               | tidak | user di body, JWT hanya di cookie                                      |
-| GET    | `/api/auth/profile`             | ya    | profil dari JWT                                                        |
-| GET    | `/api/anime`                    | ya    | seluruh watchlist user                                                 |
-| GET    | `/api/anime/:anim_id`           | ya    | satu item watchlist                                                    |
-| POST   | `/api/anime`                    | ya    | tambah ke watchlist                                                    |
-| PUT    | `/api/anime/:anim_id`           | ya    | ubah item                                                              |
-| PATCH  | `/api/anime/:anim_id/increment` | ya    | tambah episode                                                         |
-| DELETE | `/api/anime/:anim_id`           | ya    | hapus item                                                             |
-| GET    | `/api/catalog/anime`            | tidak | daftar top (10 filter) dan pencarian, berpaginasi (?q, ?page, ?filter) |
-| GET    | `/api/catalog/anime/:id`        | tidak | detail anime (AniList)                                                 |
+| Method | Path                            | Auth     | Keterangan                                                               |
+| ------ | ------------------------------- | -------- | ------------------------------------------------------------------------ |
+| POST   | `/api/auth/register`            | tidak    | daftar                                                                   |
+| POST   | `/api/auth/login`               | tidak    | user di body, JWT hanya di cookie                                        |
+| GET    | `/api/auth/profile`             | ya       | profil dari JWT                                                          |
+| GET    | `/api/anime`                    | ya       | seluruh watchlist user                                                   |
+| GET    | `/api/anime/:anim_id`           | ya       | satu item watchlist                                                      |
+| POST   | `/api/anime`                    | ya       | tambah ke watchlist                                                      |
+| PUT    | `/api/anime/:anim_id`           | ya       | ubah item                                                                |
+| PATCH  | `/api/anime/:anim_id/increment` | ya       | tambah episode                                                           |
+| DELETE | `/api/anime/:anim_id`           | ya       | hapus item                                                               |
+| GET    | `/api/catalog/anime`            | tidak    | daftar top (10 filter) dan pencarian, berpaginasi (?q, ?page, ?filter)   |
+| GET    | `/api/catalog/anime/:id`        | tidak    | detail anime (AniList)                                                   |
+| GET    | `/api/users/:username`          | opsional | profil publik + statistik (stats null untuk profil privat bukan pemilik) |
+| PUT    | `/api/users/profile`            | ya       | ubah displayName, bio, isPrivate                                         |
 
 Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbeda dari yang ada sekarang. Putuskan nanti apakah diganti atau PRD yang disesuaikan.
 
 ## 6. Database Saat Ini
 
-- Database `AniWatchList`. Tabel: `users`, `anime_catalog`, `user_anime`, `schema_migrations`, dan `animes_legacy` (cadangan hasil rename migrasi 004, tidak dipakai kode).
+- Database `AniWatchList`. Tabel: `users`, `anime_catalog`, `user_anime`, `schema_migrations`, `animes_legacy` (cadangan hasil rename migrasi 004, tidak dipakai kode), `user_profiles` dan `follows` (migrasi 005; follows belum dipakai sampai 2B)..
 - Stored procedure: hanya `sp_insert_user` (dipakai auth).
-- Migrasi: 001 sampai 004 (004_retire_legacy_animes.sql).
+- Migrasi: 001 sampai 005.
 - DROP MANUAL animes_legacy pada atau setelah 2026-12-16, setelah backup, di luar runner migrasi, lalu catat di sini.
 
 ## 7. Status Checklist Phase 0
@@ -108,9 +111,11 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Koleksi Bruno (backend/api_test) harus memakai cookie + header X-CSRF-Token. Perbarui jika masih Bearer.
 - Sebelum produksi: COOKIE_SECURE=true, HTTPS, CORS_ORIGINS produksi, frontend dan backend satu domain induk, NODE_ENV=production (stack error dimatikan).
 - State pembatas laju di memori proses (per instance); pindah ke store Redis jika multi-instance. Produksi di belakang proxy wajib mengisi TRUST_PROXY sesuai jumlah proxy.
-- modules/watchlist belum punya lapisan service (controller memanggil model langsung); tambahkan saat fitur Phase 2 menyentuh watchlist (mis. statistik profil).
+- controller watchlist masih memanggil model langsung, service baru hanya untuk statistik
 - Nama internal watchlist (Anime, getAllAnime, cariAnimeById) masih campur Indonesia dan Inggris. Jangan mengganti nama field respons `anim_*`, itu kontrak.
 - Komentar di watchlist.model.mjs masih menyebut Stored Procedure padahal sudah query biasa. Perbaiki sambil lalu.
+- bio dan displayName disimpan apa adanya; frontend wajib merender sebagai teks (tidak boleh dangerouslySetInnerHTML).
+- Regex username hanya untuk pendaftar baru; username lama bisa tidak cocok (cek query pemeriksaan di setiap perangkat) dan diakses ter-encode.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -130,7 +135,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
-17. Phase 2 (profil dan follow), empat chat: 2A backend (migrasi 005, GET /users/:username, PUT /users/profile, statistik lewat watchlist.service) (selesai); 2B backend (follow/unfollow, jumlah, isFollowing); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
+17. Phase 2 (profil dan follow), empat chat: 2A (selesai); 2B backend (follow/unfollow, jumlah, isFollowing); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -320,12 +325,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Berikutnya: Phase 2 (profil dan follow) di modules/users (tambah controller, routes, validator; ekspor lewat index.mjs). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
 - **2026-11-19** — Phase 2, bagian 2A (backend: profil)
   - Selesai: migrasi 005 (user_profiles, follows). optionalAuth. watchlist.service.getUserStats (lapisan service pertama watchlist). modules/users punya controller, routes (createUsersRoutes), validator, dan model profil. GET /users/:username (stats null untuk profil privat bukan pemilik), PUT /users/profile (upsert, pembatas profileUpdate 30/15 mnt per user). Register memakai regex username baru. Tes users.test.mjs dan tes username di auth.test.mjs.
-  - File diubah: src/app.mjs, src/middlewares/auth.middleware.mjs, src/config/rateLimit.mjs, src/config/env.mjs, backend/.env.example (opsional), src/modules/auth/auth.validator.mjs, src/modules/watchlist/{watchlist.model,index}.mjs, src/modules/users/{index,users.model,users.service}.mjs, tests/support/db.mjs, tests/support/db.mjs, tests/auth.test.mjs, tests/rateLimit.test.mjs, tests/auth-cookie.test.mjs (hapus deklarasi ganda findCookie/cookieValue), API.md
+  - File diubah: src/app.mjs, src/middlewares/auth.middleware.mjs, src/config/rateLimit.mjs, src/config/env.mjs, backend/.env.example (opsional), src/modules/auth/auth.validator.mjs, src/modules/watchlist/{watchlist.model,index}.mjs, src/modules/users/{index,users.model,users.service}.mjs, tests/support/db.mjs, tests/auth.test.mjs, tests/rateLimit.test.mjs, tests/auth-cookie.test.mjs (hapus deklarasi ganda findCookie/cookieValue), API.md
   - File baru: src/db/migrations/005_create_user_profiles_and_follows.sql, src/modules/watchlist/watchlist.service.mjs, src/modules/users/{users.controller,users.routes,users.validator}.mjs, tests/users.test.mjs (tes pembatas laju PUT ada di rateLimit.test.mjs)
   - Keputusan baru: username = us_name; respons profil camelCase tanpa email/hash/us_id. Profil privat: stats null untuk orang lain. Baris user_profiles dibuat saat PUT pertama; GET memakai default. avatar/banner ditolak (strict) sampai Phase 3. optionalAuth hanya untuk GET. Nama baru wajib regex; pengguna lama tetap bisa login (query awal: 0 baris tidak cocok). `total` statistik menghitung semua baris user_anime, byStatus hanya 4 status API.
-  - Wajib dilakukan sendiri: pnpm migrate di Windows dan Linux (backup dulu). Variabel RATE*LIMIT_PROFILE_UPDATE*\* bersifat opsional (ada default 30 per 15 menit).
+  - Wajib dilakukan sendiri: pnpm migrate di Windows dan Linux (backup dulu). Variabel `RATE_LIMIT_PROFILE_UPDATE_*` bersifat opsional (ada default 30 per 15 menit).
   - Berikutnya: 2B (follow/unfollow, jumlah follower/following, isFollowing di GET profil; endpoint /users/:username/follow sesuai PRD).
-  - Bagian 4 (Struktur): modules/users kini lengkap (<nama>.{controller,service,model,routes,validator}.mjs + index.mjs); modules/watchlist punya watchlist.service.mjs. Tes baru: users.test.mjs.
-  - Bagian 5 (Endpoint): tambahkan GET /api/users/:username (auth opsional) dan PUT /api/users/profile (ya).
-  - Bagian 6 (Database): tabel tambahan `user_profiles` dan `follows` (migrasi 005; follows belum dipakai sampai 2B). Migrasi: 001 sampai 005.
-  - Bagian 8 (Utang teknis): hapus butir "modules/watchlist belum punya lapisan service" (diganti: controller watchlist masih memanggil model langsung, service baru hanya untuk statistik). Tambah: bio dan displayName disimpan apa adanya, frontend wajib merender sebagai teks. Tambah: regex username hanya untuk pendaftar baru; username lama berspasi diakses ter-encode.
