@@ -9,4 +9,4 @@ variables:
   - name: csrf
     value: a89dd08f02432e3eae17fa2fb89da4de036e8042c478c24b4bb19e53db0a38ef
   - name: csrf2
-    value: 29f63e4e4dfb141510a8c9d7186b48b7df22b578ced7962c8b770e63f6493204
+    value: 92b111b6ed8b27e2fe0396652789e480bda89e24fe6f26e2f910d0f7f266eba5
