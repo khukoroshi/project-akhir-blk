@@ -17,10 +17,6 @@ const PROFILE = "/api/auth/profile";
 const ALLOWED_ORIGIN = env.cors.origins[0];
 const bearer = (t) => ({ Authorization: `Bearer ${t}` });
 
-const findCookie = (res, name) =>
-  (res.headers["set-cookie"] ?? []).find((c) => c.startsWith(`${name}=`));
-const cookieValue = (setCookie) => setCookie.split(";")[0].split("=")[1];
-
 const loginWithAgent = async () => {
   await api().post(REGISTER).send(defaultCredentials);
   const agent = request.agent(app);

@@ -10,6 +10,8 @@ export const cleanDatabase = async () => {
     assertSafeDatabaseName(name);
     verified = true;
   }
+  await db.query("DELETE FROM follows");
+  await db.query("DELETE FROM user_profiles");
   await db.query("DELETE FROM user_anime");
   await db.query("DELETE FROM anime_catalog");
   await db.query("DELETE FROM users");

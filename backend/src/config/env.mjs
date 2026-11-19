@@ -119,6 +119,7 @@ const RATE_LIMIT_DEFAULTS = {
   register: { env: "REGISTER", max: 10, windowMin: 60 },
   catalog: { env: "CATALOG", max: 60, windowMin: 1 },
   createAnime: { env: "CREATE_ANIME", max: 30, windowMin: 15 },
+  profileUpdate: { env: "PROFILE_UPDATE", max: 30, windowMin: 15 }, // baru
 };
 
 const rateLimitLimits = Object.fromEntries(

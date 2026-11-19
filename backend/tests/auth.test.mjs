@@ -108,6 +108,28 @@ describe("POST /api/auth/register", () => {
     expectError(res, 400);
     expect(res.body.message).toBe("Email sudah digunakan");
   });
+  it.each([
+    ["spasi", "nama dengan spasi"],
+    ["diawali garis bawah", "_awal"],
+    ["diawali titik", ".awal"],
+    ["diawali strip", "-awal"],
+    ["karakter @", "nama@x"],
+    ["karakter /", "nama/x"],
+  ])("400: nama tidak valid (%s)", async (_label, name) => {
+    const res = await api()
+      .post(REGISTER)
+      .send({ ...defaultCredentials, name });
+
+    expectError(res, 400);
+    expect(await countUsers()).toBe(0);
+  });
+
+  it("201: nama dengan titik, garis bawah, dan strip diterima", async () => {
+    const res = await api()
+      .post(REGISTER)
+      .send({ ...defaultCredentials, name: "a.b_c-1" });
+    expect(res.status).toBe(201);
+  });
 });
 
 describe("POST /api/auth/login", () => {

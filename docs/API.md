@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-16.
+> Terakhir diperbarui: 2026-11-19.
 
 ## 1. Konvensi Umum
 
@@ -12,7 +12,7 @@
 - **Auth:** cookie HttpOnly `access_token` yang diatur oleh `POST /auth/login`. Header `Authorization` diabaikan total (request ber-Bearer tanpa cookie: 401).
 - **CSRF:** semua POST/PUT/PATCH/DELETE yang terautentikasi wajib header `X-CSRF-Token` berisi nilai cookie `csrf_token` (cookie ini bisa dibaca JavaScript). Tidak cocok atau hilang: 403 "Token CSRF tidak valid". Dikecualikan: GET dan endpoint tanpa sesi (register, login, logout).
 - **CORS:** hanya origin di `CORS_ORIGINS` yang diizinkan (dengan credentials). Frontend wajib mengirim request dengan `withCredentials: true`. Header yang diizinkan: Content-Type, X-CSRF-Token.
-- **Validasi saat ini:** Zod (strict) di endpoint auth, watchlist, dan katalog (query). Target: semua endpoint baru wajib Zod.
+- **Validasi saat ini:** Zod (strict) di endpoint auth, watchlist, katalog (query), dan users.
 
 **Response sukses**
 
@@ -44,6 +44,7 @@ Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "er
 | `POST /auth/register`                          | 10 / 60 menit  | IP          | semua percobaan dihitung        |
 | `GET /catalog/anime`, `GET /catalog/anime/:id` | 60 / 1 menit   | IP          | satu batas untuk kedua endpoint |
 | `POST /anime`                                  | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung |
+| `PUT /users/profile`                           | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung |
 
 Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, password benar pun ditolak 429. Frontend sebaiknya menampilkan `message` dan jangan mengulang request sebelum `Retry-After` lewat.
 
@@ -58,11 +59,11 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Auth:** tidak
 - **Body** (strict, field lain ditolak):
 
-| Field      | Tipe   | Wajib | Aturan Zod                                |
-| ---------- | ------ | ----- | ----------------------------------------- |
-| `name`     | string | ya    | trim, 3-50 karakter                       |
-| `email`    | string | ya    | trim, huruf kecil, format email, maks 100 |
-| `password` | string | ya    | 8-72 karakter, wajib ada huruf dan angka  |
+| Field      | Tipe   | Wajib | Aturan Zod                                                                                                              |
+| ---------- | ------ | ----- | ----------------------------------------------------------------------------------------------------------------------- |
+| `name`     | string | ya    | trim, 3-50 karakter, regex ^[A-Za-z0-9][A-Za-z0-9_.-]{2,49}$ (huruf, angka, ., \_, -; diawali huruf/angka; tanpa spasi) |
+| `email`    | string | ya    | trim, huruf kecil, format email, maks 100                                                                               |
+| `password` | string | ya    | 8-72 karakter, wajib ada huruf dan angka                                                                                |
 
 - **Sukses 201:** `data: { us_id, us_name, us_email }`
 - **Error:** 400 validasi gagal (pesan error pertama), 400 "Nama sudah digunakan", 400 "Email sudah digunakan", 400 "Nama atau email sudah digunakan" (kunci tidak dikenali), 429 terlalu banyak percobaan (pembatas laju server)
@@ -143,6 +144,36 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Sukses 200:** `message` saja
 - **Error:** 400 `anim_id` tidak valid, 404 tidak ditemukan di watchlist
 
+### Profil Pengguna
+
+> Username = `users.us_name`. Respons camelCase dan TIDAK PERNAH memuat email, hash password, atau us_id.
+> Bentuk objek `Profile`:
+> `{ username: string, displayName: string (default = username), bio: string|null, isPrivate: boolean, joinedAt: string (ISO 8601), isSelf: boolean, stats: Stats|null }`
+> `Stats`: `{ total: number, byStatus: { "watching", "completed", "dropped", "plan to watch": number } (keempatnya selalu ada), episodesWatched: number, meanScore: number|null (1 desimal), scoreDistribution: { "1".."10": number } (selalu 10 kunci; kunci = bagian bulat skor, 8.5 masuk "8") }`
+
+#### `GET /users/:username`
+
+- **Auth:** opsional (cookie valid mengisi `isSelf`; tanpa cookie atau cookie tidak valid tetap 200 sebagai anonim)
+- **Param:** `username` string, trim, 3-50 karakter (ter-encode di URL)
+- **Sukses 200:** `data: Profile`
+- **Error:** 400 username tidak valid, 404 "Pengguna tidak ditemukan", 429 pembatas laju global
+- **Catatan:** jika `isPrivate` true dan pemanggil bukan pemilik, `stats` = null (field lain tetap ada). Baris profil dibuat saat PUT pertama; sebelum itu `displayName` = username, `bio` null, `isPrivate` false.
+
+#### `PUT /users/profile`
+
+- **Auth:** ya (CSRF wajib)
+- **Body** (strict, semua field dikirim sekaligus):
+
+| Field         | Tipe             | Wajib | Aturan Zod                                              |
+| ------------- | ---------------- | ----- | ------------------------------------------------------- |
+| `displayName` | string atau null | ya    | trim, 1-100 karakter, atau null (null = pakai username) |
+| `bio`         | string atau null | ya    | maks 500 karakter, atau null                            |
+| `isPrivate`   | boolean          | ya    | true atau false                                         |
+
+- **Sukses 200:** `data: Profile` (profil terbaru, `isSelf: true`)
+- **Error:** 400 validasi gagal (termasuk `avatarUrl`/`bannerUrl`: belum bisa diubah, upload di Phase 3), 401 belum login, 403 token CSRF tidak valid, 429 pembatas laju (30 per 15 menit per user)
+- **Catatan:** pemanggilan pertama membuat baris profil (upsert). Teks `displayName` dan `bio` harus dirender sebagai teks biasa di frontend.
+
 ### Katalog AniList (publik, tanpa auth)
 
 #### `GET /catalog/anime?q=<kata kunci>&page=<n>&filter=<kategori>`
@@ -218,3 +249,4 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - 2026-11-12: Auth cookie (13A, tahap tambah): login mengatur cookie access_token (HttpOnly) dan csrf_token; endpoint terproteksi menerima Bearer ATAU cookie; request ber-cookie yang mengubah data wajib header X-CSRF-Token (403 jika salah); POST /auth/logout baru; CORS memakai daftar origin dengan credentials. Bearer masih diterima sementara.
 - 2026-11-13: Auth cookie (13C, tahap hapus): Bearer dihapus (header Authorization diabaikan, tanpa cookie: 401); CSRF wajib untuk semua mutasi terautentikasi; login tidak lagi mengembalikan token di body (hanya `data: { user }`); Authorization dihapus dari header CORS yang diizinkan.
 - 2026-11-14: Pembatasan laju: 429 dari server (global 600/15 mnt, login gagal 5/15 mnt per IP+email dan 30/15 mnt per IP, register 10/60 mnt, katalog 60/mnt, POST /anime 30/15 mnt per user), header Retry-After dan `RateLimit-*`. Perilaku endpoint lain tidak berubah.
+- 2026-11-19: Users (Phase 2A): GET /users/:username (auth opsional), PUT /users/profile (30/15 menit per user). Register: nama baru wajib cocok regex `^[A-Za-z0-9][A-Za-z0-9_.-]{2,49}$`. Pada tabel "Endpoint Rencana", `/users/:username` dan `/users/profile` dihapus (sudah ada); follow memakai `/users/:username/follow` (2B), bukan `:id`.

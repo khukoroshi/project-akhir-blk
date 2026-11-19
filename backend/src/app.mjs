@@ -8,6 +8,8 @@ import AppError from "./utils/appError.mjs";
 import { authRoutes } from "./modules/auth/index.mjs";
 import { createWatchlistRoutes } from "./modules/watchlist/index.mjs";
 import { catalogRoutes } from "./modules/anime/index.mjs";
+import { createUsersRoutes } from "./modules/users/index.mjs";
+// ...
 
 export const createApp = ({
   rateLimit = env.rateLimit,
@@ -31,6 +33,7 @@ export const createApp = ({
 
   app.use("/api/auth", authRoutes);
   app.use("/api/anime", createWatchlistRoutes(limiters));
+  app.use("/api/users", createUsersRoutes(limiters));
   app.use("/api/catalog", catalogRoutes);
 
   // Endpoint utama

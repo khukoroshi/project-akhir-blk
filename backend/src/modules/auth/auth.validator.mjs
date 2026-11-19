@@ -14,7 +14,11 @@ export const registerSchema = z.strictObject(
       .string({ error: "Nama wajib diisi" })
       .trim()
       .min(3, "Nama minimal 3 karakter")
-      .max(50, "Nama maksimal 50 karakter"),
+      .max(50, "Nama maksimal 50 karakter")
+      .regex(
+        /^[A-Za-z0-9][A-Za-z0-9_.-]{2,49}$/,
+        "Nama hanya boleh berisi huruf, angka, titik, garis bawah, dan strip, serta harus diawali huruf atau angka (tanpa spasi)",
+      ),
     email: emailField,
     password: z
       .string({ error: "Password wajib diisi" })

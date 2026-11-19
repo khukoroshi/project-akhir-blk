@@ -28,3 +28,17 @@ export const protect = (req, res, next) => {
   // Every authenticated request uses the cookie, so every mutation needs CSRF.
   return csrfProtect(req, res, next);
 };
+
+// Fills req.user when the cookie is valid. Never rejects: no cookie or an
+// invalid cookie simply continues as anonymous. Use on GET routes only.
+export const optionalAuth = (req, res, next) => {
+  const token = req.cookies?.[ACCESS_COOKIE];
+  if (token) {
+    try {
+      req.user = jwt.verify(token, env.jwt.secret);
+    } catch {
+      // Treated as anonymous.
+    }
+  }
+  return next();
+};

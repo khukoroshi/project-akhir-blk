@@ -238,7 +238,7 @@ frontend/src/
 ### Profiles & Social Relationships
 
 - `GET /api/users/:username` — Fetch public profile & tracking stats
-- `PUT /api/users/profile` — Update bio, display name, avatar
+- `PUT /api/users/profile` — UUpdate bio, display name
 - `POST /api/users/:username/follow` — Follow (idempotent)
 - `DELETE /api/users/:username/follow` — Unfollow (idempotent)
 

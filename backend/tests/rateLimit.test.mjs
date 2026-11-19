@@ -26,6 +26,7 @@ const buildApp = ({ limits = {}, trustProxy, enabled = true } = {}) =>
           register: limit(1000),
           catalog: limit(1000),
           createAnime: limit(1000),
+          profileUpdate: limit(1000),
           ...limits,
         },
       },
@@ -175,6 +176,37 @@ describe("POST /api/anime", () => {
     const server = buildApp({ limits: { createAnime: limit(1) } });
     for (let i = 0; i < 3; i++) {
       expect((await server.post("/api/anime").send({})).status).toBe(401);
+    }
+  });
+});
+
+describe("PUT /api/users/profile", () => {
+  const body = { displayName: null, bio: null, isPrivate: false };
+
+  it("is counted per user, not per IP", async () => {
+    const a = await createUserAndLogin();
+    const b = await createUserAndLogin({
+      name: "tester-b",
+      email: "b@example.com",
+    });
+    const server = buildApp({ limits: { profileUpdate: limit(2) } });
+    const put = (token) =>
+      withSession(server.put("/api/users/profile"), token).send(body);
+
+    expect((await put(a.token)).status).toBe(200);
+    expect((await put(a.token)).status).toBe(200);
+    expectLimited(await put(a.token));
+
+    // Same IP, different user: not affected.
+    expect((await put(b.token)).status).toBe(200);
+  });
+
+  it("requests without a session get 401, not 429", async () => {
+    const server = buildApp({ limits: { profileUpdate: limit(1) } });
+    for (let i = 0; i < 3; i++) {
+      expect((await server.put("/api/users/profile").send(body)).status).toBe(
+        401,
+      );
     }
   });
 });

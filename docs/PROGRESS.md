@@ -130,7 +130,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
-17. Phase 2 (profil dan follow), empat chat: 2A backend (migrasi 005, GET /users/:username, PUT /users/profile, statistik lewat watchlist.service); 2B backend (follow/unfollow, jumlah, isFollowing); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
+17. Phase 2 (profil dan follow), empat chat: 2A backend (migrasi 005, GET /users/:username, PUT /users/profile, statistik lewat watchlist.service) (selesai); 2B backend (follow/unfollow, jumlah, isFollowing); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -318,3 +318,14 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: backend/tests/architecture.test.mjs
   - Keputusan baru: file lepas selain app.mjs di src/ juga dilarang. Folder lama (controllers, models, routes, services, validators) dilarang permanen; kode baru wajib di modules/<nama>/.
   - Berikutnya: Phase 2 (profil dan follow) di modules/users (tambah controller, routes, validator; ekspor lewat index.mjs). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **2026-11-19** — Phase 2, bagian 2A (backend: profil)
+  - Selesai: migrasi 005 (user_profiles, follows). optionalAuth. watchlist.service.getUserStats (lapisan service pertama watchlist). modules/users punya controller, routes (createUsersRoutes), validator, dan model profil. GET /users/:username (stats null untuk profil privat bukan pemilik), PUT /users/profile (upsert, pembatas profileUpdate 30/15 mnt per user). Register memakai regex username baru. Tes users.test.mjs dan tes username di auth.test.mjs.
+  - File diubah: src/app.mjs, src/middlewares/auth.middleware.mjs, src/config/rateLimit.mjs, src/config/env.mjs, backend/.env.example (opsional), src/modules/auth/auth.validator.mjs, src/modules/watchlist/{watchlist.model,index}.mjs, src/modules/users/{index,users.model,users.service}.mjs, tests/support/db.mjs, tests/support/db.mjs, tests/auth.test.mjs, tests/rateLimit.test.mjs, tests/auth-cookie.test.mjs (hapus deklarasi ganda findCookie/cookieValue), API.md
+  - File baru: src/db/migrations/005_create_user_profiles_and_follows.sql, src/modules/watchlist/watchlist.service.mjs, src/modules/users/{users.controller,users.routes,users.validator}.mjs, tests/users.test.mjs (tes pembatas laju PUT ada di rateLimit.test.mjs)
+  - Keputusan baru: username = us_name; respons profil camelCase tanpa email/hash/us_id. Profil privat: stats null untuk orang lain. Baris user_profiles dibuat saat PUT pertama; GET memakai default. avatar/banner ditolak (strict) sampai Phase 3. optionalAuth hanya untuk GET. Nama baru wajib regex; pengguna lama tetap bisa login (query awal: 0 baris tidak cocok). `total` statistik menghitung semua baris user_anime, byStatus hanya 4 status API.
+  - Wajib dilakukan sendiri: pnpm migrate di Windows dan Linux (backup dulu). Variabel RATE*LIMIT_PROFILE_UPDATE*\* bersifat opsional (ada default 30 per 15 menit).
+  - Berikutnya: 2B (follow/unfollow, jumlah follower/following, isFollowing di GET profil; endpoint /users/:username/follow sesuai PRD).
+  - Bagian 4 (Struktur): modules/users kini lengkap (<nama>.{controller,service,model,routes,validator}.mjs + index.mjs); modules/watchlist punya watchlist.service.mjs. Tes baru: users.test.mjs.
+  - Bagian 5 (Endpoint): tambahkan GET /api/users/:username (auth opsional) dan PUT /api/users/profile (ya).
+  - Bagian 6 (Database): tabel tambahan `user_profiles` dan `follows` (migrasi 005; follows belum dipakai sampai 2B). Migrasi: 001 sampai 005.
+  - Bagian 8 (Utang teknis): hapus butir "modules/watchlist belum punya lapisan service" (diganti: controller watchlist masih memanggil model langsung, service baru hanya untuk statistik). Tambah: bio dan displayName disimpan apa adanya, frontend wajib merender sebagai teks. Tambah: regex username hanya untuk pendaftar baru; username lama berspasi diakses ter-encode.

@@ -126,6 +126,30 @@ const Anime = {
     });
   },
 
+  // Raw aggregates for profile stats. Shaping happens in watchlist.service.
+  getStatsByUser: async (usId) => {
+    const [[statusRows], [scoreRows], [[meanRow]]] = await Promise.all([
+      db.execute(
+        `SELECT status, COUNT(*) AS total,
+                COALESCE(SUM(episodes_watched), 0) AS episodes
+         FROM user_anime WHERE user_id = ? GROUP BY status`,
+        [usId],
+      ),
+      db.execute(
+        `SELECT FLOOR(score) AS bucket, COUNT(*) AS total
+         FROM user_anime WHERE user_id = ? AND score IS NOT NULL
+         GROUP BY FLOOR(score)`,
+        [usId],
+      ),
+      db.execute(
+        `SELECT ROUND(AVG(score), 1) AS mean
+         FROM user_anime WHERE user_id = ?`,
+        [usId],
+      ),
+    ]);
+    return { statusRows, scoreRows, mean: meanRow?.mean ?? null };
+  },
+
   // Hapus anime dari watchlist
   deleteWatchList: async (animId, usId) => {
     const query = "DELETE FROM user_anime WHERE id = ? AND user_id = ?";

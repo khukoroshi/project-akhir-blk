@@ -78,5 +78,9 @@ export const createRateLimiters = ({ enabled, limits }) => {
       keyGenerator: userKey,
       subject: "penambahan anime",
     }),
+    profileUpdate: make("profileUpdate", {
+      keyGenerator: userKey,
+      subject: "perubahan profil",
+    }),
   };
 };
