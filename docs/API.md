@@ -36,15 +36,16 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "error", "message": "Terlalu banyak ... Coba lagi dalam N menit." }`, dan header `Retry-After` (detik). Header standar `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` ikut dikirim. Batas dihitung per jendela waktu dan nilainya bisa diubah lewat env server (nilai di bawah adalah default).
 
-| Endpoint                                       | Batas          | Kunci       | Catatan                         |
-| ---------------------------------------------- | -------------- | ----------- | ------------------------------- |
-| Semua `/api/*`                                 | 600 / 15 menit | IP          | batas global                    |
-| `POST /auth/login`                             | 5 / 15 menit   | IP + email  | hanya percobaan gagal dihitung  |
-| `POST /auth/login`                             | 30 / 15 menit  | IP          | hanya percobaan gagal dihitung  |
-| `POST /auth/register`                          | 10 / 60 menit  | IP          | semua percobaan dihitung        |
-| `GET /catalog/anime`, `GET /catalog/anime/:id` | 60 / 1 menit   | IP          | satu batas untuk kedua endpoint |
-| `POST /anime`                                  | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung |
-| `PUT /users/profile`                           | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung |
+| Endpoint                                       | Batas          | Kunci       | Catatan                                                    |
+| ---------------------------------------------- | -------------- | ----------- | ---------------------------------------------------------- |
+| Semua `/api/*`                                 | 600 / 15 menit | IP          | batas global                                               |
+| `POST /auth/login`                             | 5 / 15 menit   | IP + email  | hanya percobaan gagal dihitung                             |
+| `POST /auth/login`                             | 30 / 15 menit  | IP          | hanya percobaan gagal dihitung                             |
+| `POST /auth/register`                          | 10 / 60 menit  | IP          | semua percobaan dihitung                                   |
+| `GET /catalog/anime`, `GET /catalog/anime/:id` | 60 / 1 menit   | IP          | satu batas untuk kedua endpoint                            |
+| `POST /anime`                                  | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung                            |
+| `PUT /users/profile`                           | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung                            |
+| `POST` / `DELETE /users/:username/follow`      | 60 / 15 menit  | user (sesi) | satu batas untuk keduanya; semua request ber-sesi dihitung |
 
 Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, password benar pun ditolak 429. Frontend sebaiknya menampilkan `message` dan jangan mengulang request sebelum `Retry-After` lewat.
 
@@ -148,7 +149,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 
 > Username = `users.us_name`. Respons camelCase dan TIDAK PERNAH memuat email, hash password, atau us_id.
 > Bentuk objek `Profile`:
-> `{ username: string, displayName: string (default = username), bio: string|null, isPrivate: boolean, joinedAt: string (ISO 8601), isSelf: boolean, stats: Stats|null }`
+> `{ username: string, displayName: string (default = username), bio: string|null, isPrivate: boolean, joinedAt: string (ISO 8601), isSelf: boolean, followersCount: number, followingCount: number, isFollowing: boolean, stats: Stats|null }`
 > `Stats`: `{ total: number, byStatus: { "watching", "completed", "dropped", "plan to watch": number } (keempatnya selalu ada), episodesWatched: number, meanScore: number|null (1 desimal), scoreDistribution: { "1".."10": number } (selalu 10 kunci; kunci = bagian bulat skor, 8.5 masuk "8") }`
 
 #### `GET /users/:username`
@@ -157,7 +158,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Param:** `username` string, trim, 3-50 karakter (ter-encode di URL)
 - **Sukses 200:** `data: Profile`
 - **Error:** 400 username tidak valid, 404 "Pengguna tidak ditemukan", 429 pembatas laju global
-- **Catatan:** jika `isPrivate` true dan pemanggil bukan pemilik, `stats` = null (field lain tetap ada). Baris profil dibuat saat PUT pertama; sebelum itu `displayName` = username, `bio` null, `isPrivate` false.
+- **Catatan:** (baris lama dipertahankan) `followersCount` dan `followingCount` selalu ada, juga untuk profil privat. `isFollowing` true hanya jika pemanggil login, bukan pemilik, dan mengikuti pengguna itu; false untuk anonim dan pemilik.
 
 #### `PUT /users/profile`
 
@@ -173,6 +174,24 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Sukses 200:** `data: Profile` (profil terbaru, `isSelf: true`)
 - **Error:** 400 validasi gagal (termasuk `avatarUrl`/`bannerUrl`: belum bisa diubah, upload di Phase 3), 401 belum login, 403 token CSRF tidak valid, 429 pembatas laju (30 per 15 menit per user)
 - **Catatan:** pemanggilan pertama membuat baris profil (upsert). Teks `displayName` dan `bio` harus dirender sebagai teks biasa di frontend.
+
+#### `POST /users/:username/follow`
+
+- **Auth:** ya (CSRF wajib)
+- **Param:** `username` string, trim, 3-50 karakter (ter-encode di URL)
+- **Body:** tidak ada
+- **Sukses 200:** `data: { username, isFollowing: true, followersCount }`
+- **Error:** 400 username tidak valid, 400 "Tidak bisa mengikuti diri sendiri", 401 belum login, 403 token CSRF tidak valid, 404 "Pengguna tidak ditemukan", 429 pembatas laju (60 per 15 menit per user, dibagi dengan DELETE)
+- **Catatan:** idempotent, bukan toggle: mengikuti dua kali tetap satu relasi dan tetap 200. Berlaku juga untuk profil privat (tanpa persetujuan; statistik profil privat tetap tersembunyi). `username` pada respons memakai ejaan tersimpan di database.
+
+#### `DELETE /users/:username/follow`
+
+- **Auth:** ya (CSRF wajib)
+- **Param:** sama seperti POST
+- **Body:** tidak ada
+- **Sukses 200:** `data: { username, isFollowing: false, followersCount }`
+- **Error:** sama seperti POST (400 diri sendiri memakai pesan yang sama)
+- **Catatan:** idempotent: berhenti mengikuti saat tidak mengikuti tetap 200.
 
 ### Katalog AniList (publik, tanpa auth)
 
@@ -202,7 +221,6 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 | ------ | ---------------------------- | ---- | ---------------------------------- |
 | GET    | `/users/:username`           | 2    | profil publik + statistik          |
 | PUT    | `/users/profile`             | 2    | ubah bio, nama tampilan, avatar    |
-| POST   | `/users/:id/follow`          | 2    | toggle follow                      |
 | GET    | `/posts?page=&limit=`        | 3    | feed berpaginasi                   |
 | POST   | `/posts`                     | 3    | buat post                          |
 | POST   | `/posts/:id/like`            | 3    | toggle like                        |
@@ -250,3 +268,4 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - 2026-11-13: Auth cookie (13C, tahap hapus): Bearer dihapus (header Authorization diabaikan, tanpa cookie: 401); CSRF wajib untuk semua mutasi terautentikasi; login tidak lagi mengembalikan token di body (hanya `data: { user }`); Authorization dihapus dari header CORS yang diizinkan.
 - 2026-11-14: Pembatasan laju: 429 dari server (global 600/15 mnt, login gagal 5/15 mnt per IP+email dan 30/15 mnt per IP, register 10/60 mnt, katalog 60/mnt, POST /anime 30/15 mnt per user), header Retry-After dan `RateLimit-*`. Perilaku endpoint lain tidak berubah.
 - 2026-11-19: Users (Phase 2A): GET /users/:username (auth opsional), PUT /users/profile (30/15 menit per user). Register: nama baru wajib cocok regex `^[A-Za-z0-9][A-Za-z0-9_.-]{2,49}$`. Pada tabel "Endpoint Rencana", `/users/:username` dan `/users/profile` dihapus (sudah ada); follow memakai `/users/:username/follow` (2B), bukan `:id`.
+- 2026-11-19: Users (Phase 2B): POST dan DELETE /users/:username/follow (idempotent, auth + CSRF, 60/15 menit per user bersama). GET /users/:username dan respons PUT /users/profile menambah followersCount, followingCount, isFollowing. Bentuk field lain tidak berubah.

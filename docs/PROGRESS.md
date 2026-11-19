@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 (profil dan follow): 2A selesai.
+- **Phase aktif:** Phase 2 (profil dan follow): 2A dan 2B selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 2B (follow/unfollow, jumlah follower/following, isFollowing di GET profil).
+- **Berikutnya:** 2C (frontend: halaman profil, statistik, navbar).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -35,6 +35,7 @@
 - Path API dipertahankan (/anime, /catalog/anime, /auth/profile); PRD disesuaikan dengan kode.
 - Modul backend diekspor lewat modules/<nama>/index.mjs. Kode di luar modul hanya boleh mengimpor index.mjs modul itu; integrations/ tidak boleh mengimpor modules/. Dijaga tests/architecture.test.mjs. Modul baru memakai pola controller-service-model.
 - Phase 2: URL profil memakai username (us_name). Respons profil camelCase, tidak pernah memuat email, hash password, atau us_id. Profil privat menyembunyikan statistik dari orang lain; follow tanpa persetujuan. Avatar dan banner ditunda ke Phase 3. Follow memakai POST dan DELETE (idempotent), bukan toggle. Daftar followers/following dan pencarian pengguna ditunda; hanya jumlah yang tampil. Statistik dihitung saat diminta, tanpa cache. Kode frontend baru di frontend/src/features/profile/.
+- Follow dan unfollow idempotent (INSERT ... ON DUPLICATE KEY UPDATE; DELETE), mengikuti diri sendiri 400, follow juga untuk profil privat. followersCount dan followingCount selalu tampil, juga untuk profil privat; isFollowing hanya true untuk pemanggil login non-pemilik yang mengikuti. Pembatas follow (60/15 menit per user) dipakai bersama oleh POST dan DELETE lewat satu instance.
 
 ## 4. Struktur Saat Ini (sesuai target backend)
 
@@ -42,7 +43,7 @@
 `src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.{controller,service,model,routes,validator}.mjs + index.mjs), modules/watchlist.service.mjs, utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
 
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
-- Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), users (modul di modules/users: service dan model saja, route menyusul di Phase 2).
+- Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), users (modul di modules/users: controller, service, model, routes, validator; profil dan follow). Tes: tambah tests/follow.test.mjs.
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
 - Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture,users}.test.mjs).
@@ -57,27 +58,29 @@
 
 ## 5. Endpoint yang Sudah Ada
 
-| Method | Path                            | Auth     | Keterangan                                                               |
-| ------ | ------------------------------- | -------- | ------------------------------------------------------------------------ |
-| POST   | `/api/auth/register`            | tidak    | daftar                                                                   |
-| POST   | `/api/auth/login`               | tidak    | user di body, JWT hanya di cookie                                        |
-| GET    | `/api/auth/profile`             | ya       | profil dari JWT                                                          |
-| GET    | `/api/anime`                    | ya       | seluruh watchlist user                                                   |
-| GET    | `/api/anime/:anim_id`           | ya       | satu item watchlist                                                      |
-| POST   | `/api/anime`                    | ya       | tambah ke watchlist                                                      |
-| PUT    | `/api/anime/:anim_id`           | ya       | ubah item                                                                |
-| PATCH  | `/api/anime/:anim_id/increment` | ya       | tambah episode                                                           |
-| DELETE | `/api/anime/:anim_id`           | ya       | hapus item                                                               |
-| GET    | `/api/catalog/anime`            | tidak    | daftar top (10 filter) dan pencarian, berpaginasi (?q, ?page, ?filter)   |
-| GET    | `/api/catalog/anime/:id`        | tidak    | detail anime (AniList)                                                   |
-| GET    | `/api/users/:username`          | opsional | profil publik + statistik (stats null untuk profil privat bukan pemilik) |
-| PUT    | `/api/users/profile`            | ya       | ubah displayName, bio, isPrivate                                         |
+| Method | Path                            | Auth     | Keterangan                                                                                                              |
+| ------ | ------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/auth/register`            | tidak    | daftar                                                                                                                  |
+| POST   | `/api/auth/login`               | tidak    | user di body, JWT hanya di cookie                                                                                       |
+| GET    | `/api/auth/profile`             | ya       | profil dari JWT                                                                                                         |
+| GET    | `/api/anime`                    | ya       | seluruh watchlist user                                                                                                  |
+| GET    | `/api/anime/:anim_id`           | ya       | satu item watchlist                                                                                                     |
+| POST   | `/api/anime`                    | ya       | tambah ke watchlist                                                                                                     |
+| PUT    | `/api/anime/:anim_id`           | ya       | ubah item                                                                                                               |
+| PATCH  | `/api/anime/:anim_id/increment` | ya       | tambah episode                                                                                                          |
+| DELETE | `/api/anime/:anim_id`           | ya       | hapus item                                                                                                              |
+| GET    | `/api/catalog/anime`            | tidak    | daftar top (10 filter) dan pencarian, berpaginasi (?q, ?page, ?filter)                                                  |
+| GET    | `/api/catalog/anime/:id`        | tidak    | detail anime (AniList)                                                                                                  |
+| GET    | `/api/users/:username`          | opsional | profil publik + statistik + followersCount, followingCount, isFollowing (stats null untuk profil privat bukan pemilik). |
+| PUT    | `/api/users/profile`            | ya       | ubah displayName, bio, isPrivate                                                                                        |
+| POST   | `/api/users/:username/follow`   | ya       | ikuti pengguna (idempotent), data: username, isFollowing, followersCount                                                |
+| DELETE | `/api/users/:username/follow`   | ya       | berhenti mengikuti (idempotent)                                                                                         |
 
 Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbeda dari yang ada sekarang. Putuskan nanti apakah diganti atau PRD yang disesuaikan.
 
 ## 6. Database Saat Ini
 
-- Database `AniWatchList`. Tabel: `users`, `anime_catalog`, `user_anime`, `schema_migrations`, `animes_legacy` (cadangan hasil rename migrasi 004, tidak dipakai kode), `user_profiles` dan `follows` (migrasi 005; follows belum dipakai sampai 2B)..
+- Database `AniWatchList`. Tabel: `users`, `anime_catalog`, `user_anime`, `schema_migrations`, `animes_legacy` (cadangan hasil rename migrasi 004, tidak dipakai kode), `user_profiles` dan `follows` (migrasi 005; follows dipakai sejak 2B)
 - Stored procedure: hanya `sp_insert_user` (dipakai auth).
 - Migrasi: 001 sampai 005.
 - DROP MANUAL animes_legacy pada atau setelah 2026-12-16, setelah backup, di luar runner migrasi, lalu catat di sini.
@@ -116,6 +119,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Komentar di watchlist.model.mjs masih menyebut Stored Procedure padahal sudah query biasa. Perbaiki sambil lalu.
 - bio dan displayName disimpan apa adanya; frontend wajib merender sebagai teks (tidak boleh dangerouslySetInnerHTML).
 - Regex username hanya untuk pendaftar baru; username lama bisa tidak cocok (cek query pemeriksaan di setiap perangkat) dan diakses ter-encode.
+- Hitungan follow dihitung saat diminta dengan COUNT(\*) (tanpa cache). Bergantung pada indeks: primary key (follower_id, following_id) dan indeks foreign key following_id dari migrasi 005. Jika kelak lambat, tambah kolom hitungan atau cache.
+- GET profil kini menjalankan 2 query tambahan (hitungan dan isFollowing) secara paralel.
+- Pencocokan username mengikuti collation MySQL (tidak peka huruf besar/kecil); respons follow memakai ejaan tersimpan.
+- Daftar followers/following, pencarian pengguna, dan notifikasi follow belum ada (Phase 5 untuk notifikasi).
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -135,7 +142,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
-17. Phase 2 (profil dan follow), empat chat: 2A (selesai); 2B backend (follow/unfollow, jumlah, isFollowing); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
+17. Phase 2 (profil dan follow), empat chat: 2A (selesai); 2B (selesai); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -330,3 +337,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Keputusan baru: username = us_name; respons profil camelCase tanpa email/hash/us_id. Profil privat: stats null untuk orang lain. Baris user_profiles dibuat saat PUT pertama; GET memakai default. avatar/banner ditolak (strict) sampai Phase 3. optionalAuth hanya untuk GET. Nama baru wajib regex; pengguna lama tetap bisa login (query awal: 0 baris tidak cocok). `total` statistik menghitung semua baris user_anime, byStatus hanya 4 status API.
   - Wajib dilakukan sendiri: pnpm migrate di Windows dan Linux (backup dulu). Variabel `RATE_LIMIT_PROFILE_UPDATE_*` bersifat opsional (ada default 30 per 15 menit).
   - Berikutnya: 2B (follow/unfollow, jumlah follower/following, isFollowing di GET profil; endpoint /users/:username/follow sesuai PRD).
+- **2026-11-19** — Phase 2, bagian 2B (backend: follow)
+  - Selesai: POST dan DELETE /users/:username/follow (idempotent, auth + CSRF, 400 diri sendiri, 404 username tidak ada). GET /users/:username dan respons PUT /users/profile menambah followersCount, followingCount, isFollowing. Pembatas laju follow 60/15 menit per user, bersama untuk POST dan DELETE. Tes follow.test.mjs.
+  - File diubah: src/modules/users/{users.model,users.service,users.controller,users.routes}.mjs, src/config/{rateLimit,env}.mjs, backend/.env.example, tests/users.test.mjs (daftar kunci profil), API.md
+  - File baru: tests/follow.test.mjs
+  - Keputusan baru: lihat bagian 3 (butir Phase 2). Tidak ada migrasi baru; variabel RATE*LIMIT_FOLLOW*\* opsional (default 60 per 15 menit).
+  - Berikutnya: 2C (frontend: halaman profil, statistik, navbar), lalu 2D (edit profil dan tombol follow).
