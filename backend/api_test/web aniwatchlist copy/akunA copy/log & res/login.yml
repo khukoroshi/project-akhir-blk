@@ -1,0 +1,27 @@
+info:
+  name: login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/auth/login"
+  body:
+    type: json
+    data: '{"email":"khukoroshi@gmail.com","password":"Khuk0r0SH!"}'
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const cookies = res.getHeader("set-cookie") || [];
+        const hit = cookies.map(c => c.match(/csrf_token=([^;]+)/)).find(Boolean);
+        if (hit) bru.setEnvVar("csrf_2", hit[1]);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

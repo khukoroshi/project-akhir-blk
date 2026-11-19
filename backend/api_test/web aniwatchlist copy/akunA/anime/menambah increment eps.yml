@@ -1,0 +1,21 @@
+info:
+  name: menambah increment eps
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: "{{base_url}}/anime/{{anime_id}}/increment"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf}}"
+  auth:
+    type: bearer
+    token: ""
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

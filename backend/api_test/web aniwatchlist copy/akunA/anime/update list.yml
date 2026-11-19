@@ -1,0 +1,24 @@
+info:
+  name: update list
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{base_url}}/anime/{{anime_id}}"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf}}"
+  body:
+    type: json
+    data: '{ "eps": 3, "status": "watching" }'
+  auth:
+    type: bearer
+    token: ""
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
