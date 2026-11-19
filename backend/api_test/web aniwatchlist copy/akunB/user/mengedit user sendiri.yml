@@ -5,7 +5,13 @@ info:
 
 http:
   method: PUT
-  url: ""
+  url: "{{base_url}}/users/profile"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf2}}"
+  body:
+    type: json
+    data: '{ "displayName": "Alice Wonder", "bio": "Suka isekai", "isPrivate": false }'
   auth: inherit
 
 settings:

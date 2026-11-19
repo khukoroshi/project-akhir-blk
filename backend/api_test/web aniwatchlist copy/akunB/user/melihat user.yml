@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{base_url}}/users/khukoroshi"
+  url: "{{base_url}}/users/testing2"
   headers:
     - name: X-CSRF-Token
       value: "{{csrf2}}"

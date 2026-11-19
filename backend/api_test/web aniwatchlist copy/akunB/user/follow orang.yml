@@ -5,7 +5,10 @@ info:
 
 http:
   method: POST
-  url: ""
+  url: "{{base_url}}/users/khukoroshi/follow"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf2}}"
   auth: inherit
 
 settings:

@@ -1,0 +1,22 @@
+info:
+  name: mengedit user sendiri
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{base_url}}/users/profile"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf}}"
+  body:
+    type: json
+    data: '{ "displayName": "Fafnir", "bio": "Suka isekai",  "isPrivate": false }'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

@@ -1,0 +1,19 @@
+info:
+  name: unfollow orang
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{base_url}}/users/testing2/follow"
+  headers:
+    - name: X-CSRF-Token
+      value: "{{csrf}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
