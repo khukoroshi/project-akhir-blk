@@ -1,14 +1,14 @@
 info:
-  name: menambah increment eps
+  name: profile
   type: http
-  seq: 5
+  seq: 2
 
 http:
-  method: PATCH
-  url: "{{base_url}}/anime/{{anime_id}}/increment"
+  method: GET
+  url: "{{base_url}}/auth/profile"
   headers:
     - name: X-CSRF-Token
-      value: "{{csrf}}"
+      value: "{{csrf2}}"
   auth:
     type: bearer
     token: ""

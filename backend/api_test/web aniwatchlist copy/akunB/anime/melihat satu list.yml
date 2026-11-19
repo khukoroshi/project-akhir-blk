@@ -8,7 +8,7 @@ http:
   url: "{{base_url}}/anime/{{anime_id}}"
   headers:
     - name: X-CSRF-Token
-      value: "{{csrf}}"
+      value: "{{csrf2}}"
   auth:
     type: bearer
     token: ""

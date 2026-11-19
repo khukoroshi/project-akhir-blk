@@ -1,17 +1,14 @@
 info:
-  name: menambahkan list anime
+  name: menambah increment eps
   type: http
-  seq: 1
+  seq: 5
 
 http:
-  method: POST
-  url: "{{base_url}}/anime"
+  method: PATCH
+  url: "{{base_url}}/anime/{{anime_id}}/increment"
   headers:
     - name: X-CSRF-Token
-      value: "{{csrf}}"
-  body:
-    type: json
-    data: '{ "externalId": 1535, "foo": "bar" }'
+      value: "{{csrf2}}"
   auth:
     type: bearer
     token: ""

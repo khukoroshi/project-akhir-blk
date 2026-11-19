@@ -1,17 +1,17 @@
 info:
-  name: update list
+  name: menambahkan list anime
   type: http
-  seq: 4
+  seq: 1
 
 http:
-  method: PUT
-  url: "{{base_url}}/anime/{{anime_id}}"
+  method: POST
+  url: "{{base_url}}/anime"
   headers:
     - name: X-CSRF-Token
-      value: "{{csrf}}"
+      value: "{{csrf2}}"
   body:
     type: json
-    data: '{ "eps": 3, "status": "watching" }'
+    data: '{ "externalId": 1535, "foo": "bar" }'
   auth:
     type: bearer
     token: ""

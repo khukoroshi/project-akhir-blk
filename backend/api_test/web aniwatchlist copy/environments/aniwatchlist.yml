@@ -2,12 +2,11 @@ name: aniwatchlist
 variables:
   - name: base_url
     value: http://localhost:3000/api
-    description: ""
   - name: anime_id
     value:
       type: number
       data: "20"
-    description: ""
   - name: csrf
-    value: 442a828e65c9254b9dbd1fbd66aedc35db91a623bc9912b4925357b7351313b4
-    description: ""
+    value: a89dd08f02432e3eae17fa2fb89da4de036e8042c478c24b4bb19e53db0a38ef
+  - name: csrf2
+    value: 29f63e4e4dfb141510a8c9d7186b48b7df22b578ced7962c8b770e63f6493204

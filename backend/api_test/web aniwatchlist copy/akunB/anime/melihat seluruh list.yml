@@ -1,14 +1,14 @@
 info:
-  name: delete list
+  name: melihat seluruh list
   type: http
-  seq: 6
+  seq: 2
 
 http:
-  method: DELETE
-  url: "{{base_url}}/anime/{{anime_id}}"
+  method: GET
+  url: "{{base_url}}/anime"
   headers:
     - name: X-CSRF-Token
-      value: "{{csrf}}"
+      value: "{{csrf2}}"
   auth:
     type: bearer
     token: ""
