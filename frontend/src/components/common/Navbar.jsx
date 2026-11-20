@@ -152,9 +152,18 @@ function Navbar({ username }) {
           </NavLink>
 
           {username && (
-            <NavLink to="/myList" className={navLinkClass}>
-              My List
-            </NavLink>
+            <>
+              <NavLink to="/myList" className={navLinkClass}>
+                My List
+              </NavLink>
+
+              <NavLink
+                to={`/u/${encodeURIComponent(username)}`}
+                className={navLinkClass}
+              >
+                Profil saya
+              </NavLink>
+            </>
           )}
         </div>
 

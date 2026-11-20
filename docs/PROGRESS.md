@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 (profil dan follow): 2A dan 2B selesai.
+- **Phase aktif:** Phase 2 (profil dan follow): 2A, 2B, dan 2C selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 2C (frontend: halaman profil, statistik, navbar).
+- **Berikutnya:** 2D (frontend: edit profil dan tombol follow).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -50,9 +50,10 @@
 - Folder yang diizinkan di src/: config, db, integrations, middlewares, modules, utils, plus app.mjs (dijaga tests/architecture.test.mjs).
 
 **Frontend:**
-`src/{components/common, components/features/{anime,aunt,user}, context, layouts, pages, services, utils}`
+`src/{components/common, components/features/{anime,aunt,user}, context, features/profile, layouts, pages, services, utils}`
 
-- Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
+- Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
+- Fitur profil: `features/profile/{profileApi.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx}`. `pages/Profile.jsx` hanya merangkai hook dan komponen.
 - Target `features/` dari PRD belum dibuat. Folder `aunt` kemungkinan typo dari `auth`.
 - Frontend katalog: `components/common/{Pagination,DaftarAnime,FilterTabs}.jsx`, `utils/catalogFilters.js` (daftar filter, harus sama dengan validator backend).
 
@@ -142,7 +143,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
-17. Phase 2 (profil dan follow), empat chat: 2A dan 2B (selesai); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
+17. Phase 2 (profil dan follow), empat chat: 2A, 2B, dan 2C (selesai); 2D frontend (edit profil dan tombol follow).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -343,3 +344,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: tests/follow.test.mjs
   - Keputusan baru: lihat bagian 3 (butir Phase 2). Tidak ada migrasi baru; variabel `RATE_LIMIT_FOLLOW_*` opsional (default 60 per 15 menit).
   - Berikutnya: 2C (frontend: halaman profil, statistik, navbar), lalu 2D (edit profil dan tombol follow).
+- **2026-11-20** — Phase 2, bagian 2C (frontend: halaman profil, hanya baca)
+  - Selesai: rute publik /u/:username dan halaman Profile. Header (displayName, @username, bio teks biasa, tanggal bergabung, followersCount dan followingCount, label Privat, penanda "Ini profil kamu"), statistik (total, empat status, episodesWatched, meanScore, distribusi skor 1-10 berupa batang CSS dengan label dan jumlah sebagai teks), pesan profil privat bila stats null. Status UI: kerangka loading, 404/400 (tautan ke Home), 429 (pesan server, tanpa tombol coba lagi), kegagalan jaringan dan error lain (tombol Coba lagi). document.title diatur dan dipulihkan. Navbar menampilkan tautan "Profil saya" hanya saat login.
+  - File diubah: frontend/src/App.jsx, frontend/src/components/common/Navbar.jsx
+  - File baru: frontend/src/pages/Profile.jsx, frontend/src/features/profile/{profileApi,useProfile}.js, frontend/src/features/profile/{ProfileHeader,ProfileStats,ScoreDistribution,ProfileStatus}.jsx
+  - Keputusan baru: useProfile menyimpan hasil bersama kunci permintaan (percobaan:username) sehingga data lama tidak tampil saat username berubah; permintaan tertunda dibatalkan dengan AbortController. Status 400 (username tidak valid) ditampilkan sama dengan 404. Tombol Coba lagi tidak ditampilkan pada 429 (mengikuti API.md). joinedAt diformat lewat utils/formatDate (UTC, YYYY-MM-DD). Tidak ada perubahan backend dan API.md, tidak ada library baru.
+  - Berikutnya: 2D (edit profil lewat PUT /users/profile dan tombol follow/unfollow di ProfileHeader; tampilan hanya untuk isSelf dan non-pemilik).

@@ -10,6 +10,7 @@ import LoginForm from "./components/features/aunt/LoginForm";
 import RegisterForm from "./components/features/aunt/RegisterForm";
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/" element={<Home />} />
 
         <Route path="/anime/:id" element={<AnimeDetail />} />
+        <Route path="/u/:username" element={<Profile />} />
 
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
