@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-19.
+> Terakhir diperbarui: 2026-11-20.
 
 ## 1. Konvensi Umum
 
@@ -158,7 +158,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Param:** `username` string, trim, 3-50 karakter (ter-encode di URL)
 - **Sukses 200:** `data: Profile`
 - **Error:** 400 username tidak valid, 404 "Pengguna tidak ditemukan", 429 pembatas laju global
-- **Catatan:** (baris lama dipertahankan) `followersCount` dan `followingCount` selalu ada, juga untuk profil privat. `isFollowing` true hanya jika pemanggil login, bukan pemilik, dan mengikuti pengguna itu; false untuk anonim dan pemilik.
+- **Catatan:** `followersCount` dan `followingCount` selalu ada, juga untuk profil privat. `isFollowing` true hanya jika pemanggil login, bukan pemilik, dan mengikuti pengguna itu; false untuk anonim dan pemilik.
 
 #### `PUT /users/profile`
 

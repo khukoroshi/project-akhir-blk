@@ -7,6 +7,6 @@ variables:
       type: number
       data: "20"
   - name: csrf
-    value: a89dd08f02432e3eae17fa2fb89da4de036e8042c478c24b4bb19e53db0a38ef
+    value: 67bf918a64d1526fffa0c93b0e1195485e3aa781ecd2fc1f46369205525e16a0
   - name: csrf2
     value: 92b111b6ed8b27e2fe0396652789e480bda89e24fe6f26e2f910d0f7f266eba5

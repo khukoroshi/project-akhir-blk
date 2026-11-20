@@ -40,13 +40,13 @@
 ## 4. Struktur Saat Ini (sesuai target backend)
 
 **Backend** (modular):
-`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.{controller,service,model,routes,validator}.mjs + index.mjs), modules/watchlist.service.mjs, utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
+`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.{controller,service,model,routes,validator}.mjs + index.mjs), Modul watchlist punya service hanya untuk statistik (watchlist.service.mjs); controller-nya masih memanggil model langsung, utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
 
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
-- Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), users (modul di modules/users: controller, service, model, routes, validator; profil dan follow). Tes: tambah tests/follow.test.mjs.
+- Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), users (modul di modules/users: controller, service, model, routes, validator; profil dan follow).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
-- Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture,users}.test.mjs).
+- Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture,users,follow}.test.mjs).
 - Folder yang diizinkan di src/: config, db, integrations, middlewares, modules, utils, plus app.mjs (dijaga tests/architecture.test.mjs).
 
 **Frontend:**
@@ -76,7 +76,7 @@
 | POST   | `/api/users/:username/follow`   | ya       | ikuti pengguna (idempotent), data: username, isFollowing, followersCount                                                |
 | DELETE | `/api/users/:username/follow`   | ya       | berhenti mengikuti (idempotent)                                                                                         |
 
-Catatan: path PRD (`/api/watchlist`, `/api/anime/search`, `/api/auth/me`) berbeda dari yang ada sekarang. Putuskan nanti apakah diganti atau PRD yang disesuaikan.
+**Catatan**: Keputusan (2026-11-16): path di kode dipertahankan; PRD disesuaikan.
 
 ## 6. Database Saat Ini
 
@@ -119,7 +119,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Komentar di watchlist.model.mjs masih menyebut Stored Procedure padahal sudah query biasa. Perbaiki sambil lalu.
 - bio dan displayName disimpan apa adanya; frontend wajib merender sebagai teks (tidak boleh dangerouslySetInnerHTML).
 - Regex username hanya untuk pendaftar baru; username lama bisa tidak cocok (cek query pemeriksaan di setiap perangkat) dan diakses ter-encode.
-- Hitungan follow dihitung saat diminta dengan COUNT(\*) (tanpa cache). Bergantung pada indeks: primary key (follower_id, following_id) dan indeks foreign key following_id dari migrasi 005. Jika kelak lambat, tambah kolom hitungan atau cache.
+- Hitungan follow dihitung saat diminta dengan `COUNT(*)` (tanpa cache). Bergantung pada indeks: primary key (follower_id, following_id) dan indeks foreign key following_id dari migrasi 005. Jika kelak lambat, tambah kolom hitungan atau cache.
 - GET profil kini menjalankan 2 query tambahan (hitungan dan isFollowing) secara paralel.
 - Pencocokan username mengikuti collation MySQL (tidak peka huruf besar/kecil); respons follow memakai ejaan tersimpan.
 - Daftar followers/following, pencarian pengguna, dan notifikasi follow belum ada (Phase 5 untuk notifikasi).
@@ -142,7 +142,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
-17. Phase 2 (profil dan follow), empat chat: 2A (selesai); 2B (selesai); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
+17. Phase 2 (profil dan follow), empat chat: 2A dan 2B (selesai); 2C frontend (halaman profil, statistik, navbar); 2D frontend (edit profil dan tombol follow).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -341,5 +341,5 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Selesai: POST dan DELETE /users/:username/follow (idempotent, auth + CSRF, 400 diri sendiri, 404 username tidak ada). GET /users/:username dan respons PUT /users/profile menambah followersCount, followingCount, isFollowing. Pembatas laju follow 60/15 menit per user, bersama untuk POST dan DELETE. Tes follow.test.mjs.
   - File diubah: src/modules/users/{users.model,users.service,users.controller,users.routes}.mjs, src/config/{rateLimit,env}.mjs, backend/.env.example, tests/users.test.mjs (daftar kunci profil), API.md
   - File baru: tests/follow.test.mjs
-  - Keputusan baru: lihat bagian 3 (butir Phase 2). Tidak ada migrasi baru; variabel RATE*LIMIT_FOLLOW*\* opsional (default 60 per 15 menit).
+  - Keputusan baru: lihat bagian 3 (butir Phase 2). Tidak ada migrasi baru; variabel `RATE_LIMIT_FOLLOW_*` opsional (default 60 per 15 menit).
   - Berikutnya: 2C (frontend: halaman profil, statistik, navbar), lalu 2D (edit profil dan tombol follow).
