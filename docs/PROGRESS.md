@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 (profil dan follow): 2A, 2B, dan 2C selesai.
+- **Phase aktif:** Phase 2 (profil dan follow) selesai: 2A, 2B, 2C, dan 2D.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** 2D (frontend: edit profil dan tombol follow).
+- **Berikutnya:** Phase 3 (feed komunitas: posts, comments, likes, upload gambar).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -53,8 +53,8 @@
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, features/profile, layouts, pages, services, utils}`
 
-- Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
-- Fitur profil: `features/profile/{profileApi.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx}`. `pages/Profile.jsx` hanya merangkai hook dan komponen.
+- Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
+- Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
 - Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
 - Frontend katalog: `components/common/{Pagination,DaftarAnime,FilterTabs}.jsx`, `utils/catalogFilters.js` (daftar filter, harus sama dengan validator backend).
 
@@ -144,7 +144,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 14. Rate limiter (login, katalog, POST /anime).(selesai)
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
-17. Phase 2 (profil dan follow), empat chat: 2A, 2B, dan 2C (selesai); 2D frontend (edit profil dan tombol follow).
+17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -351,3 +351,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: frontend/src/pages/Profile.jsx, frontend/src/features/profile/{profileApi,useProfile}.js, frontend/src/features/profile/{ProfileHeader,ProfileStats,ScoreDistribution,ProfileStatus}.jsx
   - Keputusan baru: useProfile menyimpan hasil bersama kunci permintaan (percobaan:username) sehingga data lama tidak tampil saat username berubah; permintaan tertunda dibatalkan dengan AbortController. Status 400 (username tidak valid) ditampilkan sama dengan 404. Tombol Coba lagi tidak ditampilkan pada 429 (mengikuti API.md). joinedAt diformat lewat utils/formatDate (UTC, YYYY-MM-DD). Tidak ada perubahan backend dan API.md, tidak ada library baru.
   - Berikutnya: 2D (edit profil lewat PUT /users/profile dan tombol follow/unfollow di ProfileHeader; tampilan hanya untuk isSelf dan non-pemilik).
+- **2026-11-21** — Phase 2, bagian 2D (frontend: edit profil dan tombol follow; Phase 2 selesai)
+  - Selesai: halaman /profile/edit (rute terlindungi) dengan ProfileEditForm: nama tampilan (kosong dikirim null, maks 100), bio (penghitung, maks 500, kosong dikirim null), saklar profil privat dengan penjelasan, catatan "Segera hadir" untuk avatar dan banner, validasi klien berpesan Indonesia, pesan server ditampilkan, status "Menyimpan...", 403 berpesan sesi tidak valid, 429 memakai pesan server. FollowButton di ProfileHeader untuk non-pemilik (aria-pressed, dinonaktifkan selama request, hasil server memperbarui header tanpa refetch, error di dekat tombol, jumlah follower aria-live polite); pemilik melihat tautan "Edit profil". Anonim yang klik Ikuti diarahkan ke /login dan kembali ke halaman asal setelah login (location.state.from). useProfile menunggu cek sesi, memuat ulang saat user?.id berubah, dan menyediakan patchProfile(patch).
+  - File diubah: frontend/src/App.jsx, frontend/src/pages/Profile.jsx, frontend/src/features/profile/{profileApi.js,useProfile.js,ProfileHeader.jsx}, frontend/src/components/common/ProtectedRoute.jsx, frontend/src/components/features/aunt/LoginForm.jsx
+  - File baru: frontend/src/pages/ProfileEdit.jsx, frontend/src/features/profile/{ProfileEditForm.jsx,FollowButton.jsx,profileErrors.js}
+  - Keputusan baru: tidak ada cache profil bersama antar halaman; setelah simpan, pengguna tetap di halaman edit dengan pesan sukses dan tautan ke profil (profil memuat ulang saat dibuka). Pembaruan follow memakai hasil server (bukan optimistis) dengan penjaga klik ganda lewat useRef. Nama tampilan awal di formulir = displayName dari API (username jika belum diatur), sehingga menyimpan tanpa mengubah akan menyimpan username sebagai nama tampilan; mengosongkan kolom mengembalikan ke null. Bio dihitung dan divalidasi dari panjang mentah, dikirim setelah trim. Tujuan redirect login hanya path internal (diawali "/" dan bukan "//"), memakai replace. Tidak ada perubahan backend, API.md, atau library.
+  - Berikutnya: Phase 3 (posts, post_images, comments, post_likes; halaman feed; upload gambar dan avatar/banner). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.

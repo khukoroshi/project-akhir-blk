@@ -1,4 +1,7 @@
+import { Link } from "react-router-dom";
+
 import formatDate from "../../utils/formatDate";
+import FollowButton from "./FollowButton";
 
 function formatJoinedDate(isoString) {
   const date = new Date(isoString);
@@ -14,7 +17,7 @@ function formatJoinedDate(isoString) {
   });
 }
 
-function ProfileHeader({ profile }) {
+function ProfileHeader({ profile, onProfileChange }) {
   const joined = formatJoinedDate(profile.joinedAt);
 
   return (
@@ -63,7 +66,11 @@ function ProfileHeader({ profile }) {
           <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm">
             <div className="flex gap-1.5">
               <dt className="text-slate-500 dark:text-slate-400">Followers</dt>
-              <dd className="font-semibold text-slate-900 dark:text-white">
+              <dd
+                aria-live="polite"
+                aria-atomic="true"
+                className="font-semibold text-slate-900 dark:text-white"
+              >
                 {profile.followersCount}
               </dd>
             </div>
@@ -86,6 +93,18 @@ function ProfileHeader({ profile }) {
               </div>
             )}
           </dl>
+        </div>
+        <div className="sm:shrink-0">
+          {profile.isSelf ? (
+            <Link
+              to="/profile/edit"
+              className="inline-block rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Edit profil
+            </Link>
+          ) : (
+            <FollowButton profile={profile} onChange={onProfileChange} />
+          )}
         </div>
       </div>
     </header>

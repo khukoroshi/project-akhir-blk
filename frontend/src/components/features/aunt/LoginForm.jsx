@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import api from "../../../services/api";
 
@@ -9,10 +9,23 @@ import { useAuth } from "../../../context/useAuth";
 import Button from "../../common/Button";
 import Input from "../../common/Input";
 
+function getRedirectTarget(from) {
+  // Hanya path internal; tolak "//host" dan nilai non-string.
+  if (
+    typeof from === "string" &&
+    from.startsWith("/") &&
+    !from.startsWith("//")
+  ) {
+    return from;
+  }
+  return "/";
+}
+
 function LoginForm() {
   const { login } = useAuth();
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +49,7 @@ function LoginForm() {
 
       login(user);
 
-      navigate("/");
+      navigate(getRedirectTarget(location.state?.from), { replace: true });
     } catch (err) {
       setErrorMsg(err.response?.data?.message || "Email atau password salah");
     } finally {

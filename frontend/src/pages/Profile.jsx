@@ -14,7 +14,14 @@ import {
 function Profile() {
   const { username } = useParams();
   const { user } = useAuth();
-  const { data: profile, loading, error, refetch } = useProfile(username);
+  // ganti baris destrukturisasi hook:
+  const {
+    data: profile,
+    loading,
+    error,
+    refetch,
+    patchProfile,
+  } = useProfile(username);
 
   /*
    * Judul tab browser, dipulihkan saat halaman ditutup
@@ -39,8 +46,7 @@ function Profile() {
   } else {
     content = (
       <div className="space-y-6">
-        <ProfileHeader profile={profile} />
-
+        <ProfileHeader profile={profile} onProfileChange={patchProfile} />
         {profile.stats ? (
           <ProfileStats stats={profile.stats} />
         ) : (

@@ -11,6 +11,7 @@ import RegisterForm from "./components/features/aunt/RegisterForm";
 
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import Profile from "./pages/Profile";
+import ProfileEdit from "./pages/ProfileEdit";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         {/* Protected */}
         <Route element={<ProtectedRoute />}>
           <Route path="/myList" element={<MyList />} />
+          <Route path="/profile/edit" element={<ProfileEdit />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
