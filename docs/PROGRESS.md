@@ -40,8 +40,9 @@
 ## 4. Struktur Saat Ini (sesuai target backend)
 
 **Backend** (modular):
-`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.{controller,service,model,routes,validator}.mjs + index.mjs), Modul watchlist punya service hanya untuk statistik (watchlist.service.mjs); controller-nya masih memanggil model langsung, utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
+`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.{controller,service,model,routes,validator}.mjs + index.mjs), utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
 
+- Modul watchlist punya service hanya untuk statistik (`watchlist.service.mjs`); controller-nya masih memanggil model langsung.
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
 - Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), users (modul di modules/users: controller, service, model, routes, validator; profil dan follow).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
@@ -54,7 +55,7 @@
 
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx}`. `pages/Profile.jsx` hanya merangkai hook dan komponen.
-- Target `features/` dari PRD belum dibuat. Folder `aunt` kemungkinan typo dari `auth`.
+- Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
 - Frontend katalog: `components/common/{Pagination,DaftarAnime,FilterTabs}.jsx`, `utils/catalogFilters.js` (daftar filter, harus sama dengan validator backend).
 
 ## 5. Endpoint yang Sudah Ada
