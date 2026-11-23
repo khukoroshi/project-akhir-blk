@@ -6,14 +6,14 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 (profil dan follow) selesai: 2A, 2B, 2C, dan 2D.
+- **Phase aktif:** Phase 2 selesai. Fase desain (lihat DESIGN.md): D0 selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** Phase 3 (feed komunitas: posts, comments, likes, upload gambar).
+- **Berikutnya:** D1 (fondasi tema dan komponen), D2 sampai D8 (per bagian), baru Phase 3 (feed komunitas). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
 
 ## 2. Stack Aktual (sesuai repo)
 
 - **Frontend:** React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), React Router 7, Axios, React Compiler. Package manager: pnpm.
-- **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`, `cookie-parser`. Dev: `nodemon`, Vitest, Supertest, `express-rate-limit`, Terpasang tambahan: `express-rate-limit`.
+- **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`, `cookie-parser`, `express-rate-limit`. Dev: `nodemon`, Vitest, Supertest.
 - **API anime eksternal:** AniList (GraphQL) saja. Jikan dibuang.
 
 ## 3. Keputusan Final
@@ -36,6 +36,7 @@
 - Modul backend diekspor lewat modules/<nama>/index.mjs. Kode di luar modul hanya boleh mengimpor index.mjs modul itu; integrations/ tidak boleh mengimpor modules/. Dijaga tests/architecture.test.mjs. Modul baru memakai pola controller-service-model.
 - Phase 2: URL profil memakai username (us_name). Respons profil camelCase, tidak pernah memuat email, hash password, atau us_id. Profil privat menyembunyikan statistik dari orang lain; follow tanpa persetujuan. Avatar dan banner ditunda ke Phase 3. Follow memakai POST dan DELETE (idempotent), bukan toggle. Daftar followers/following dan pencarian pengguna ditunda; hanya jumlah yang tampil. Statistik dihitung saat diminta, tanpa cache. Kode frontend baru di frontend/src/features/profile/.
 - Follow dan unfollow idempotent (INSERT ... ON DUPLICATE KEY UPDATE; DELETE), mengikuti diri sendiri 400, follow juga untuk profil privat. followersCount dan followingCount selalu tampil, juga untuk profil privat; isFollowing hanya true untuk pemanggil login non-pemilik yang mengikuti. Pembatas follow (60/15 menit per user) dipakai bersama oleh POST dan DELETE lewat satu instance.
+- Desain: lihat DESIGN.md (tema terang/gelap/sistem ala GitHub, aksen global biru, aksen profil 5 pilihan + default, ponsel dulu dengan titik pisah 1024px). Perombakan hanya mengubah tampilan, bukan logika atau kontrak.
 
 ## 4. Struktur Saat Ini (sesuai target backend)
 
@@ -125,6 +126,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - GET profil kini menjalankan 2 query tambahan (hitungan dan isFollowing) secara paralel.
 - Pencocokan username mengikuti collation MySQL (tidak peka huruf besar/kecil); respons follow memakai ejaan tersimpan.
 - Daftar followers/following, pencarian pengguna, dan notifikasi follow belum ada (Phase 5 untuk notifikasi).
+- Menyimpan formulir edit profil tanpa mengubah apa pun menyimpan username sebagai displayName (bukan null). Tidak berbahaya; rapikan di D6 (kirim null bila sama dengan username).
+- Frontend belum punya test runner; UI diverifikasi manual. Pertimbangkan Vitest + Testing Library setelah fase desain.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -145,6 +148,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
+18. Fase desain (DESIGN.md): D1 fondasi; D2 kerangka (header, navigasi ponsel, footer); D3 Home; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
 
@@ -294,7 +299,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - Wajib dilakukan sendiri: di produksi set COOKIE_SECURE=true (dan frontend/backend satu domain induk). Perbarui koleksi backend/api_test (Bruno) ke cookie bila masih memakai Bearer.
   - Berikutnya: rate limiter (login, katalog, POST /anime), lalu hapus tabel animes lama dan 2 procedure, lalu refactor ke modules/.
 - **2026-11-14** — Rate limiter
-  - Selesai: express-rate-limit terpasang. Pembatas: global /api, login (per IP+email dan per IP, hanya gagal dihitung, dipasang sebelum validasi dan bcrypt), register, katalog, POST /anime (per user). Respons 429 lewat AppError (bahasa Indonesia, menyebut menit) + Retry-After; standardHeaders aktif, legacyHeaders mati. env: RATE*LIMIT_ENABLED, TRUST_PROXY (angka 1-10, "true" ditolak), RATE_LIMIT*<NAMA>\_MAX/\_WINDOW_MIN. Tes: rateLimit.test.mjs; pembatas mati di semua tes lain.
+  - Selesai: express-rate-limit terpasang. Pembatas: global /api, login (per IP+email dan per IP, hanya gagal dihitung, dipasang sebelum validasi dan bcrypt), register, katalog, POST /anime (per user). Respons 429 lewat AppError (bahasa Indonesia, menyebut menit) + Retry-After; standardHeaders aktif, legacyHeaders mati. env: `RATE_LIMIT_ENABLED`, `TRUST_PROXY` (angka 1-10, "true" ditolak), RATE_LIMIT\*<NAMA>\_MAX/\_WINDOW_MIN. Tes: rateLimit.test.mjs; pembatas mati di semua tes lain.
   - File diubah: backend/src/app.mjs (jadi createApp(), default export tetap), backend/src/routes/anim.routes.mjs (createAnimRoutes), backend/src/config/env.mjs, backend/.env.example, backend/tests/support/env.mjs, backend/package.json, pnpm-lock.yaml, API.md
   - File baru: backend/src/config/rateLimit.mjs, backend/tests/rateLimit.test.mjs
   - Keputusan baru: state pembatas di memori proses (hilang saat restart, tidak dibagi antar instance; pindah ke store Redis jika multi-instance). Kunci per-user memakai req.user.id (verifikasi cocok dengan auth.middleware). Produksi di belakang proxy wajib isi TRUST_PROXY sesuai jumlah proxy, kalau tidak semua pengguna tampak satu IP. JSON rusak ditolak sebelum pembatas login (tetap kena batas global).
