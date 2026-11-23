@@ -1,94 +1,54 @@
-function Input({
-  label,
-  type = "text",
-  name,
-  placeholder = "",
-  step,
-  max,
-  min,
-  value,
-  onChange,
-  error,
-  disabled = false,
-  className = "",
-  required = false,
-  children,
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      {label && (
-        <label
-          htmlFor={name}
-          className="
-            mb-1
-            block
-            text-sm
-            font-medium
-            text-slate-700
+import { useId } from "react";
+import cx from "../../utils/cx";
 
-            dark:text-slate-300
-          "
-        >
+export default function Input({
+  label,
+  hint,
+  error,
+  id,
+  className = "",
+  "aria-describedby": ariaDescribedBy,
+  ref,
+  ...props
+}) {
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  const hintId = hint ? `${inputId}-hint` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
+  const describedBy =
+    [ariaDescribedBy, hintId, errorId].filter(Boolean).join(" ") || undefined;
+
+  return (
+    <div className={cx("flex flex-col gap-1.5", className)}>
+      {label && (
+        <label htmlFor={inputId} className="text-sm font-medium text-fg">
           {label}
         </label>
       )}
-
       <input
-        id={name}
-        name={name}
-        type={type}
-        step={step}
-        max={max}
-        min={min}
-        value={value}
-        placeholder={placeholder}
-        onChange={onChange}
-        disabled={disabled}
-        required={required}
-        className={`
-          w-full
-          rounded-lg
-          border
-          border-slate-300
-          bg-white
-          px-3
-          py-2
-          text-slate-900
-          outline-none
-          transition
-
-          placeholder:text-slate-400
-
-          focus:border-indigo-500
-          focus:ring-2
-          focus:ring-indigo-500/20
-
-          disabled:cursor-not-allowed
-          disabled:bg-slate-100
-          disabled:text-slate-500
-
-          dark:border-slate-700
-          dark:bg-slate-950
-          dark:text-white
-          dark:placeholder:text-slate-600
-
-          dark:focus:border-indigo-400
-          dark:focus:ring-indigo-400/20
-
-          dark:disabled:bg-slate-800
-          dark:disabled:text-slate-500
-
-          ${className}
-        `}
+        ref={ref}
+        id={inputId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
+        className={cx(
+          "block min-h-11 w-full rounded-md border bg-canvas px-3 text-sm text-fg lg:min-h-9",
+          "placeholder:text-muted",
+          "focus-visible:outline-2 focus-visible:outline-accent",
+          "disabled:cursor-not-allowed disabled:opacity-60",
+          error ? "border-danger" : "border-border-strong",
+        )}
+        {...props}
       />
-
-      {error && (
-        <span className="text-sm text-red-500 dark:text-red-400">{error}</span>
+      {hint && (
+        <p id={hintId} className="text-xs text-muted">
+          {hint}
+        </p>
       )}
-
-      {children}
+      {error && (
+        <p id={errorId} className="text-xs font-medium text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
-
-export default Input;

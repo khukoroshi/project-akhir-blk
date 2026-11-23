@@ -39,3 +39,118 @@ html.dark body {
   background-color: #020617;
   color: #f1f5f9;
 }
+
+/* ---------- Design system (D1) ---------- */
+
+/* Variant for the new data-theme system. The legacy `dark` variant above
+   stays until D2 removes the old ThemeProvider. */
+@custom-variant theme-dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="light"] {
+  --ds-canvas: #ffffff;
+  --ds-subtle: #f6f8fa;
+  --ds-border: #d0d7de;
+  --ds-border-strong: #818b98;
+  --ds-fg: #1f2328;
+  --ds-muted: #59636e;
+  --ds-accent: #0969da;
+  --ds-accent-emphasis: #0969da;
+  --ds-on-accent: #ffffff;
+  --ds-success: #1a7f37;
+  --ds-attention: #9a6700;
+  --ds-danger: #d1242f;
+  --ds-done: #8250df;
+
+  --ds-ap-violet: #8250df;
+  --ds-ap-violet-on: #ffffff;
+  --ds-ap-teal: #0f766e;
+  --ds-ap-teal-on: #ffffff;
+  --ds-ap-orange: #bc4c00;
+  --ds-ap-orange-on: #ffffff;
+  --ds-ap-pink: #bf3989;
+  --ds-ap-pink-on: #ffffff;
+  --ds-ap-green: #1a7f37;
+  --ds-ap-green-on: #ffffff;
+
+  --profile-accent: var(--ds-accent-emphasis);
+  --profile-on-accent: var(--ds-on-accent);
+}
+
+[data-theme="dark"] {
+  --ds-canvas: #0d1117;
+  --ds-subtle: #151b23;
+  --ds-border: #3d444d;
+  --ds-border-strong: #656c76;
+  --ds-fg: #f0f6fc;
+  --ds-muted: #9198a1;
+  --ds-accent: #4493f8;
+  --ds-accent-emphasis: #1f6feb;
+  --ds-on-accent: #ffffff;
+  --ds-success: #3fb950;
+  --ds-attention: #d29922;
+  --ds-danger: #f85149;
+  --ds-done: #ab7df8;
+
+  --ds-ap-violet: #ab7df8;
+  --ds-ap-violet-on: #0d1117;
+  --ds-ap-teal: #39c5cf;
+  --ds-ap-teal-on: #0d1117;
+  --ds-ap-orange: #f0883e;
+  --ds-ap-orange-on: #0d1117;
+  --ds-ap-pink: #f778ba;
+  --ds-ap-pink-on: #0d1117;
+  --ds-ap-green: #3fb950;
+  --ds-ap-green-on: #0d1117;
+
+  --profile-accent: var(--ds-accent-emphasis);
+  --profile-on-accent: var(--ds-on-accent);
+}
+
+/* Not on <html> in D1, so legacy pages keep their own color-scheme. */
+[data-theme="light"]:not(html) {
+  color-scheme: light;
+}
+[data-theme="dark"]:not(html) {
+  color-scheme: dark;
+}
+
+/* Profile accents: values come from the fixed list above, never from users. */
+[data-accent="violet"] {
+  --profile-accent: var(--ds-ap-violet);
+  --profile-on-accent: var(--ds-ap-violet-on);
+}
+[data-accent="teal"] {
+  --profile-accent: var(--ds-ap-teal);
+  --profile-on-accent: var(--ds-ap-teal-on);
+}
+[data-accent="orange"] {
+  --profile-accent: var(--ds-ap-orange);
+  --profile-on-accent: var(--ds-ap-orange-on);
+}
+[data-accent="pink"] {
+  --profile-accent: var(--ds-ap-pink);
+  --profile-on-accent: var(--ds-ap-pink-on);
+}
+[data-accent="green"] {
+  --profile-accent: var(--ds-ap-green);
+  --profile-on-accent: var(--ds-ap-green-on);
+}
+
+@theme inline {
+  --color-canvas: var(--ds-canvas);
+  --color-subtle: var(--ds-subtle);
+  --color-border: var(--ds-border);
+  --color-border-strong: var(--ds-border-strong);
+  --color-fg: var(--ds-fg);
+  --color-muted: var(--ds-muted);
+  --color-accent: var(--ds-accent);
+  --color-accent-emphasis: var(--ds-accent-emphasis);
+  --color-on-accent: var(--ds-on-accent);
+  --color-success: var(--ds-success);
+  --color-attention: var(--ds-attention);
+  --color-danger: var(--ds-danger);
+  --color-done: var(--ds-done);
+  --color-profile-accent: var(--profile-accent);
+  --color-profile-on-accent: var(--profile-on-accent);
+}

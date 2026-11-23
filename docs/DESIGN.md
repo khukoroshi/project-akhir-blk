@@ -47,6 +47,8 @@ Bersih dan lega, terinspirasi GitHub. Sampul anime adalah pusat perhatian, jadi 
 
 Kontras terukur (teks pada canvas): fg 15,8 / 17,4; muted 6,1 / 6,5; accent 5,2 / 6,1; success 5,1 / 7,5; attention 4,9 / 7,5; danger 5,2 / 5,7. Semua di atas 4,5:1 pada canvas dan subtle. Tepi tombol utama gelap (#1f6feb di atas canvas) hanya 4,1:1, cukup untuk komponen (minimal 3:1).
 
+tombol danger memakai teks dan garis danger di atas canvas, tanpa isian.
+
 Status watchlist: watching = accent, completed = success, dropped = danger, plan to watch = attention. Selalu disertai label teks atau ikon, jangan warna saja.
 
 ## 5. Aksen profil
@@ -97,7 +99,7 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 | Chat | Isi                                                      | Status  |
 | ---- | -------------------------------------------------------- | ------- |
 | D0   | DESIGN.md                                                | selesai |
-| D1   | Fondasi: tema, token, komponen dasar, ikon               | belum   |
+| D1   | Fondasi: tema, token, komponen dasar, ikon               | selesai |
 | D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman | belum   |
 | D3   | Home dan katalog                                         | belum   |
 | D4   | Detail anime                                             | belum   |

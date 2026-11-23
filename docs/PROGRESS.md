@@ -6,13 +6,13 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 selesai. Fase desain (lihat DESIGN.md): D0 selesai.
+- **Phase aktif:** Phase 2 selesai. Fase desain (lihat DESIGN.md): D0 dan D1 selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** D1 (fondasi tema dan komponen), D2 sampai D8 (per bagian), baru Phase 3 (feed komunitas). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- **Berikutnya:** D2 (kerangka: header, navigasi ponsel, footer), D3 sampai D8, baru Phase 3 (feed komunitas). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
 
 ## 2. Stack Aktual (sesuai repo)
 
-- **Frontend:** React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), React Router 7, Axios, React Compiler. Package manager: pnpm.
+- **Frontend:** React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), React Router 7, Axios, lucide-react (ikon, hanya lewat components/common/icons.jsx), React Compiler. Package manager: pnpm.
 - **Backend:** Node.js (ESM, file `.mjs`), Express 5, MySQL (`mysql2`), JWT (`jsonwebtoken`), `bcryptjs`, `cors`, `dotenv`, `axios`, `cookie-parser`, `express-rate-limit`. Dev: `nodemon`, Vitest, Supertest.
 - **API anime eksternal:** AniList (GraphQL) saja. Jikan dibuang.
 
@@ -52,8 +52,10 @@
 - Folder yang diizinkan di src/: config, db, integrations, middlewares, modules, utils, plus app.mjs (dijaga tests/architecture.test.mjs).
 
 **Frontend:**
-`src/{components/common, components/features/{anime,aunt,user}, context, features/profile, layouts, pages, services, utils}`
+`src/{components/common, components/features/{anime,aunt,user}, context, features/profile, hooks, layouts, pages, services, utils}`
 
+- Fondasi desain (D1): `utils/{theme.js, cx.js}`, `hooks/useTheme.js`, `components/common/{icons.jsx, Button, Card, Input, Modal, Badge, Avatar, Skeleton, ThemeToggle}.jsx`, `pages/DesignPreview.jsx` (rute /design hanya saat import.meta.env.DEV). Token warna ada di `assets/styles/index.css` (variabel --ds-\*, dipetakan lewat @theme inline).
+- Halaman lama belum memakai token. ThemeProvider lama (kelas .dark, kunci localStorage "theme") dan @custom-variant dark lama masih aktif sampai D2.
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
 - Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
@@ -148,7 +150,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
-18. Fase desain (DESIGN.md): D1 fondasi; D2 kerangka (header, navigasi ponsel, footer); D3 Home; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (header, navigasi ponsel, footer); D3 Home; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
@@ -362,3 +364,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: frontend/src/pages/ProfileEdit.jsx, frontend/src/features/profile/{ProfileEditForm.jsx,FollowButton.jsx,profileErrors.js}
   - Keputusan baru: tidak ada cache profil bersama antar halaman; setelah simpan, pengguna tetap di halaman edit dengan pesan sukses dan tautan ke profil (profil memuat ulang saat dibuka). Pembaruan follow memakai hasil server (bukan optimistis) dengan penjaga klik ganda lewat useRef. Nama tampilan awal di formulir = displayName dari API (username jika belum diatur), sehingga menyimpan tanpa mengubah akan menyimpan username sebagai nama tampilan; mengosongkan kolom mengembalikan ke null. Bio dihitung dan divalidasi dari panjang mentah, dikirim setelah trim. Tujuan redirect login hanya path internal (diawali "/" dan bukan "//"), memakai replace. Tidak ada perubahan backend, API.md, atau library.
   - Berikutnya: Phase 3 (posts, post_images, comments, post_likes; halaman feed; upload gambar dan avatar/banner). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
+- - **2026-11-23** — D1 (fondasi desain)
+  - Selesai: skrip tema inline di index.html (atribut data-theme di <html> sebelum React dimuat). utils/theme.js (mode system/light/dark, kunci localStorage "anisphere-theme" dengan try/catch, nilai tidak valid jadi system, mode system mengikuti prefers-color-scheme, sinkron antar tab) dan hook useTheme (useSyncExternalStore). Token warna per tema dan pemetaan @theme inline (kelas bg-canvas, bg-subtle, border-border, border-border-strong, text-fg, text-muted, text-accent, bg-accent-emphasis, text-on-accent, success, attention, danger, done). Aksen profil lewat [data-accent="violet|teal|orange|pink|green"] (--profile-accent, --profile-on-accent; kelas bg-profile-accent, text-profile-on-accent). components/common: icons.jsx (lucide-react), Button, Card, Input, Modal, Badge, Avatar, Skeleton, ThemeToggle. Halaman /design hanya mode dev.
+  - File diubah: frontend/index.html, frontend/src/assets/styles/index.css, frontend/src/App.jsx, frontend/package.json, pnpm-lock.yaml
+  - File baru: frontend/src/utils/{theme.js,cx.js}, frontend/src/hooks/useTheme.js, frontend/src/components/common/{icons,Button,Card,Input,Modal,Badge,Avatar,Skeleton,ThemeToggle}.jsx, frontend/src/pages/DesignPreview.jsx
+  - Keputusan baru: variabel CSS berawalan --ds- (App.css lama memakai --accent dan --border). @custom-variant dark lama (berbasis .dark) dipertahankan agar halaman lama tidak berubah; varian baru bernama theme-dark (berbasis data-theme); D2 mengganti yang lama setelah ThemeProvider lama dihapus. color-scheme baru dipasang pada elemen non-html (pembungkus pratinjau), pada <html> baru saat D2. Pada tema gelap, teks putih di atas danger (#f85149) hanya sekitar 3,3:1, jadi Button danger memakai teks dan garis danger tanpa isian. border-strong terang #818b98 (3,46:1 terhadap canvas), gelap #656c76 (3,57:1). Badge memakai latar subtle dengan tepi bernada. Tidak ada perubahan backend atau API.md.
+  - Berikutnya: D2 (header, navigasi ponsel dengan laci, footer, wadah halaman; ganti ThemeProvider lama dengan useTheme dan alihkan variant dark ke data-theme).
