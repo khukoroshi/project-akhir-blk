@@ -4,13 +4,14 @@ import {
   getThemeMode,
   setThemeMode,
   subscribeTheme,
+  DEFAULT_MODE,
 } from "../utils/theme";
 
 export default function useTheme() {
   const mode = useSyncExternalStore(
     subscribeTheme,
     getThemeMode,
-    () => "system",
+    () => DEFAULT_MODE,
   );
   const resolvedTheme = useSyncExternalStore(
     subscribeTheme,

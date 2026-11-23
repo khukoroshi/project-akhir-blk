@@ -56,6 +56,7 @@
 
 - Fondasi desain (D1): `utils/{theme.js, cx.js}`, `hooks/useTheme.js`, `components/common/{icons.jsx, Button, Card, Input, Modal, Badge, Avatar, Skeleton, ThemeToggle}.jsx`, `pages/DesignPreview.jsx` (rute /design hanya saat import.meta.env.DEV). Token warna ada di `assets/styles/index.css` (variabel `--ds-*`, dipetakan lewat @theme inline).
 - Halaman lama belum memakai token. ThemeProvider lama (kelas .dark, kunci localStorage "theme") dan @custom-variant dark lama masih aktif sampai D2.
+- Kerangka (D2): components/common/{Header, NavDrawer, Footer, linkButtonClasses}, layouts/MainLayout.jsx (min-h-dvh, tautan "Lewati ke konten", wadah max-w-7xl). Tema hanya lewat utils/theme.js dan hooks/useTheme.js (kunci anisphere-theme, DEFAULT_MODE). ThemeProvider, ThemeContext, context/useTheme, ThemeSwitcher, dan Navbar sudah dihapus. @custom-variant dark berbasis data-theme.
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
 - Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
@@ -130,9 +131,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Daftar followers/following, pencarian pengguna, dan notifikasi follow belum ada (Phase 5 untuk notifikasi).
 - Menyimpan formulir edit profil tanpa mengubah apa pun menyimpan username sebagai displayName (bukan null). Tidak berbahaya; rapikan di D6 (kirim null bila sama dengan username).
 - Frontend belum punya test runner; UI diverifikasi manual. Pertimbangkan Vitest + Testing Library setelah fase desain.
-- Sisa template dan aset: src/assets/{hero.png, react.svg, vite.svg}, public/icons.svg, assets/styles/App.css, README frontend, components/features/user/UserProfileCard.jsx (stub). Hapus yang terbukti tidak dipakai.
 - Gambar berat: public/favicon.png (304 KB) dan public/Gemini*Generated_Image*\*.png (250 KB). Optimalkan.
-- Dua berkas useTheme (context/ lama dan hooks/ baru) ada bersamaan sampai D2.
+- Nama berkas logo di Header.jsx (LOGO_SRC) harus sama dengan berkas di frontend/public/.
+- Halaman lama masih memakai warna mentah (slate-\*, bg-white) dan belum memakai token; dirapikan di D3 sampai D7.
+- Kolom cari di header dan di Home.jsx ada bersamaan sampai D3.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -153,7 +155,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
-18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (header, navigasi ponsel, footer); D3 Home; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 Home; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
@@ -373,3 +375,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: frontend/src/utils/{theme.js,cx.js}, frontend/src/hooks/useTheme.js, frontend/src/components/common/{icons,Button,Card,Input,Modal,Badge,Avatar,Skeleton,ThemeToggle}.jsx, frontend/src/pages/DesignPreview.jsx
   - Keputusan baru: variabel CSS berawalan --ds- (App.css lama memakai --accent dan --border). @custom-variant dark lama (berbasis .dark) dipertahankan agar halaman lama tidak berubah; varian baru bernama theme-dark (berbasis data-theme); D2 mengganti yang lama setelah ThemeProvider lama dihapus. color-scheme baru dipasang pada elemen non-html (pembungkus pratinjau), pada <html> baru saat D2. Pada tema gelap, teks putih di atas danger (#f85149) hanya sekitar 3,3:1, jadi Button danger memakai teks dan garis danger tanpa isian. border-strong terang #818b98 (3,46:1 terhadap canvas), gelap #656c76 (3,57:1). Badge memakai latar subtle dengan tepi bernada. Tidak ada perubahan backend atau API.md.
   - Berikutnya: D2 (header, navigasi ponsel dengan laci, footer, wadah halaman; ganti ThemeProvider lama dengan useTheme dan alihkan variant dark ke data-theme).
+- **2026-11-23** — D2 (kerangka aplikasi dan penyatuan tema)
+  - Selesai: sistem tema lama dihapus, semua lewat utils/theme.js dan hooks/useTheme.js. Migrasi sekali kunci theme ke anisphere-theme (di theme.js, dan dibaca saat first paint di index.html). @custom-variant dark kini berbasis data-theme, varian theme-dark dihapus, color-scheme dipasang di <html>, body memakai --ds-canvas dan --ds-fg, DEFAULT_MODE ditambahkan. Header baru (hamburger dan laci di semua lebar, logo, kolom cari di laptop, ikon cari dengan bar di bawah header di ponsel, ThemeToggle, menu avatar dengan tampilan tombol lama, tombol Masuk dan Daftar). Laci aksesibel (dialog, jebakan fokus, Esc, klik latar, gulir terkunci, fokus kembali ke pemicu, hormat reduced-motion). Pencarian header mengirim ke /?q= atau /. Footer dan MainLayout baru.
+  - File diubah: frontend/index.html, frontend/src/main.jsx, frontend/src/utils/theme.js, frontend/src/hooks/useTheme.js, frontend/src/assets/styles/index.css, frontend/src/components/common/icons.jsx, frontend/src/layouts/MainLayout.jsx
+  - File baru: frontend/src/components/common/{Header,NavDrawer,Footer,linkButtonClasses}.jsx/.js
+  - File dihapus: context/{ThemeProvider.jsx, ThemeContext.js, useTheme.js}, components/common/{ThemeSwitcher.jsx, Navbar.jsx}, serta aset template dan UserProfileCard.jsx yang terbukti tidak dipakai
+  - Keputusan baru: laci yang sama dipakai di laptop dan ponsel (menggantikan "header horizontal" di DESIGN.md). Laci dirender lewat portal ke document.body. Kolom cari header disinkronkan dari ?q= hanya saat di / (lewat key), bukan lewat effect. Lebar wadah memakai max-w-7xl (sama dengan 1280px). Tidak ada perubahan backend, API.md, rute, atau library.
+  - Berikutnya: D3 (Home dan katalog; kolom cari milik Home disesuaikan dengan kolom cari header).

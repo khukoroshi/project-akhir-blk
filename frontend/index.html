@@ -9,6 +9,10 @@
         var mode = "system";
         try {
           var stored = localStorage.getItem("anisphere-theme");
+          if (stored !== "light" && stored !== "dark" && stored !== "system") {
+            var legacy = localStorage.getItem("theme"); // first paint only
+            if (legacy === "light" || legacy === "dark") stored = legacy;
+          }
           if (stored === "light" || stored === "dark") mode = stored;
         } catch (e) {}
         var dark = mode === "dark";

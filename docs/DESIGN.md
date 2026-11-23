@@ -10,23 +10,23 @@ Bersih dan lega, terinspirasi GitHub. Sampul anime adalah pusat perhatian, jadi 
 
 ## 2. Keputusan
 
-| Hal                | Keputusan                                                                                                                              |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Tema               | Terang, gelap, ikut sistem (default sistem)                                                                                            |
-| Aksen global       | Biru ala GitHub, sama untuk semua pengguna                                                                                             |
-| Aksen profil       | Pilihan terbatas (6 opsi, lihat bagian 5), hanya di halaman profil                                                                     |
-| Huruf              | Tumpukan font sistem: `-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif`                       |
-| Ikon               | Satu pustaka (lucide-react), semua impor lewat satu berkas `components/common/icons.jsx` agar mudah diganti SVG kustom                 |
-| Navigasi ponsel    | Header atas: menu (hamburger) di kiri membuka laci dari kiri; logo; ikon cari dan avatar atau tombol Masuk di kanan. Tanpa bilah bawah |
-| Navigasi laptop    | Header horizontal: logo, tautan utama, cari, pengalih tema, avatar                                                                     |
-| Sudut dan bayangan | `rounded-md` (6px), bayangan minimal, garis tipis sebagai pemisah                                                                      |
+| Hal                | Keputusan                                                                                                                                                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tema               | Terang, gelap, ikut sistem (default sistem)                                                                                                                                                                                                                                     |
+| Aksen global       | Biru ala GitHub, sama untuk semua pengguna                                                                                                                                                                                                                                      |
+| Aksen profil       | Pilihan terbatas (6 opsi, lihat bagian 5), hanya di halaman profil                                                                                                                                                                                                              |
+| Huruf              | Tumpukan font sistem: `-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif`                                                                                                                                                                |
+| Ikon               | Satu pustaka (lucide-react), semua impor lewat satu berkas `components/common/icons.jsx` agar mudah diganti SVG kustom                                                                                                                                                          |
+| Navigasi ponsel    | Header atas: menu (hamburger) di kiri membuka laci dari kiri; logo; ikon cari dan avatar atau tombol Masuk di kanan. Tanpa bilah bawah                                                                                                                                          |
+| Navigasi laptop    | Header lengket (latar subtle, garis bawah border): hamburger di kiri membuka laci yang sama dengan ponsel (Beranda, MyList saat login), logo, lalu di kanan kolom cari, pengalih tema, dan avatar (menu: Profil saya, Edit profil, MyList, Keluar) atau tombol Masuk dan Daftar |
+| Sudut dan bayangan | `rounded-md` (6px), bayangan minimal, garis tipis sebagai pemisah                                                                                                                                                                                                               |
 
 ## 3. Tema
 
 - Atribut `data-theme="light|dark"` pada `<html>`. Mode pilihan disimpan di `localStorage` kunci `anisphere-theme` (`system|light|dark`; nilai lain diabaikan, bungkus try/catch).
 - Skrip kecil di `index.html` memasang tema sebelum React dimuat (tanpa berkedip). Mode `system` mengikuti `prefers-color-scheme` dan memperbarui diri saat berubah.
 - Tailwind 4: warna didefinisikan sebagai variabel CSS lalu dipetakan lewat `@theme`; varian gelap lewat `@custom-variant dark` berbasis `data-theme`. Komponen memakai kelas token (`bg-canvas`, `text-fg`), bukan warna mentah.
-- Selama D2 sampai D8: variabel CSS berawalan `--ds-`; varian baru bernama `theme-dark` (berbasis data-theme), varian `dark` lama (berbasis .dark) bertahan sampai D2 lalu diganti. Kelas yang memakai token tidak butuh varian `dark:`.
+- Varian dark: berbasis data-theme (varian theme-dark sementara dihapus karena identik). Kelas yang memakai token tidak butuh dark:. DEFAULT_MODE ada di utils/theme.js.
 
 ## 4. Token
 
@@ -101,7 +101,7 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 | ---- | -------------------------------------------------------- | ------- |
 | D0   | DESIGN.md                                                | selesai |
 | D1   | Fondasi: tema, token, komponen dasar, ikon               | selesai |
-| D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman | belum   |
+| D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman | selesai |
 | D3   | Home dan katalog                                         | belum   |
 | D4   | Detail anime                                             | belum   |
 | D5   | MyList                                                   | belum   |

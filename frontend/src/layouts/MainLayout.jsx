@@ -1,19 +1,27 @@
-import Navbar from "../components/common/Navbar";
+import Footer from "../components/common/Footer";
+import Header from "../components/common/Header";
 
 function MainLayout({ children, username }) {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
-      <Navbar username={username} />
+    <div className="flex min-h-dvh flex-col bg-canvas text-fg">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:border focus:border-border-strong focus:bg-canvas focus:px-4 focus:py-2 focus:text-fg focus-visible:outline-2 focus-visible:outline-accent"
+      >
+        Lewati ke konten
+      </a>
 
-      <main className="relative">
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-72 overflow-hidden">
-          <div className="absolute left-1/2 top-0 h-72 w-[700px] -translate-x-1/2 rounded-full bg-indigo-100/40 blur-3xl dark:bg-indigo-500/10" />
-        </div>
+      <Header username={username} />
 
-        <div className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {children}
-        </div>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 focus:outline-none sm:px-6 lg:px-8"
+      >
+        {children}
       </main>
+
+      <Footer username={username} />
     </div>
   );
 }
