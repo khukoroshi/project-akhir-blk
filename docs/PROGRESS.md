@@ -54,7 +54,7 @@
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, features/profile, hooks, layouts, pages, services, utils}`
 
-- Fondasi desain (D1): `utils/{theme.js, cx.js}`, `hooks/useTheme.js`, `components/common/{icons.jsx, Button, Card, Input, Modal, Badge, Avatar, Skeleton, ThemeToggle}.jsx`, `pages/DesignPreview.jsx` (rute /design hanya saat import.meta.env.DEV). Token warna ada di `assets/styles/index.css` (variabel --ds-\*, dipetakan lewat @theme inline).
+- Fondasi desain (D1): `utils/{theme.js, cx.js}`, `hooks/useTheme.js`, `components/common/{icons.jsx, Button, Card, Input, Modal, Badge, Avatar, Skeleton, ThemeToggle}.jsx`, `pages/DesignPreview.jsx` (rute /design hanya saat import.meta.env.DEV). Token warna ada di `assets/styles/index.css` (variabel `--ds-*`, dipetakan lewat @theme inline).
 - Halaman lama belum memakai token. ThemeProvider lama (kelas .dark, kunci localStorage "theme") dan @custom-variant dark lama masih aktif sampai D2.
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
@@ -130,6 +130,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Daftar followers/following, pencarian pengguna, dan notifikasi follow belum ada (Phase 5 untuk notifikasi).
 - Menyimpan formulir edit profil tanpa mengubah apa pun menyimpan username sebagai displayName (bukan null). Tidak berbahaya; rapikan di D6 (kirim null bila sama dengan username).
 - Frontend belum punya test runner; UI diverifikasi manual. Pertimbangkan Vitest + Testing Library setelah fase desain.
+- Sisa template dan aset: src/assets/{hero.png, react.svg, vite.svg}, public/icons.svg, assets/styles/App.css, README frontend, components/features/user/UserProfileCard.jsx (stub). Hapus yang terbukti tidak dipakai.
+- Gambar berat: public/favicon.png (304 KB) dan public/Gemini*Generated_Image*\*.png (250 KB). Optimalkan.
+- Dua berkas useTheme (context/ lama dan hooks/ baru) ada bersamaan sampai D2.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -364,7 +367,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: frontend/src/pages/ProfileEdit.jsx, frontend/src/features/profile/{ProfileEditForm.jsx,FollowButton.jsx,profileErrors.js}
   - Keputusan baru: tidak ada cache profil bersama antar halaman; setelah simpan, pengguna tetap di halaman edit dengan pesan sukses dan tautan ke profil (profil memuat ulang saat dibuka). Pembaruan follow memakai hasil server (bukan optimistis) dengan penjaga klik ganda lewat useRef. Nama tampilan awal di formulir = displayName dari API (username jika belum diatur), sehingga menyimpan tanpa mengubah akan menyimpan username sebagai nama tampilan; mengosongkan kolom mengembalikan ke null. Bio dihitung dan divalidasi dari panjang mentah, dikirim setelah trim. Tujuan redirect login hanya path internal (diawali "/" dan bukan "//"), memakai replace. Tidak ada perubahan backend, API.md, atau library.
   - Berikutnya: Phase 3 (posts, post_images, comments, post_likes; halaman feed; upload gambar dan avatar/banner). Pengingat: DROP manual animes_legacy pada atau setelah 2026-12-16, setelah backup.
-- - **2026-11-23** — D1 (fondasi desain)
+- **2026-11-23** — D1 (fondasi desain)
   - Selesai: skrip tema inline di index.html (atribut data-theme di <html> sebelum React dimuat). utils/theme.js (mode system/light/dark, kunci localStorage "anisphere-theme" dengan try/catch, nilai tidak valid jadi system, mode system mengikuti prefers-color-scheme, sinkron antar tab) dan hook useTheme (useSyncExternalStore). Token warna per tema dan pemetaan @theme inline (kelas bg-canvas, bg-subtle, border-border, border-border-strong, text-fg, text-muted, text-accent, bg-accent-emphasis, text-on-accent, success, attention, danger, done). Aksen profil lewat [data-accent="violet|teal|orange|pink|green"] (--profile-accent, --profile-on-accent; kelas bg-profile-accent, text-profile-on-accent). components/common: icons.jsx (lucide-react), Button, Card, Input, Modal, Badge, Avatar, Skeleton, ThemeToggle. Halaman /design hanya mode dev.
   - File diubah: frontend/index.html, frontend/src/assets/styles/index.css, frontend/src/App.jsx, frontend/package.json, pnpm-lock.yaml
   - File baru: frontend/src/utils/{theme.js,cx.js}, frontend/src/hooks/useTheme.js, frontend/src/components/common/{icons,Button,Card,Input,Modal,Badge,Avatar,Skeleton,ThemeToggle}.jsx, frontend/src/pages/DesignPreview.jsx

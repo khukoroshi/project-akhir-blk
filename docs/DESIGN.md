@@ -26,6 +26,7 @@ Bersih dan lega, terinspirasi GitHub. Sampul anime adalah pusat perhatian, jadi 
 - Atribut `data-theme="light|dark"` pada `<html>`. Mode pilihan disimpan di `localStorage` kunci `anisphere-theme` (`system|light|dark`; nilai lain diabaikan, bungkus try/catch).
 - Skrip kecil di `index.html` memasang tema sebelum React dimuat (tanpa berkedip). Mode `system` mengikuti `prefers-color-scheme` dan memperbarui diri saat berubah.
 - Tailwind 4: warna didefinisikan sebagai variabel CSS lalu dipetakan lewat `@theme`; varian gelap lewat `@custom-variant dark` berbasis `data-theme`. Komponen memakai kelas token (`bg-canvas`, `text-fg`), bukan warna mentah.
+- Selama D2 sampai D8: variabel CSS berawalan `--ds-`; varian baru bernama `theme-dark` (berbasis data-theme), varian `dark` lama (berbasis .dark) bertahan sampai D2 lalu diganti. Kelas yang memakai token tidak butuh varian `dark:`.
 
 ## 4. Token
 
@@ -34,7 +35,7 @@ Bersih dan lega, terinspirasi GitHub. Sampul anime adalah pusat perhatian, jadi 
 | canvas          | #ffffff | #0d1117 | latar halaman                               |
 | subtle          | #f6f8fa | #151b23 | kartu, header, panel                        |
 | border          | #d0d7de | #3d444d | pemisah, tepi kartu                         |
-| border-strong   | (D1)    | (D1)    | tepi input dan kontrol, kontras minimal 3:1 |
+| border-strong   | #818b98 | #656c76 | tepi input dan kontrol, kontras minimal 3:1 |
 | fg              | #1f2328 | #f0f6fc | teks utama                                  |
 | muted           | #59636e | #9198a1 | teks sekunder                               |
 | accent          | #0969da | #4493f8 | tautan, ikon aktif, tab aktif               |
@@ -47,7 +48,7 @@ Bersih dan lega, terinspirasi GitHub. Sampul anime adalah pusat perhatian, jadi 
 
 Kontras terukur (teks pada canvas): fg 15,8 / 17,4; muted 6,1 / 6,5; accent 5,2 / 6,1; success 5,1 / 7,5; attention 4,9 / 7,5; danger 5,2 / 5,7. Semua di atas 4,5:1 pada canvas dan subtle. Tepi tombol utama gelap (#1f6feb di atas canvas) hanya 4,1:1, cukup untuk komponen (minimal 3:1).
 
-tombol danger memakai teks dan garis danger di atas canvas, tanpa isian.
+Tombol danger memakai teks dan garis danger di atas canvas, tanpa isian (teks putih di atas danger gelap #f85149 hanya 3,35:1).
 
 Status watchlist: watching = accent, completed = success, dropped = danger, plan to watch = attention. Selalu disertai label teks atau ikon, jangan warna saja.
 
