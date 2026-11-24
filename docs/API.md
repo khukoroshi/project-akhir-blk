@@ -202,9 +202,9 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
   - `q` (opsional, maks 100 karakter). Jika kosong, mengembalikan daftar top.
   - `page` (opsional, bilangan bulat 1-200, default 1). Daftar top (tanpa `q`) dibatasi maksimal halaman 10.
   - `filter` (opsional, default `all`): `all` `airing` `upcoming` `tv` `movie` `ova` `ona` `special` `popular` `favorited`. Nilai lain 400 "filter tidak valid". Diabaikan jika `q` ada.
-- **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large } } ]`, `meta: { page, perPage, hasNextPage }`, `coverImage: { large }`, `genres: string[]` (maks 3), `season: string|null`,` seasonYear: number|null`
+- **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large }, genres: string[] (maks 3), season: string|null, seasonYear: number|null } ]`, `meta: { page, perPage, hasNextPage }`
 - **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top dan pencarian. Di halaman 10 daftar top, meta.hasNextPage selalu false, genres, season, seasonYear ditambahkan 2026-11-24; field lain dan meta tidak berubah..
-- **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 parameter tidak dikenal, 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, membalas status gagal selain 429 (termasuk 404), atau membalas error GraphQL, 504 AniList timeout
+- **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 query apa pun ditolak (endpoint ini tidak punya parameter), 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, membalas status gagal selain 429 (termasuk 404), atau membalas error GraphQL, 504 AniList timeout
 
 #### `GET /catalog/anime/featured`
 

@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2 selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** D3C (tampilan daftar). Fase desain: D0, D1, D2, D3A, D3B selesai.
+- **Berikutnya:** D3C (tampilan daftar), lalu D3D (carousel dan panel forum), lalu D4 sampai D8.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -158,7 +158,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
-18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (selesai), D3B Home (selesai), D3C tampilan daftar, D3D carousel dan panel forum.; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (selesai), D3B Home (selesai), D3C tampilan daftar, D3D carousel dan panel forum; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)

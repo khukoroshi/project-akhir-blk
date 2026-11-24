@@ -20,6 +20,8 @@ Bersih dan lega, terinspirasi GitHub. Sampul anime adalah pusat perhatian, jadi 
 | Navigasi ponsel    | Header atas: menu (hamburger) di kiri membuka laci dari kiri; logo; ikon cari dan avatar atau tombol Masuk di kanan. Tanpa bilah bawah                                                                                                                                          |
 | Navigasi laptop    | Header lengket (latar subtle, garis bawah border): hamburger di kiri membuka laci yang sama dengan ponsel (Beranda, MyList saat login), logo, lalu di kanan kolom cari, pengalih tema, dan avatar (menu: Profil saya, Edit profil, MyList, Keluar) atau tombol Masuk dan Daftar |
 | Sudut dan bayangan | `rounded-md` (6px), bayangan minimal, garis tipis sebagai pemisah                                                                                                                                                                                                               |
+| Bahasa antarmuka   | Inggris penuh (label, tombol, placeholder, aria-label, pesan, alt, judul tab). Setiap chat desain menerjemahkan semua teks di berkas yang disentuhnya. `<html lang="en">`. Dokumen kerja tetap Indonesia                                                                        |
+| Judul anime        | Selalu romaji (fallback english, lalu native). Satu helper getAnimeTitle di utils/animeLabels.js untuk data AniList; judul watchlist (anim_title) tersimpan romaji di server                                                                                                    |
 
 ## 3. Tema
 
@@ -114,9 +116,9 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 Urutan: baris unggulan (carousel + panel forum), hero, kotak hasil, isi.
 
 - Baris unggulan: grid 3 kolom di lg (carousel lg:col-span-2, panel forum 1 kolom); di bawah lg satu kolom (carousel dulu, panel forum ringkas di bawahnya).
-- Carousel: slide dari GET /catalog/anime/featured (maks 8). Gambar banner (fallback sampul besar), lencana skor dan format di kiri atas, judul, tombol (Detail, + Watchlist, + Rencana tonton), titik indikator. Scroll-snap dan geser di ponsel, panah di laptop. role="region" aria-roledescription="carousel", slide diberi "n dari total". Autoplay maks 6 detik per slide, berhenti saat hover, fokus, atau sentuh, ada tombol jeda, mati bila prefers-reduced-motion. Gambar slide pertama dimuat prioritas, sisanya lazy; rasio tetap agar tidak bergeser. Teks di atas gambar memakai putih dengan scrim gelap (pengecualian token).
-- Panel forum: wadah "Forum diskusi - Segera hadir" tanpa isi palsu; komponen menerima daftar postingan agar Phase 3 tinggal mengisi.
-- Hero: wadah bg-subtle, border, tanpa kolom cari; teks, tab kategori di dalam wadah, dan chip "Hasil untuk ..." (dengan tombol hapus) saat ada ?q=.
-- Kotak hasil: bilah bg-subtle berisi ikon, label kecil, judul bagian, kontrol halaman (ikon panah, "Halaman N", label aksesibel), dan tombol tampilan grid/daftar. Kontrol halaman juga di bawah isi.
+- Carousel: slide dari GET /catalog/anime/featured (maks 8). Gambar banner (fallback sampul besar), lencana skor dan format di kiri atas, judul, tombol (Details, + Watchlist, + Plan to Watch), titik indikator. Scroll-snap dan geser di ponsel, panah di laptop. role="region" aria-roledescription="carousel", slide diberi "n dari total". Autoplay maks 6 detik per slide, berhenti saat hover, fokus, atau sentuh, ada tombol jeda, mati bila prefers-reduced-motion. Gambar slide pertama dimuat prioritas, sisanya lazy; rasio tetap agar tidak bergeser. Teks di atas gambar memakai putih dengan scrim gelap (pengecualian token).
+- Panel forum: wadah "Discussion forum - Coming soon" tanpa isi palsu; komponen menerima daftar postingan agar Phase 3 tinggal mengisi.
+- Hero: wadah bg-subtle, border, tanpa kolom cari; teks, tab kategori di dalam wadah, dan chip "Results for ..." (dengan tombol hapus) saat ada ?q=.
+- Kotak hasil: bilah bg-subtle berisi ikon, label kecil, judul bagian, kontrol halaman (ikon panah, "Page N", label aksesibel), dan tombol tampilan grid/daftar. Kontrol halaman juga di bawah isi.
 - Grid kartu: 2 (default), 3 (sm), 4 (md), 6 (lg) kolom. Daftar: 1 (default), 2 (md), 3 (lg) kolom. Parameter URL: ?view=list (grid default) di samping ?q, ?page, ?filter.
-- Kartu daftar: poster di kiri; kanan: judul, lalu baris Format dan Episode, Status dan musim/tahun, Skor, dan lencana genre.
+- Kartu daftar: poster di kiri; kanan: judul, lalu rows Format and Episodes, Status and season/year, Score, dan lencana genre.
