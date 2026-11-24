@@ -70,10 +70,10 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 
 ## 6. Responsif
 
-| Lebar                               | Layout                                                                              |
-| ----------------------------------- | ----------------------------------------------------------------------------------- |
-| di bawah 1024px (ponsel dan tablet) | tata letak ponsel; tablet memakai wadah lebih lebar dan kolom grid lebih banyak     |
-| 1024px ke atas (laptop dan desktop) | tata letak laptop; desktop besar dibatasi `max-w-screen-xl` (1280px) dan dipusatkan |
+| Lebar                               | Layout                                                                          |
+| ----------------------------------- | ------------------------------------------------------------------------------- |
+| di bawah 1024px (ponsel dan tablet) | tata letak ponsel; tablet memakai wadah lebih lebar dan kolom grid lebih banyak |
+| 1024px ke atas (laptop dan desktop) | tata letak laptop; desktop besar dibatasi `max-w-7xl` (1280px) dan dipusatkan   |
 
 - Grid katalog: 2 kolom (default), 3 (`sm`), 4 (`md`), 6 (`lg`). Semua membagi 48 (jumlah per halaman).
 - Target sentuh minimal 44px. Tidak ada fungsi yang hanya muncul saat hover. Tab filter bisa digulir horizontal. Tabel MyList menjadi daftar kartu di ponsel.
@@ -108,3 +108,15 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 | D6   | Profil, edit profil, aksen (plus backend 006)            | belum   |
 | D7   | Login dan Register                                       | belum   |
 | D8   | Poles: kondisi kosong, error, loading, aksesibilitas     | belum   |
+
+## 10. Halaman Home (D3)
+
+Urutan: baris unggulan (carousel + panel forum), hero, kotak hasil, isi.
+
+- Baris unggulan: grid 3 kolom di lg (carousel lg:col-span-2, panel forum 1 kolom); di bawah lg satu kolom (carousel dulu, panel forum ringkas di bawahnya).
+- Carousel: slide dari GET /catalog/anime/featured (maks 8). Gambar banner (fallback sampul besar), lencana skor dan format di kiri atas, judul, tombol (Detail, + Watchlist, + Rencana tonton), titik indikator. Scroll-snap dan geser di ponsel, panah di laptop. role="region" aria-roledescription="carousel", slide diberi "n dari total". Autoplay maks 6 detik per slide, berhenti saat hover, fokus, atau sentuh, ada tombol jeda, mati bila prefers-reduced-motion. Gambar slide pertama dimuat prioritas, sisanya lazy; rasio tetap agar tidak bergeser. Teks di atas gambar memakai putih dengan scrim gelap (pengecualian token).
+- Panel forum: wadah "Forum diskusi - Segera hadir" tanpa isi palsu; komponen menerima daftar postingan agar Phase 3 tinggal mengisi.
+- Hero: wadah bg-subtle, border, tanpa kolom cari; teks, tab kategori di dalam wadah, dan chip "Hasil untuk ..." (dengan tombol hapus) saat ada ?q=.
+- Kotak hasil: bilah bg-subtle berisi ikon, label kecil, judul bagian, kontrol halaman (ikon panah, "Halaman N", label aksesibel), dan tombol tampilan grid/daftar. Kontrol halaman juga di bawah isi.
+- Grid kartu: 2 (default), 3 (sm), 4 (md), 6 (lg) kolom. Daftar: 1 (default), 2 (md), 3 (lg) kolom. Parameter URL: ?view=list (grid default) di samping ?q, ?page, ?filter.
+- Kartu daftar: poster di kiri; kanan: judul, lalu baris Format dan Episode, Status dan musim/tahun, Skor, dan lencana genre.
