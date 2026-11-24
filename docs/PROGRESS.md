@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2 selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** D3 (Home, empat chat: D3A sampai D3D).
+- **Berikutnya:** D3B (Home: hero, kotak hasil, kartu grid). dan Fase desain: D0, D1, D2, D3A selesai.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -41,14 +41,14 @@
 ## 4. Struktur Saat Ini (sesuai target backend)
 
 **Backend** (modular):
-`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.{controller,service,model,routes,validator}.mjs + index.mjs), utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
+`src/{config, db (migrate.mjs, migrations/), integrations/anilist (anilist.client.mjs, anilist.format.mjs, index.mjs), middlewares, modules/{anime, watchlist, auth, users} (tiap modul: <nama>.{controller,service,model,routes,validator}.mjs + index.mjs), utils (validation.mjs, authCookies.mjs, ...), app.mjs}`
 
 - Modul watchlist punya service hanya untuk statistik (`watchlist.service.mjs`); controller-nya masih memanggil model langsung.
 - Aturan impor (dijaga `tests/architecture.test.mjs`): kode di luar `modules/<b>` hanya boleh mengimpor `modules/<b>/index.mjs`; `integrations/` tidak boleh mengimpor `modules/`.
 - Fitur yang ada: `auth`, `watchlist` (modul di modules/watchlist), `anime` (katalog, sudah modul di modules/anime), users (modul di modules/users: controller, service, model, routes, validator; profil dan follow).
 - `backend/public/` berisi frontend statis lama (HTML/JS/CSS), kemungkinan sudah tidak dipakai.
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
-- Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,rateLimit,db,architecture,users,follow}.test.mjs).
+- Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,catalog-featured,rateLimit,db,architecture,users,follow}.test.mjs).
 - Folder yang diizinkan di src/: config, db, integrations, middlewares, modules, utils, plus app.mjs (dijaga tests/architecture.test.mjs).
 
 **Frontend:**
@@ -75,7 +75,8 @@
 | PUT    | `/api/anime/:anim_id`           | ya       | ubah item                                                                                                               |
 | PATCH  | `/api/anime/:anim_id/increment` | ya       | tambah episode                                                                                                          |
 | DELETE | `/api/anime/:anim_id`           | ya       | hapus item                                                                                                              |
-| GET    | `/api/catalog/anime`            | tidak    | daftar top (10 filter) dan pencarian, berpaginasi (?q, ?page, ?filter)                                                  |
+| GET    | `/api/catalog/anime`            | tidak    | daftar top (10 filter) dan pencarian, berpaginasi (?q, ?page, ?filter); item memuat genres, season, seasonYear.         |
+| GET    | `/api/catalog/anime/featured`   | tidak    | maks 8 anime RELEASING trending untuk carousel Home (cache 30 menit, tanpa parameter)                                   |
 | GET    | `/api/catalog/anime/:id`        | tidak    | detail anime (AniList)                                                                                                  |
 | GET    | `/api/users/:username`          | opsional | profil publik + statistik + followersCount, followingCount, isFollowing (stats null untuk profil privat bukan pemilik). |
 | PUT    | `/api/users/profile`            | ya       | ubah displayName, bio, isPrivate                                                                                        |
@@ -155,7 +156,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
-18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (endpoint featured + field daftar), D3B Home (hero, kotak hasil, kartu grid), D3C tampilan daftar, D3D carousel dan panel forum.; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (selesai), D3B Home (hero, kotak hasil, kartu grid), D3C tampilan daftar, D3D carousel dan panel forum.; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
@@ -208,3 +209,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File dihapus: context/{ThemeProvider.jsx, ThemeContext.js, useTheme.js}, components/common/{ThemeSwitcher.jsx, Navbar.jsx}, serta aset template dan UserProfileCard.jsx yang terbukti tidak dipakai
   - Keputusan baru: laci yang sama dipakai di laptop dan ponsel (menggantikan "header horizontal" di DESIGN.md). Laci dirender lewat portal ke document.body. Kolom cari header disinkronkan dari ?q= hanya saat di / (lewat key), bukan lewat effect. Lebar wadah memakai max-w-7xl (sama dengan 1280px). Tidak ada perubahan backend, API.md, rute, atau library.
   - Berikutnya: D3 (Home dan katalog; kolom cari milik Home disesuaikan dengan kolom cari header).
+- **2026-11-24** — D3A (backend: data untuk Home baru)
+  - Selesai: GET /api/catalog/anime/featured (publik, query apa pun 400, maks 8 item, banner diutamakan, diisi sampul extraLarge bila banner kurang dari 5, description teks biasa maks 220 karakter, cache 30 menit, penanganan 429/502/504 dan pembatas laju katalog sama dengan endpoint katalog lain). Rute dideklarasikan sebelum /anime/:id. Daftar katalog menambah genres (maks 3), season, seasonYear per item; kunci cache dan meta tidak berubah. Tes catalog-featured.test.mjs.
+  - File diubah: src/integrations/anilist/{anilist.client.mjs,index.mjs}, src/modules/anime/{anime.controller,anime.routes,anime.validator}.mjs, API.md
+  - File baru: src/integrations/anilist/anilist.format.mjs, tests/catalog-featured.test.mjs
+  - Keputusan baru: cache featured satu slot terpisah dengan TTL 30 menit (clearCacheForTests membersihkan keduanya). Item tanpa banner diisi setelah item ber-banner (urutan trending di dalam tiap kelompok dipertahankan). description null bila kosong. genres hanya dipotong bila lebih dari 3. Tidak ada migrasi, perubahan frontend, atau library baru.
+  - Berikutnya: D3B (Home: hero, kotak hasil, kartu grid memakai genres, season, seasonYear), lalu D3C (tampilan daftar) dan D3D (carousel dan panel forum).

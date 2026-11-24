@@ -1,8 +1,14 @@
+import {
+  FEATURED_FETCH_COUNT,
+  limitGenres,
+  pickFeatured,
+} from "./anilist.format.mjs";
 const ANILIST_URL = "https://graphql.anilist.co";
 
 const REQUEST_TIMEOUT_MS = 10_000;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const CACHE_MAX_ENTRIES = 200;
+const FEATURED_CACHE_TTL_MS = 30 * 60 * 1000;
 const PER_PAGE = 48;
 const MAX_TOP_PAGES = 10;
 
@@ -20,6 +26,8 @@ const CATALOG_FILTERS = {
 };
 
 const cache = new Map();
+// Single-slot cache for the featured list (own TTL, not shared with `cache`).
+let featuredCache = null;
 
 const getCached = (key) => {
   const entry = cache.get(key);
@@ -62,6 +70,9 @@ const ANIME_SEARCH_QUERY = `
         format
         status
         averageScore
+        genres
+        season
+        seasonYear
         coverImage { large }
       }
     }
@@ -81,6 +92,9 @@ const ANIME_TOP_QUERY = `
         format
         status
         averageScore
+        genres
+        season
+        seasonYear
         coverImage { large }
       }
     }
@@ -124,6 +138,27 @@ const ANIME_DETAIL_QUERY = `
         year
         month
         day
+      }
+    }
+  }
+`;
+
+const ANIME_FEATURED_QUERY = `
+  query ($perPage: Int!) {
+    Page(page: 1, perPage: $perPage) {
+      media(type: ANIME, status: RELEASING, sort: TRENDING_DESC, isAdult: false) {
+        id
+        title { romaji english native }
+        bannerImage
+        coverImage { extraLarge large color }
+        format
+        episodes
+        status
+        averageScore
+        genres
+        season
+        seasonYear
+        description(asHtml: false)
       }
     }
   }
@@ -246,7 +281,7 @@ const getAnime = async (query = "", page = 1, filter = "all") => {
     (search !== "" || page < MAX_TOP_PAGES);
 
   const result = {
-    items: data.Page.media,
+    items: data.Page.media.map(limitGenres),
     meta: { page, perPage: PER_PAGE, hasNextPage },
   };
 
@@ -254,7 +289,27 @@ const getAnime = async (query = "", page = 1, filter = "all") => {
   return result;
 };
 
-// Test-only: lets each test start with an empty cache. No behavior change.
-const clearCacheForTests = () => cache.clear();
+const getFeaturedAnime = async () => {
+  if (featuredCache && featuredCache.expiresAt >= Date.now()) {
+    return featuredCache.value;
+  }
 
-export { getAnime, getAnimeDetail, clearCacheForTests };
+  const data = await requestAniList(ANIME_FEATURED_QUERY, {
+    perPage: FEATURED_FETCH_COUNT,
+  });
+  const items = pickFeatured(data.Page?.media ?? []);
+
+  featuredCache = {
+    value: items,
+    expiresAt: Date.now() + FEATURED_CACHE_TTL_MS,
+  };
+  return items;
+};
+
+// Test-only: lets each test start with an empty cache. No behavior change.
+const clearCacheForTests = () => {
+  cache.clear();
+  featuredCache = null;
+};
+
+export { getAnime, getAnimeDetail, getFeaturedAnime, clearCacheForTests };

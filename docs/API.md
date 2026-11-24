@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-20.
+> Terakhir diperbarui: 2026-11-24.
 
 ## 1. Konvensi Umum
 
@@ -36,16 +36,16 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "error", "message": "Terlalu banyak ... Coba lagi dalam N menit." }`, dan header `Retry-After` (detik). Header standar `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` ikut dikirim. Batas dihitung per jendela waktu dan nilainya bisa diubah lewat env server (nilai di bawah adalah default).
 
-| Endpoint                                       | Batas          | Kunci       | Catatan                                                    |
-| ---------------------------------------------- | -------------- | ----------- | ---------------------------------------------------------- |
-| Semua `/api/*`                                 | 600 / 15 menit | IP          | batas global                                               |
-| `POST /auth/login`                             | 5 / 15 menit   | IP + email  | hanya percobaan gagal dihitung                             |
-| `POST /auth/login`                             | 30 / 15 menit  | IP          | hanya percobaan gagal dihitung                             |
-| `POST /auth/register`                          | 10 / 60 menit  | IP          | semua percobaan dihitung                                   |
-| `GET /catalog/anime`, `GET /catalog/anime/:id` | 60 / 1 menit   | IP          | satu batas untuk kedua endpoint                            |
-| `POST /anime`                                  | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung                            |
-| `PUT /users/profile`                           | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung                            |
-| `POST` / `DELETE /users/:username/follow`      | 60 / 15 menit  | user (sesi) | satu batas untuk keduanya; semua request ber-sesi dihitung |
+| Endpoint                                                                      | Batas          | Kunci       | Catatan                                                    |
+| ----------------------------------------------------------------------------- | -------------- | ----------- | ---------------------------------------------------------- |
+| Semua `/api/*`                                                                | 600 / 15 menit | IP          | batas global                                               |
+| `POST /auth/login`                                                            | 5 / 15 menit   | IP + email  | hanya percobaan gagal dihitung                             |
+| `POST /auth/login`                                                            | 30 / 15 menit  | IP          | hanya percobaan gagal dihitung                             |
+| `POST /auth/register`                                                         | 10 / 60 menit  | IP          | semua percobaan dihitung                                   |
+| `GET /catalog/anime`, `GET /catalog/anime/featured`, `GET /catalog/anime/:id` | 60 / 1 menit   | IP          | satu batas untuk ketiga endpoint                           |
+| `POST /anime`                                                                 | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung                            |
+| `PUT /users/profile`                                                          | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung                            |
+| `POST` / `DELETE /users/:username/follow`                                     | 60 / 15 menit  | user (sesi) | satu batas untuk keduanya; semua request ber-sesi dihitung |
 
 Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, password benar pun ditolak 429. Frontend sebaiknya menampilkan `message` dan jangan mengulang request sebelum `Retry-After` lewat.
 
@@ -202,9 +202,18 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
   - `q` (opsional, maks 100 karakter). Jika kosong, mengembalikan daftar top.
   - `page` (opsional, bilangan bulat 1-200, default 1). Daftar top (tanpa `q`) dibatasi maksimal halaman 10.
   - `filter` (opsional, default `all`): `all` `airing` `upcoming` `tv` `movie` `ova` `ona` `special` `popular` `favorited`. Nilai lain 400 "filter tidak valid". Diabaikan jika `q` ada.
-- **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large } } ]`, `meta: { page, perPage, hasNextPage }`
-- **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top dan pencarian. Di halaman 10 daftar top, meta.hasNextPage selalu false.
+- **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large } } ]`, `meta: { page, perPage, hasNextPage }`, `coverImage: { large }`, `genres: string[]` (maks 3), `season: string|null`,` seasonYear: number|null`
+- **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top dan pencarian. Di halaman 10 daftar top, meta.hasNextPage selalu false, genres, season, seasonYear ditambahkan 2026-11-24; field lain dan meta tidak berubah..
 - **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 parameter tidak dikenal, 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, membalas status gagal selain 429 (termasuk 404), atau membalas error GraphQL, 504 AniList timeout
+
+#### `GET /catalog/anime/featured`
+
+- **Auth:** tidak
+- **Query:** tidak ada. Parameter apa pun ditolak 400 (strict).
+- **Sukses 200:** `data: [Featured]` (maks 8), tanpa `meta`.
+  `Featured`: `{ id, title: { romaji, english, native }, bannerImage: string|null, coverImage: { extraLarge, large, color }, format, episodes, status, averageScore, genres: string[] (maks 3), season, seasonYear, description: string|null }`
+- **Catatan:** diambil dari AniList (ANIME, status RELEASING, urut TRENDING_DESC, bukan dewasa, 16 item). Hanya item ber-banner yang dipertahankan; jika kurang dari 5, diisi item yang punya `coverImage.extraLarge` (bannerImage = null) sampai 8. `description` adalah teks biasa (tanpa HTML, entitas didecode, spasi dirapikan, maks 220 karakter, dipotong di batas kata dengan "..."), atau null jika kosong; render sebagai teks. Di-cache 30 menit (terpisah dari cache daftar). Timeout 10 detik. Rute ini sebelum `/catalog/anime/:id`.
+- **Error:** 400 parameter dikenali tidak ada (query apa pun), 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, membalas status gagal, atau membalas error GraphQL, 504 AniList timeout
 
 #### `GET /catalog/anime/:id`
 
@@ -269,3 +278,4 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - 2026-11-14: Pembatasan laju: 429 dari server (global 600/15 mnt, login gagal 5/15 mnt per IP+email dan 30/15 mnt per IP, register 10/60 mnt, katalog 60/mnt, POST /anime 30/15 mnt per user), header Retry-After dan `RateLimit-*`. Perilaku endpoint lain tidak berubah.
 - 2026-11-19: Users (Phase 2A): GET /users/:username (auth opsional), PUT /users/profile (30/15 menit per user). Register: nama baru wajib cocok regex `^[A-Za-z0-9][A-Za-z0-9_.-]{2,49}$`. Pada tabel "Endpoint Rencana", `/users/:username` dan `/users/profile` dihapus (sudah ada); follow memakai `/users/:username/follow` (2B), bukan `:id`.
 - 2026-11-19: Users (Phase 2B): POST dan DELETE /users/:username/follow (idempotent, auth + CSRF, 60/15 menit per user bersama). GET /users/:username dan respons PUT /users/profile menambah followersCount, followingCount, isFollowing. Bentuk field lain tidak berubah.
+- 2026-11-24: Katalog (D3A): GET /catalog/anime/featured (publik, tanpa parameter, maks 8 item, cache 30 menit, description teks biasa). GET /catalog/anime menambah field per item: genres (maks 3), season, seasonYear. Kontrak lain tidak berubah.

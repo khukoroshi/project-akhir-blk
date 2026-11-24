@@ -1,4 +1,8 @@
-import { getAnime, getAnimeDetail } from "../../integrations/anilist/index.mjs";
+import {
+  getAnime,
+  getAnimeDetail,
+  getFeaturedAnime,
+} from "../../integrations/anilist/index.mjs";
 
 import AppError from "../../utils/appError.mjs";
 
@@ -45,4 +49,19 @@ const getDetail = async (req, res, next) => {
   }
 };
 
-export { searchAnime, getDetail };
+const getFeatured = async (req, res, next) => {
+  try {
+    const items = await getFeaturedAnime();
+
+    res.status(200).json({ status: "success", data: items });
+  } catch (error) {
+    next(
+      new AppError(
+        error.message || "Gagal mengambil anime unggulan dari AniList",
+        error.statusCode || 500,
+      ),
+    );
+  }
+};
+
+export { searchAnime, getDetail, getFeatured };

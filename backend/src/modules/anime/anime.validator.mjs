@@ -45,3 +45,6 @@ export const catalogQuerySchema = z
       error: `Daftar top dibatasi maksimal ${MAX_TOP_PAGE} halaman`,
     },
   );
+
+// No query parameters are allowed; any key is rejected with 400.
+export const featuredQuerySchema = z.strictObject({}, strictOptions);
