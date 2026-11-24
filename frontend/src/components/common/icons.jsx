@@ -22,4 +22,7 @@ export {
   Star,
   LayoutGrid,
   List,
+  MessagesSquare,
+  Pause,
+  Play,
 } from "lucide-react";

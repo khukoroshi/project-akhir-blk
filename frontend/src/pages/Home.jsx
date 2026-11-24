@@ -12,6 +12,7 @@ import AnimeGridSkeleton from "../components/common/AnimeGridSkeleton";
 import Pagination from "../components/common/Pagination";
 import FilterTabs from "../components/common/FilterTabs";
 import ViewToggle from "../components/common/ViewToggle";
+import FeaturedRow from "../features/anime/FeaturedRow";
 import { ListVideo, Search } from "../components/common/icons";
 import {
   CATALOG_FILTERS,
@@ -40,6 +41,8 @@ function Home() {
   const filter = activeFilter.key; // invalid values fall back to "all"
 
   const view = parseCatalogView(searchParams.get("view"));
+  // Featured row only on the first page of the plain (non-search) catalog.
+  const showFeatured = !query && page === 1;
 
   const goToPage = (nextPage) => {
     navigate(buildCatalogPath({ q: query, filter, page: nextPage, view }));
@@ -73,12 +76,12 @@ function Home() {
         setHasNextPage(response.data.meta?.hasNextPage ?? false);
       } catch (err) {
         if (ignore) return;
-        console.error("Gagal mengambil data:", err);
+        console.error("Failed to fetch anime:", err);
 
         setError(
           err.response?.data?.message ||
             err.message ||
-            "Gagal mengambil data anime",
+            "Failed to load anime data.",
         );
       } finally {
         if (!ignore) setLoading(false);
@@ -98,6 +101,8 @@ function Home() {
   return (
     <MainLayout username={user?.name}>
       <div className="space-y-6">
+        {showFeatured && <FeaturedRow />}
+
         {/* HERO */}
         <section className="rounded-md border border-border bg-subtle p-5 sm:p-8">
           <Badge tone="accent">Anime Catalog</Badge>

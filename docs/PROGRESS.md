@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2 selesai; D3 sebagian (D3A, D3B, D3C selesai).
+- **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2, D3 selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** D3D (carousel dan panel forum), lalu D4 sampai D8.
+- **Berikutnya:** D4 (Detail anime), lalu D5 sampai D8.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -59,6 +59,7 @@
 - Kerangka (D2): components/common/{Header, NavDrawer, Footer, linkButtonClasses}, layouts/MainLayout.jsx (min-h-dvh, tautan "Lewati ke konten", wadah max-w-7xl). Tema hanya lewat utils/theme.js dan hooks/useTheme.js (kunci anisphere-theme, DEFAULT_MODE). ThemeProvider, ThemeContext, context/useTheme, ThemeSwitcher, dan Navbar sudah dihapus. @custom-variant dark berbasis data-theme.
 - Home (D3B): components/common/{AnimeGridSkeleton, Pagination, FilterTabs, DaftarAnime, CardImage}.jsx sudah memakai token. utils/animeLabels.js berisi formatLabel dan statusLabel.
 - Home (D3C): tampilan grid/daftar lewat ?view=list (grid default, nilai lain dianggap grid). components/common/{AnimeListItem, ViewToggle}.jsx baru; DaftarAnime dan AnimeGridSkeleton menerima prop view. utils/catalogLayout.js (kelas grid bersama), utils/catalogFilters.js memuat buildCatalogPath dan parseCatalogView (semua URL katalog dibangun lewat sini). utils/animeLabels.js memuat getAnimeTitle dan seasonLabel; label status berbahasa Inggris.
+- Home (D3D): features/anime/{useFeatured.js, FeaturedCarousel.jsx, FeaturedSlide.jsx, FeaturedRow.jsx}, features/watchlist/useAddToList.js, features/community/ForumPanel.jsx, hooks/usePrefersReducedMotion.js. icons.jsx menambah MessagesSquare, Pause, Play. Baris unggulan tampil di atas hero hanya bila tanpa ?q= dan page = 1.
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
 - Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
@@ -141,6 +142,12 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - AnimeListItem memakai div dengan kelas yang sama seperti CardImage, bukan komponen Card. Samakan ke Card di D8 bila Card cocok.
 - Teks antarmuka Inggris baru mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, dan komponen D3C. ErrorApiPage dan halaman lain masih bisa berbahasa Indonesia (dirapikan per chat desain).
 - getAnimeTitle baru dipakai di Home (kartu dan kartu daftar). Pasang juga di carousel (D3D), Detail (D4), dan tempat lain yang menampilkan judul AniList.
+- AnimeDetail.jsx masih memiliki handleAddToList sendiri (kata-kata Indonesia, mengirim tier/score/notes null). Dialihkan ke useAddToList di D4.
+- Pesan error dari backend berbahasa Indonesia dan tampil apa adanya di UI Inggris (carousel, Home). Putuskan nanti: terjemahkan di server atau petakan di klien.
+- Skor lencana carousel = averageScore / 10 (1 desimal). Samakan dengan CardImage bila formatnya berbeda.
+- Dot indikator carousel selebar 24px x tinggi 44px (bukan 44x44) agar delapan titik muat di 375px.
+- Cache useFeatured hanya di memori modul (hilang saat reload); TTL 5 menit, dibersihkan saat Try again.
+- getAnimeTitle kini juga dipakai di carousel; tinggal Detail (D4).
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -161,7 +168,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
-18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (selesai), D3B Home (selesai), D3C tampilan daftar (selesai), D3D carousel dan panel forum; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+18. Fase desain: D1, D2, D3 (D3A sampai D3D) selesai; D4 Detail (alihkan AnimeDetail.jsx ke useAddToList); D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
@@ -232,3 +239,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: frontend/src/components/common/{AnimeListItem.jsx, ViewToggle.jsx}, frontend/src/utils/catalogLayout.js
   - Keputusan baru: semua URL katalog dibangun lewat buildCatalogPath (q menang atas filter; default dihilangkan). Kelas grid dan daftar ada di catalogLayout.js (duplikasi di bagian 8 selesai). Cincin fokus kartu daftar lewat has-[a:focus-visible] pada pembungkus; tautan judul tanpa outline sendiri. view tidak dikirim ke server. Tidak ada perubahan backend, API.md, atau library.
   - Berikutnya: D3D (carousel dan panel forum; carousel memakai getAnimeTitle), lalu D4 (Detail).
+- **2026-11-25** — D3D (Home: baris unggulan, carousel, dan panel forum)
+  - Selesai: baris unggulan di atas hero (hanya tanpa ?q= dan page = 1): grid lg 3 kolom (carousel 2 kolom, ForumPanel 1 kolom setinggi carousel; di bawah lg satu kolom). Carousel dari GET /catalog/anime/featured: scroll-snap tanpa batang gulir, slide aktif dilacak IntersectionObserver, slide tidak aktif inert; banner (fallback sampul extraLarge) dengan scrim gelap dan teks putih; lencana skor dan format; judul lewat getAnimeTitle; meta "Format · N eps · Status"; genre dan deskripsi hanya sm ke atas (teks biasa); tombol Details, + Watchlist, + Plan to Watch (target 44px) dengan pesan aria-live dan status "In your list". Kontrol: jeda/lanjut, titik, panah (terlihat dari lg, tetap bisa difokus), ArrowLeft/Right. Autoplay 6 detik, berhenti saat hover, fokus keyboard, sentuhan (menjeda), tab tersembunyi, atau dijeda; mati bila prefers-reduced-motion. Region dan slide beraria-label sesuai pola carousel. Loading = Skeleton setinggi sama; error = Card dengan Try again; kosong = carousel tidak tampil (panel forum selebar penuh). ForumPanel menerima posts = [] (tanpa data palsu). Pesan error di Home diterjemahkan ke Inggris.
+  - File diubah: frontend/src/pages/Home.jsx, frontend/src/components/common/icons.jsx
+  - File baru: frontend/src/features/anime/{useFeatured.js, FeaturedCarousel.jsx, FeaturedSlide.jsx, FeaturedRow.jsx}, frontend/src/features/watchlist/useAddToList.js, frontend/src/features/community/ForumPanel.jsx, frontend/src/hooks/usePrefersReducedMotion.js
+  - Keputusan baru: useAddToList(externalId, status, title) mengembalikan { ok, message } atau null (diarahkan ke login atau request sedang berjalan); hanya mengirim { externalId, status }. Anonim diarahkan ke /login dengan state.from (pola FollowButton). useFeatured memakai cache modul TTL 5 menit dan AbortController. Hook data berada di FeaturedRow (tidak ada fetch di halaman 2 atau saat mencari). Sentuhan pada carousel menjeda autoplay lewat tombol jeda. Fokus menahan autoplay hanya untuk fokus keyboard (:focus-visible). AnimeDetail.jsx dialihkan ke useAddToList di D4. Tidak ada perubahan backend, API.md, atau library.
+  - Berikutnya: D4 (Detail anime; getAnimeTitle dan useAddToList dipakai di sana), lalu D5 sampai D8.
