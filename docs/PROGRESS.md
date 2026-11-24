@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2 selesai.
+- **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2 selesai; D3 sebagian (D3A, D3B, D3C selesai).
 - **Sedang dikerjakan:** -
-- **Berikutnya:** D3C (tampilan daftar), lalu D3D (carousel dan panel forum), lalu D4 sampai D8.
+- **Berikutnya:** D3D (carousel dan panel forum), lalu D4 sampai D8.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -58,6 +58,7 @@
 - Halaman lama belum memakai token. ThemeProvider lama (kelas .dark, kunci localStorage "theme") dan @custom-variant dark lama masih aktif sampai D2.
 - Kerangka (D2): components/common/{Header, NavDrawer, Footer, linkButtonClasses}, layouts/MainLayout.jsx (min-h-dvh, tautan "Lewati ke konten", wadah max-w-7xl). Tema hanya lewat utils/theme.js dan hooks/useTheme.js (kunci anisphere-theme, DEFAULT_MODE). ThemeProvider, ThemeContext, context/useTheme, ThemeSwitcher, dan Navbar sudah dihapus. @custom-variant dark berbasis data-theme.
 - Home (D3B): components/common/{AnimeGridSkeleton, Pagination, FilterTabs, DaftarAnime, CardImage}.jsx sudah memakai token. utils/animeLabels.js berisi formatLabel dan statusLabel.
+- Home (D3C): tampilan grid/daftar lewat ?view=list (grid default, nilai lain dianggap grid). components/common/{AnimeListItem, ViewToggle}.jsx baru; DaftarAnime dan AnimeGridSkeleton menerima prop view. utils/catalogLayout.js (kelas grid bersama), utils/catalogFilters.js memuat buildCatalogPath dan parseCatalogView (semua URL katalog dibangun lewat sini). utils/animeLabels.js memuat getAnimeTitle dan seasonLabel; label status berbahasa Inggris.
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
 - Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
@@ -137,7 +138,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Nama berkas logo di Header.jsx (LOGO_SRC) harus sama dengan berkas di frontend/public/.
 - Halaman lama masih memakai warna mentah (`slate-*`, `bg-white`) dan belum memakai token; dirapikan di D3 sampai D7.
 - utils/formatStatus tidak lagi dipakai CardImage; cek apakah masih dipakai halaman lain, hapus bila tidak. LoadingPage tidak lagi dipakai Home; cek pemakai lain.
-- grid kelas di DaftarAnime.jsx dan AnimeGridSkeleton.jsx diduplikasi; jaga tetap sama.
+- AnimeListItem memakai div dengan kelas yang sama seperti CardImage, bukan komponen Card. Samakan ke Card di D8 bila Card cocok.
+- Teks antarmuka Inggris baru mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, dan komponen D3C. ErrorApiPage dan halaman lain masih bisa berbahasa Indonesia (dirapikan per chat desain).
+- getAnimeTitle baru dipakai di Home (kartu dan kartu daftar). Pasang juga di carousel (D3D), Detail (D4), dan tempat lain yang menampilkan judul AniList.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -158,7 +161,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
-18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (selesai), D3B Home (selesai), D3C tampilan daftar, D3D carousel dan panel forum; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (selesai), D3B Home (selesai), D3C tampilan daftar (selesai), D3D carousel dan panel forum; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
@@ -223,3 +226,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: frontend/src/utils/animeLabels.js, frontend/src/components/common/AnimeGridSkeleton.jsx
   - Keputusan baru: Pagination punya prop announce; hanya instance atas yang aria-live agar tidak terbaca dua kali. Chip hasil berada di dalam FilterTabs (prop query). Efek hover kartu hanya perubahan warna tepi (tanpa overlay dan tanpa zoom). Label format dan status dipusatkan di animeLabels.js. Tidak ada perubahan backend, API.md, parameter URL, atau library.
   - Berikutnya: D3C (tampilan daftar, ?view=list, memakai genres, season, seasonYear), lalu D3D (carousel dan panel forum).
+- **2026-11-25** — D3C (Home: tampilan grid dan daftar)
+  - Selesai: tombol tampilan (grup dua tombol ikon, aria-pressed, target 44px) di kotak hasil; tata letak bilah: laptop judul kiri, tombol tampilan lalu Pagination kanan, ponsel dua baris. Parameter URL ?view=list (grid default, parameter dihilangkan; nilai lain dianggap grid). Pindah tampilan memakai replace dan tidak memicu pengambilan data; tab, chip hapus pencarian, dan Pagination mempertahankan view. Kartu daftar AnimeListItem (poster kiri, judul sebagai satu-satunya tautan membentang, baris Format, Status, Score, hingga 3 lencana genre). Kolom daftar 1/2/3 (default/md/lg), grid tetap 2/3/4/6. Teks Home, FilterTabs, Pagination, CardImage, dan animeLabels diterjemahkan ke Inggris; hero kembali ke teks Inggris. Judul anime AniList lewat getAnimeTitle (romaji, english, native, "Untitled").
+  - File diubah: frontend/src/pages/Home.jsx, frontend/src/components/common/{icons.jsx, FilterTabs.jsx, Pagination.jsx, CardImage.jsx, DaftarAnime.jsx, AnimeGridSkeleton.jsx}, frontend/src/utils/{animeLabels.js, catalogFilters.js}
+  - File baru: frontend/src/components/common/{AnimeListItem.jsx, ViewToggle.jsx}, frontend/src/utils/catalogLayout.js
+  - Keputusan baru: semua URL katalog dibangun lewat buildCatalogPath (q menang atas filter; default dihilangkan). Kelas grid dan daftar ada di catalogLayout.js (duplikasi di bagian 8 selesai). Cincin fokus kartu daftar lewat has-[a:focus-visible] pada pembungkus; tautan judul tanpa outline sendiri. view tidak dikirim ke server. Tidak ada perubahan backend, API.md, atau library.
+  - Berikutnya: D3D (carousel dan panel forum; carousel memakai getAnimeTitle), lalu D4 (Detail).

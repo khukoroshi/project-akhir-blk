@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import api from "../services/api";
 
@@ -11,8 +11,13 @@ import DaftarAnime from "../components/common/DaftarAnime";
 import AnimeGridSkeleton from "../components/common/AnimeGridSkeleton";
 import Pagination from "../components/common/Pagination";
 import FilterTabs from "../components/common/FilterTabs";
+import ViewToggle from "../components/common/ViewToggle";
 import { ListVideo, Search } from "../components/common/icons";
-import { CATALOG_FILTERS } from "../utils/catalogFilters";
+import {
+  CATALOG_FILTERS,
+  buildCatalogPath,
+  parseCatalogView,
+} from "../utils/catalogFilters";
 
 function Home() {
   const [animeList, setAnimeList] = useState([]);
@@ -22,7 +27,8 @@ function Home() {
 
   const { user } = useAuth();
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const query = (searchParams.get("q") ?? "").trim();
 
   const rawPage = Number(searchParams.get("page"));
@@ -33,14 +39,19 @@ function Home() {
     CATALOG_FILTERS.find((f) => f.key === rawFilter) ?? CATALOG_FILTERS[0];
   const filter = activeFilter.key; // invalid values fall back to "all"
 
-  const goToPage = (nextPage) => {
-    const params = {};
-    if (query) params.q = query;
-    else if (filter !== "all") params.filter = filter;
-    if (nextPage > 1) params.page = String(nextPage);
+  const view = parseCatalogView(searchParams.get("view"));
 
-    setSearchParams(params);
+  const goToPage = (nextPage) => {
+    navigate(buildCatalogPath({ q: query, filter, page: nextPage, view }));
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // replace: switching view must not add a history entry. No refetch:
+  // view is not a dependency of the fetch effect.
+  const changeView = (nextView) => {
+    navigate(buildCatalogPath({ q: query, filter, page, view: nextView }), {
+      replace: true,
+    });
   };
 
   useEffect(() => {
@@ -89,71 +100,69 @@ function Home() {
       <div className="space-y-6">
         {/* HERO */}
         <section className="rounded-md border border-border bg-subtle p-5 sm:p-8">
-          <Badge tone="accent">Katalog Anime</Badge>
+          <Badge tone="accent">Anime Catalog</Badge>
 
           <h1 className="mt-3 text-2xl font-semibold tracking-tight text-fg sm:text-4xl">
-            Temukan{" "}
-            <span className="text-accent">anime favorit berikutnya.</span>
+            Discover your next{" "}
+            <span className="text-accent">favorite anime.</span>
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
-            Cari lewat kolom di header, jelajahi kategori, dan simpan anime yang
-            ingin kamu tonton ke daftar pribadimu.
+            Browse top anime, discover new favorites, and keep track of what you
+            want to watch.
           </p>
 
           <FilterTabs
             className="mt-6"
             activeKey={query ? null : filter}
             query={query}
+            view={view}
           />
         </section>
 
         {/* RESULTS BAR + CONTENT */}
         <section className="space-y-5">
-          <div className="flex flex-col gap-3 rounded-md border border-border bg-subtle p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
-            <div className="flex min-w-0 items-center gap-3">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-md border border-border bg-subtle p-3 sm:flex sm:px-4">
+            <div className="flex min-w-0 items-center gap-3 sm:mr-auto">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-canvas text-accent">
                 <ResultIcon className="size-5" aria-hidden="true" />
               </span>
               <div className="min-w-0">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted">
-                  {query ? "Hasil pencarian" : "Jelajahi"}
+                  {query ? "Search results" : "Explore"}
                 </p>
                 <h2 className="truncate text-lg font-semibold text-fg">
-                  {query ? `Hasil untuk “${query}”` : activeFilter.title}
+                  {query ? `Results for “${query}”` : activeFilter.title}
                 </h2>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              {/* D3C: tombol tampilan grid/daftar ditaruh di sini */}
-              {showPagination && (
-                <Pagination
-                  page={page}
-                  hasNextPage={hasNextPage}
-                  onPageChange={goToPage}
-                  className="w-full justify-between sm:w-auto sm:justify-end"
-                  label="Pagination atas"
-                />
-              )}
-            </div>
+            <ViewToggle view={view} onChange={changeView} />
+
+            {showPagination && (
+              <Pagination
+                page={page}
+                hasNextPage={hasNextPage}
+                onPageChange={goToPage}
+                className="col-span-2 w-full justify-between sm:col-span-1 sm:w-auto sm:justify-end"
+                label="Top pagination"
+              />
+            )}
           </div>
 
           {loading ? (
-            <AnimeGridSkeleton />
+            <AnimeGridSkeleton view={view} />
           ) : error ? (
             <ErrorApiPage error={error} />
           ) : animeList.length === 0 ? (
             <Card className="px-6 py-16 text-center">
-              <p className="text-lg font-semibold text-fg">
-                Anime tidak ditemukan
-              </p>
+              <p className="text-lg font-semibold text-fg">No anime found</p>
               <p className="mt-2 text-sm text-muted">
-                Coba gunakan kata kunci pencarian yang lain.
+                Try a different search keyword.
               </p>
             </Card>
           ) : (
-            <DaftarAnime animeList={animeList} />
+            <DaftarAnime animeList={animeList} view={view} />
           )}
 
           {showPagination && (
@@ -161,7 +170,7 @@ function Home() {
               page={page}
               hasNextPage={hasNextPage}
               onPageChange={goToPage}
-              label="Pagination bawah"
+              label="Bottom pagination"
               announce={false}
             />
           )}

@@ -20,4 +20,6 @@ export {
   House,
   ListVideo,
   Star,
+  LayoutGrid,
+  List,
 } from "lucide-react";

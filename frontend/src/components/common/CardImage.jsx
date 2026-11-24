@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import Badge from "./Badge";
 import { Star } from "./icons";
-import { formatLabel, statusLabel } from "../../utils/animeLabels";
+import {
+  formatLabel,
+  statusLabel,
+  getAnimeTitle,
+} from "../../utils/animeLabels";
 
 const CardImage = ({ data }) => {
-  const title =
-    data.title?.english ||
-    data.title?.romaji ||
-    data.title?.native ||
-    "Unknown Anime";
+  const title = getAnimeTitle(data.title);
 
   const score = data.averageScore ? (data.averageScore / 10).toFixed(1) : null;
   const format = formatLabel(data.format);
@@ -35,7 +35,7 @@ const CardImage = ({ data }) => {
                 className="size-3 fill-current text-attention"
                 aria-hidden="true"
               />
-              <span className="sr-only">Skor </span>
+              <span className="sr-only">Score </span>
               {score}
             </>
           ) : (

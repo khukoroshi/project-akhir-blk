@@ -22,7 +22,7 @@ function Pagination({
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        aria-label="Halaman sebelumnya"
+        aria-label="Previous page"
         className={buttonClass}
       >
         <ChevronLeft className="size-5" aria-hidden="true" />
@@ -32,14 +32,14 @@ function Pagination({
         aria-live={announce ? "polite" : undefined}
         className="min-w-24 text-center text-sm font-semibold text-fg"
       >
-        Halaman {page}
+        Page {page}
       </span>
 
       <button
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={!hasNextPage}
-        aria-label="Halaman berikutnya"
+        aria-label="Next page"
         className={buttonClass}
       >
         <ChevronRight className="size-5" aria-hidden="true" />

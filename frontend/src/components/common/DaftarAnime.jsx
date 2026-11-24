@@ -1,10 +1,14 @@
 import CardImage from "./CardImage";
+import AnimeListItem from "./AnimeListItem";
+import { getLayoutClasses } from "../../utils/catalogLayout";
 
-const DaftarAnime = ({ animeList }) => {
+const DaftarAnime = ({ animeList, view = "grid" }) => {
+  const Item = view === "list" ? AnimeListItem : CardImage;
+
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-6">
+    <div className={getLayoutClasses(view)}>
       {animeList.map((anime) => (
-        <CardImage key={anime.id} data={anime} />
+        <Item key={anime.id} data={anime} />
       ))}
     </div>
   );

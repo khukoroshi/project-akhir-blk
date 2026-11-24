@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CATALOG_FILTERS } from "../../utils/catalogFilters";
+import { CATALOG_FILTERS, buildCatalogPath } from "../../utils/catalogFilters";
 import { X } from "./icons";
 
 const base =
@@ -9,17 +9,17 @@ const idle = "border-border bg-canvas text-fg hover:border-border-strong";
 
 // activeKey = null means no tab is active (while searching).
 // query = current search keyword; shows a removable chip when set.
-function FilterTabs({ activeKey, query = "", className = "" }) {
+function FilterTabs({ activeKey, query = "", view = "grid", className = "" }) {
   return (
     <div className={className}>
-      <nav aria-label="Kategori anime">
+      <nav aria-label="Anime categories">
         <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {CATALOG_FILTERS.map(({ key, label }) => {
             const isActive = key === activeKey;
             return (
               <Link
                 key={key}
-                to={key === "all" ? "/" : `/?filter=${key}`}
+                to={buildCatalogPath({ filter: key, view })}
                 aria-current={isActive ? "page" : undefined}
                 className={`${base} ${isActive ? active : idle}`}
               >
@@ -32,10 +32,10 @@ function FilterTabs({ activeKey, query = "", className = "" }) {
 
       {query && (
         <div className="mt-3 inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-canvas pl-3 text-sm text-fg">
-          <span className="truncate">Hasil untuk “{query}”</span>
+          <span className="truncate">Results for “{query}”</span>
           <Link
-            to="/"
-            aria-label="Hapus pencarian"
+            to={buildCatalogPath({ view })}
+            aria-label="Clear search"
             className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-muted hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
           >
             <X className="size-4" aria-hidden="true" />
