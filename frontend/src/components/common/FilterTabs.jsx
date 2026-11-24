@@ -1,31 +1,48 @@
 import { Link } from "react-router-dom";
 import { CATALOG_FILTERS } from "../../utils/catalogFilters";
+import { X } from "./icons";
 
-const base = "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition";
-const active = "bg-indigo-600 text-white shadow-sm";
-const idle =
-  "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800";
+const base =
+  "inline-flex min-h-11 shrink-0 items-center rounded-md border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent";
+const active = "border-accent-emphasis bg-accent-emphasis text-on-accent";
+const idle = "border-border bg-canvas text-fg hover:border-border-strong";
 
-// activeKey = null means no tab is active (e.g. while searching).
-function FilterTabs({ activeKey }) {
+// activeKey = null means no tab is active (while searching).
+// query = current search keyword; shows a removable chip when set.
+function FilterTabs({ activeKey, query = "", className = "" }) {
   return (
-    <nav aria-label="Kategori anime" className="mb-6">
-      <div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {CATALOG_FILTERS.map(({ key, label }) => {
-          const isActive = key === activeKey;
-          return (
-            <Link
-              key={key}
-              to={key === "all" ? "/" : `/?filter=${key}`}
-              aria-current={isActive ? "page" : undefined}
-              className={`${base} ${isActive ? active : idle}`}
-            >
-              {label}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+    <div className={className}>
+      <nav aria-label="Kategori anime">
+        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {CATALOG_FILTERS.map(({ key, label }) => {
+            const isActive = key === activeKey;
+            return (
+              <Link
+                key={key}
+                to={key === "all" ? "/" : `/?filter=${key}`}
+                aria-current={isActive ? "page" : undefined}
+                className={`${base} ${isActive ? active : idle}`}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {query && (
+        <div className="mt-3 inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-canvas pl-3 text-sm text-fg">
+          <span className="truncate">Hasil untuk “{query}”</span>
+          <Link
+            to="/"
+            aria-label="Hapus pencarian"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-muted hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }
 

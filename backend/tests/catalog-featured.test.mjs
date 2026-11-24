@@ -4,6 +4,26 @@ import { api } from "./support/helpers.mjs";
 import { createApp } from "../src/app.mjs";
 import { clearCacheForTests } from "../src/integrations/anilist/index.mjs";
 
+// Same shape as tests/rateLimit.test.mjs. The limiter is off by default in
+// tests, so this builds an app with it on and a tiny catalog limit.
+const buildLimitedApp = (catalogMax) =>
+  request(
+    createApp({
+      rateLimit: {
+        enabled: true,
+        limits: {
+          global: { limit: 1000, windowMs: 15 * MINUTE },
+          loginEmail: { limit: 1000, windowMs: 15 * MINUTE },
+          loginIp: { limit: 1000, windowMs: 15 * MINUTE },
+          register: { limit: 1000, windowMs: 60 * MINUTE },
+          catalog: { limit: catalogMax, windowMs: MINUTE },
+          createAnime: { limit: 1000, windowMs: 15 * MINUTE },
+          profileUpdate: { limit: 1000, windowMs: 15 * MINUTE },
+        },
+      },
+    }),
+  );
+
 const CATALOG = "/api/catalog/anime";
 const FEATURED = `${CATALOG}/featured`;
 const MINUTE = 60 * 1000;
@@ -370,22 +390,29 @@ describe("GET /api/catalog/anime/featured: error dari AniList", () => {
 describe("GET /api/catalog/anime/featured: pembatas laju katalog", () => {
   it("429 + Retry-After setelah batas terlampaui", async () => {
     mockMedia([featuredMedia(1)]);
-    const app = createApp();
+    const server = buildLimitedApp(2);
 
-    const first = await request(app).get(FEATURED);
-    expect(first.status).toBe(200);
+    expect((await server.get(FEATURED)).status).toBe(200);
+    expect((await server.get(FEATURED)).status).toBe(200);
+    const res = await server.get(FEATURED);
 
-    const limit = Number(first.headers["ratelimit-limit"]) || 60;
-    let last = first;
-    for (let i = 1; i <= limit; i += 1) {
-      last = await request(app).get(FEATURED);
-    }
-
-    expectError(last, 429);
-    expect(Number(last.headers["retry-after"])).toBeGreaterThan(0);
+    expectError(res, 429);
+    expect(res.body.message).toMatch(/menit/);
+    expect(Number(res.headers["retry-after"])).toBeGreaterThan(0);
+    expect(res.headers["ratelimit-limit"]).toBeDefined();
     // Cache means AniList is only contacted once.
     expect(fetchMock).toHaveBeenCalledTimes(1);
-  }, 30_000);
+  });
+
+  it("batas dibagi dengan daftar dan detail", async () => {
+    mockMedia([featuredMedia(1)]);
+    const server = buildLimitedApp(2);
+
+    expect((await server.get(`${CATALOG}/abc`)).status).toBe(400);
+    expect((await server.get(`${CATALOG}?page=0`)).status).toBe(400);
+    expectError(await server.get(FEATURED), 429);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
 
 describe("GET /api/catalog/anime: field baru di daftar", () => {

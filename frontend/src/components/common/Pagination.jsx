@@ -1,30 +1,36 @@
-const buttonClass =
-  "inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:disabled:hover:bg-slate-900";
+import { ChevronLeft, ChevronRight } from "./icons";
+import cx from "../../utils/cx";
 
+const buttonClass =
+  "inline-flex size-11 items-center justify-center rounded-md border border-border-strong bg-canvas text-fg transition-colors hover:bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-canvas";
+
+// announce: only one instance per page should be a live region.
 function Pagination({
   page,
   hasNextPage,
   onPageChange,
-  className = "mt-8",
+  className = "mt-8 justify-center",
   label = "Pagination",
+  announce = true,
 }) {
   return (
     <nav
       aria-label={label}
-      className={`flex items-center justify-center gap-3 ${className}`}
+      className={cx("flex items-center gap-3", className)}
     >
       <button
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
+        aria-label="Halaman sebelumnya"
         className={buttonClass}
       >
-        Sebelumnya
+        <ChevronLeft className="size-5" aria-hidden="true" />
       </button>
 
       <span
-        aria-current="page"
-        className="min-w-24 text-center text-sm font-semibold text-slate-700 dark:text-slate-200"
+        aria-live={announce ? "polite" : undefined}
+        className="min-w-24 text-center text-sm font-semibold text-fg"
       >
         Halaman {page}
       </span>
@@ -33,9 +39,10 @@ function Pagination({
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={!hasNextPage}
+        aria-label="Halaman berikutnya"
         className={buttonClass}
       >
-        Berikutnya
+        <ChevronRight className="size-5" aria-hidden="true" />
       </button>
     </nav>
   );

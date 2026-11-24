@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2 selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** D3B (Home: hero, kotak hasil, kartu grid). dan Fase desain: D0, D1, D2, D3A selesai.
+- **Berikutnya:** D3C (tampilan daftar). Fase desain: D0, D1, D2, D3A, D3B selesai.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -57,6 +57,7 @@
 - Fondasi desain (D1): `utils/{theme.js, cx.js}`, `hooks/useTheme.js`, `components/common/{icons.jsx, Button, Card, Input, Modal, Badge, Avatar, Skeleton, ThemeToggle}.jsx`, `pages/DesignPreview.jsx` (rute /design hanya saat import.meta.env.DEV). Token warna ada di `assets/styles/index.css` (variabel `--ds-*`, dipetakan lewat @theme inline).
 - Halaman lama belum memakai token. ThemeProvider lama (kelas .dark, kunci localStorage "theme") dan @custom-variant dark lama masih aktif sampai D2.
 - Kerangka (D2): components/common/{Header, NavDrawer, Footer, linkButtonClasses}, layouts/MainLayout.jsx (min-h-dvh, tautan "Lewati ke konten", wadah max-w-7xl). Tema hanya lewat utils/theme.js dan hooks/useTheme.js (kunci anisphere-theme, DEFAULT_MODE). ThemeProvider, ThemeContext, context/useTheme, ThemeSwitcher, dan Navbar sudah dihapus. @custom-variant dark berbasis data-theme.
+- Home (D3B): components/common/{AnimeGridSkeleton, Pagination, FilterTabs, DaftarAnime, CardImage}.jsx sudah memakai token. utils/animeLabels.js berisi formatLabel dan statusLabel.
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
 - Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
@@ -135,7 +136,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Gambar berat: public/favicon.png (304 KB) dan public/logo.png (250 KB). Optimalkan.
 - Nama berkas logo di Header.jsx (LOGO_SRC) harus sama dengan berkas di frontend/public/.
 - Halaman lama masih memakai warna mentah (`slate-*`, `bg-white`) dan belum memakai token; dirapikan di D3 sampai D7.
-- Kolom cari di header dan di Home.jsx ada bersamaan sampai D3.
+- utils/formatStatus tidak lagi dipakai CardImage; cek apakah masih dipakai halaman lain, hapus bila tidak. LoadingPage tidak lagi dipakai Home; cek pemakai lain.
+- grid kelas di DaftarAnime.jsx dan AnimeGridSkeleton.jsx diduplikasi; jaga tetap sama.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -156,7 +158,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
-18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (selesai), D3B Home (hero, kotak hasil, kartu grid), D3C tampilan daftar, D3D carousel dan panel forum.; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+18. Fase desain (DESIGN.md): D1 fondasi (selesai); D2 kerangka (selesai); D3 dipecah: D3A backend (selesai), D3B Home (selesai), D3C tampilan daftar, D3D carousel dan panel forum.; D4 Detail; D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
@@ -215,3 +217,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: src/integrations/anilist/anilist.format.mjs, tests/catalog-featured.test.mjs
   - Keputusan baru: cache featured satu slot terpisah dengan TTL 30 menit (clearCacheForTests membersihkan keduanya). Item tanpa banner diisi setelah item ber-banner (urutan trending di dalam tiap kelompok dipertahankan). description null bila kosong. genres hanya dipotong bila lebih dari 3. Tidak ada migrasi, perubahan frontend, atau library baru.
   - Berikutnya: D3B (Home: hero, kotak hasil, kartu grid memakai genres, season, seasonYear), lalu D3C (tampilan daftar) dan D3D (carousel dan panel forum).
+- **2026-11-24** — D3B (Home: hero, kotak hasil, kartu grid, kontrol halaman)
+  - Selesai: hero bg-subtle dengan lencana "Katalog Anime", judul beraksen, deskripsi, dan tab kategori di dalamnya; kolom cari, tombol Search, dan state pencarian dihapus dari Home (pencarian lewat header). Chip "Hasil untuk ..." dengan tautan hapus ke "/" (label "Hapus pencarian"). Kotak hasil (ikon, label, judul, Pagination; ponsel dua baris; tempat tombol tampilan untuk D3C). Pagination ikon ChevronLeft/Right dengan aria-label, "Halaman N" aria-live, target 44px. Grid 2/3/4/6 kolom. CardImage berbasis token (poster 2:3, lencana skor dan format memakai Badge, judul 2 baris, episode dan status). Loading memakai grid 12 Skeleton, kondisi kosong memakai Card.
+  - File diubah: frontend/src/pages/Home.jsx, frontend/src/components/common/{icons.jsx, Pagination.jsx, FilterTabs.jsx, CardImage.jsx, DaftarAnime.jsx}
+  - File baru: frontend/src/utils/animeLabels.js, frontend/src/components/common/AnimeGridSkeleton.jsx
+  - Keputusan baru: Pagination punya prop announce; hanya instance atas yang aria-live agar tidak terbaca dua kali. Chip hasil berada di dalam FilterTabs (prop query). Efek hover kartu hanya perubahan warna tepi (tanpa overlay dan tanpa zoom). Label format dan status dipusatkan di animeLabels.js. Tidak ada perubahan backend, API.md, parameter URL, atau library.
+  - Berikutnya: D3C (tampilan daftar, ?view=list, memakai genres, season, seasonYear), lalu D3D (carousel dan panel forum).

@@ -97,17 +97,17 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 
 ## 9. Status chat desain
 
-| Chat | Isi                                                      | Status  |
-| ---- | -------------------------------------------------------- | ------- |
-| D0   | DESIGN.md                                                | selesai |
-| D1   | Fondasi: tema, token, komponen dasar, ikon               | selesai |
-| D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman | selesai |
-| D3   | Home dan katalog                                         | belum   |
-| D4   | Detail anime                                             | belum   |
-| D5   | MyList                                                   | belum   |
-| D6   | Profil, edit profil, aksen (plus backend 006)            | belum   |
-| D7   | Login dan Register                                       | belum   |
-| D8   | Poles: kondisi kosong, error, loading, aksesibilitas     | belum   |
+| Chat | Isi                                                      | Status                                           |
+| ---- | -------------------------------------------------------- | ------------------------------------------------ |
+| D0   | DESIGN.md                                                | selesai                                          |
+| D1   | Fondasi: tema, token, komponen dasar, ikon               | selesai                                          |
+| D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman | selesai                                          |
+| D3   | Home dan katalog                                         | sebagian: D3A dan D3B selesai; D3C dan D3D belum |
+| D4   | Detail anime                                             | belum                                            |
+| D5   | MyList                                                   | belum                                            |
+| D6   | Profil, edit profil, aksen (plus backend 006)            | belum                                            |
+| D7   | Login dan Register                                       | belum                                            |
+| D8   | Poles: kondisi kosong, error, loading, aksesibilitas     | belum                                            |
 
 ## 10. Halaman Home (D3)
 

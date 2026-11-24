@@ -19,4 +19,5 @@ export {
   Pencil,
   House,
   ListVideo,
+  Star,
 } from "lucide-react";

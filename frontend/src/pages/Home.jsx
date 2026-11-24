@@ -4,19 +4,20 @@ import { useAuth } from "../context/useAuth";
 import api from "../services/api";
 
 import MainLayout from "../layouts/MainLayout";
-import Button from "../components/common/Button";
-import LoadingPage from "../components/common/LoadingPage";
+import Badge from "../components/common/Badge";
+import Card from "../components/common/Card";
 import ErrorApiPage from "../components/common/ErrorApiPage";
 import DaftarAnime from "../components/common/DaftarAnime";
+import AnimeGridSkeleton from "../components/common/AnimeGridSkeleton";
 import Pagination from "../components/common/Pagination";
 import FilterTabs from "../components/common/FilterTabs";
+import { ListVideo, Search } from "../components/common/icons";
 import { CATALOG_FILTERS } from "../utils/catalogFilters";
 
 function Home() {
   const [animeList, setAnimeList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [hasNextPage, setHasNextPage] = useState(false);
 
   const { user } = useAuth();
@@ -31,20 +32,6 @@ function Home() {
   const activeFilter =
     CATALOG_FILTERS.find((f) => f.key === rawFilter) ?? CATALOG_FILTERS[0];
   const filter = activeFilter.key; // invalid values fall back to "all"
-
-  const [searchInput, setSearchInput] = useState(query);
-  const [prevQuery, setPrevQuery] = useState(query);
-
-  // Keep the input in sync when the URL changes (Back/Forward)
-  if (query !== prevQuery) {
-    setPrevQuery(query);
-    setSearchInput(query);
-  }
-
-  const handleSearch = () => {
-    const keyword = searchInput.trim();
-    setSearchParams(keyword ? { q: keyword } : {});
-  };
 
   const goToPage = (nextPage) => {
     const params = {};
@@ -94,130 +81,88 @@ function Home() {
     };
   }, [query, page, filter]);
 
+  const showPagination = !loading && !error && animeList.length > 0;
+  const ResultIcon = query ? Search : ListVideo;
+
   return (
     <MainLayout username={user?.name}>
-      <div className="space-y-10">
-        {/* HERO / SEARCH */}
-        <section className="relative overflow-hidden rounded-3xl bg-slate-900 px-6 py-12 shadow-sm sm:px-10">
-          {/* Decorative circles */}
+      <div className="space-y-6">
+        {/* HERO */}
+        <section className="rounded-md border border-border bg-subtle p-5 sm:p-8">
+          <Badge tone="accent">Katalog Anime</Badge>
 
-          <div className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-indigo-500/20 blur-3xl" />
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-fg sm:text-4xl">
+            Temukan{" "}
+            <span className="text-accent">anime favorit berikutnya.</span>
+          </h1>
 
-          <div className="pointer-events-none absolute -bottom-40 left-20 h-80 w-80 rounded-full bg-purple-500/10 blur-3xl" />
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+            Cari lewat kolom di header, jelajahi kategori, dan simpan anime yang
+            ingin kamu tonton ke daftar pribadimu.
+          </p>
 
-          <div className="relative max-w-3xl">
-            {/* Label */}
-
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-              Anime Catalog
-            </div>
-
-            {/* Heading */}
-
-            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-5xl">
-              Discover your next
-              <span className="text-indigo-400"> favorite anime.</span>
-            </h1>
-
-            {/* Description */}
-
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-              Search, discover, and keep track of the anime you want to watch.
-              Build your own personal anime collection.
-            </p>
-
-            {/* Search */}
-
-            <div className="mt-8 flex flex-col gap-2 sm:flex-row">
-              <div className="relative flex-1">
-                {/* Search icon */}
-
-                <svg
-                  className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="11" cy="11" r="7" />
-
-                  <path strokeLinecap="round" d="m20 20-4-4" />
-                </svg>
-
-                <input
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSearch();
-                  }}
-                  placeholder="Search anime..."
-                  className="h-12 w-full rounded-xl border border-white/10 bg-white/10 pl-12 pr-4 text-sm text-white outline-none placeholder:text-slate-400 transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
-                />
-              </div>
-
-              <Button
-                onClick={handleSearch}
-                variant="secondary"
-                className="h-12 rounded-xl bg-white px-6 font-semibold text-slate-900 transition hover:bg-slate-100"
-              >
-                Search
-              </Button>
-            </div>
-          </div>
+          <FilterTabs
+            className="mt-6"
+            activeKey={query ? null : filter}
+            query={query}
+          />
         </section>
 
-        {/* CATALOG */}
-
-        <section>
-          <FilterTabs activeKey={query ? null : filter} />
-          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                {query ? "Search Result" : "Explore"}
-              </p>
-
-              <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {query ? `Results for "${query}"` : activeFilter.title}
-              </h2>
+        {/* RESULTS BAR + CONTENT */}
+        <section className="space-y-5">
+          <div className="flex flex-col gap-3 rounded-md border border-border bg-subtle p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-canvas text-accent">
+                <ResultIcon className="size-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted">
+                  {query ? "Hasil pencarian" : "Jelajahi"}
+                </p>
+                <h2 className="truncate text-lg font-semibold text-fg">
+                  {query ? `Hasil untuk “${query}”` : activeFilter.title}
+                </h2>
+              </div>
             </div>
 
-            {!loading && !error && animeList.length > 0 && (
-              <Pagination
-                page={page}
-                hasNextPage={hasNextPage}
-                onPageChange={goToPage}
-                className=""
-                label="Pagination atas"
-              />
-            )}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {/* D3C: tombol tampilan grid/daftar ditaruh di sini */}
+              {showPagination && (
+                <Pagination
+                  page={page}
+                  hasNextPage={hasNextPage}
+                  onPageChange={goToPage}
+                  className="w-full justify-between sm:w-auto sm:justify-end"
+                  label="Pagination atas"
+                />
+              )}
+            </div>
           </div>
 
-          {/* API STATE */}
-
           {loading ? (
-            <LoadingPage />
+            <AnimeGridSkeleton />
           ) : error ? (
             <ErrorApiPage error={error} />
           ) : animeList.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-900">
-              <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">
+            <Card className="px-6 py-16 text-center">
+              <p className="text-lg font-semibold text-fg">
                 Anime tidak ditemukan
               </p>
-
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-sm text-muted">
                 Coba gunakan kata kunci pencarian yang lain.
               </p>
-            </div>
+            </Card>
           ) : (
             <DaftarAnime animeList={animeList} />
           )}
-          {!loading && !error && animeList.length > 0 && (
+
+          {showPagination && (
             <Pagination
               page={page}
               hasNextPage={hasNextPage}
               onPageChange={goToPage}
               label="Pagination bawah"
+              announce={false}
             />
           )}
         </section>
