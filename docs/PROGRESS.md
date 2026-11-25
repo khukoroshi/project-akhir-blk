@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2, D3 selesai.
 - **Sedang dikerjakan:** -
-- **Berikutnya:** D4 (Detail anime), lalu D5 sampai D8.
+- **Berikutnya:** L1 (frontend: header, laci, footer, tema, Modal, halaman galat ke bahasa Inggris), lalu L2 (pesan server ke bahasa Inggris), lalu D4 sampai D8.
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -37,6 +37,7 @@
 - Phase 2: URL profil memakai username (us_name). Respons profil camelCase, tidak pernah memuat email, hash password, atau us_id. Profil privat menyembunyikan statistik dari orang lain; follow tanpa persetujuan. Avatar dan banner ditunda ke Phase 3. Follow memakai POST dan DELETE (idempotent), bukan toggle. Daftar followers/following dan pencarian pengguna ditunda; hanya jumlah yang tampil. Statistik dihitung saat diminta, tanpa cache. Kode frontend baru di frontend/src/features/profile/.
 - Follow dan unfollow idempotent (INSERT ... ON DUPLICATE KEY UPDATE; DELETE), mengikuti diri sendiri 400, follow juga untuk profil privat. followersCount dan followingCount selalu tampil, juga untuk profil privat; isFollowing hanya true untuk pemanggil login non-pemilik yang mengikuti. Pembatas follow (60/15 menit per user) dipakai bersama oleh POST dan DELETE lewat satu instance.
 - Desain: lihat DESIGN.md (tema terang/gelap/sistem ala GitHub, aksen global biru, aksen profil 5 pilihan + default, ponsel dulu dengan titik pisah 1024px). Perombakan hanya mengubah tampilan, bukan logika atau kontrak.
+- UI dan pesan API berbahasa Inggris; dokumen kerja Indonesia; judul anime selalu romaji (pesan server diterjemahkan di server, bukan dipetakan di klien).
 
 ## 4. Struktur Saat Ini (sesuai target backend)
 
@@ -142,14 +143,14 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - utils/formatStatus tidak lagi dipakai CardImage; cek apakah masih dipakai halaman lain, hapus bila tidak. LoadingPage tidak lagi dipakai Home; cek pemakai lain.
 - AnimeListItem memakai div dengan kelas yang sama seperti CardImage, bukan komponen Card. Samakan ke Card di D8 bila Card cocok.
 - Teks antarmuka Inggris baru mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, dan komponen D3C. ErrorApiPage dan halaman lain masih bisa berbahasa Indonesia (dirapikan per chat desain).
-- getAnimeTitle baru dipakai di Home (kartu dan kartu daftar). Pasang juga di carousel (D3D), Detail (D4), dan tempat lain yang menampilkan judul AniList.
+- getAnimeTitle dipakai di Home dan carousel; tinggal Detail (D4) dan tempat lain yang menampilkan judul AniList.
 - AnimeDetail.jsx masih memiliki handleAddToList sendiri (kata-kata Indonesia, mengirim tier/score/notes null). Dialihkan ke useAddToList di D4.
-- Pesan error dari backend berbahasa Indonesia dan tampil apa adanya di UI Inggris (carousel, Home). Putuskan nanti: terjemahkan di server atau petakan di klien.
+- Diputuskan: pesan server diterjemahkan di server (L2).
 - Skor lencana carousel = averageScore / 10 (1 desimal). Samakan dengan CardImage bila formatnya berbeda.
 - Dot indikator carousel selebar 24px x tinggi 44px (bukan 44x44) agar delapan titik muat di 375px.
 - Cache useFeatured hanya di memori modul (hilang saat reload); TTL 5 menit, dibersihkan saat Try again.
-- getAnimeTitle kini juga dipakai di carousel; tinggal Detail (D4).
 - `pnpm catalog:refresh` adalah skrip pemeliharaan sekali pakai (T1) untuk judul lama yang masih english. Setelah dijalankan di kedua perangkat, skrip, fungsi refreshCatalog, getAnimeBatches, dan tes-nya boleh dihapus.
+- Wajib dilakukan sendiri: backup, lalu pnpm catalog:refresh --dry-run dan pnpm catalog:refresh di tiap perangkat.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -172,6 +173,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
 18. Fase desain: D1, D2, D3 (D3A sampai D3D) selesai; D4 Detail (alihkan AnimeDetail.jsx ke useAddToList); D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
     18a. T1: judul anime romaji di katalog server dan skrip catalog:refresh. (selesai)
+    18b. L1: terjemahan frontend (header, laci, footer, tema, Modal, halaman galat).
+    18c. L2: terjemahan pesan server.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)

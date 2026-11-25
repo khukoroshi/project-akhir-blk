@@ -99,24 +99,27 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 
 ## 9. Status chat desain
 
-| Chat | Isi                                                      | Status                   |
-| ---- | -------------------------------------------------------- | ------------------------ |
-| D0   | DESIGN.md                                                | selesai                  |
-| D1   | Fondasi: tema, token, komponen dasar, ikon               | selesai                  |
-| D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman | selesai                  |
-| D3   | Home dan katalog                                         | selesai (D3A sampai D3D) |
-| D4   | Detail anime                                             | belum                    |
-| D5   | MyList                                                   | belum                    |
-| D6   | Profil, edit profil, aksen (plus backend 006)            | belum                    |
-| D7   | Login dan Register                                       | belum                    |
-| D8   | Poles: kondisi kosong, error, loading, aksesibilitas     | belum                    |
+| Chat | Isi                                                                   | Status                   |
+| ---- | --------------------------------------------------------------------- | ------------------------ |
+| D0   | DESIGN.md                                                             | selesai                  |
+| D1   | Fondasi: tema, token, komponen dasar, ikon                            | selesai                  |
+| D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman              | selesai                  |
+| D3   | Home dan katalog                                                      | selesai (D3A sampai D3D) |
+| D4   | Detail anime                                                          | belum                    |
+| D5   | MyList                                                                | belum                    |
+| D6   | Profil, edit profil, aksen (plus backend 006)                         | belum                    |
+| D7   | Login dan Register                                                    | belum                    |
+| D8   | Poles: kondisi kosong, error, loading, aksesibilitas                  | belum                    |
+| T1   | Judul romaji di server (skrip catalog:refresh)                        | selesai                  |
+| L1   | Terjemahan frontend: header, laci, footer, tema, Modal, halaman galat | belum                    |
+| L2   | Terjemahan pesan server ke bahasa Inggris                             | belum                    |
 
 ## 10. Halaman Home (D3)
 
 Urutan: baris unggulan (carousel + panel forum), hero, kotak hasil, isi.
 
 - Baris unggulan: grid 3 kolom di lg (carousel lg:col-span-2, panel forum 1 kolom); di bawah lg satu kolom (carousel dulu, panel forum ringkas di bawahnya).
-- Carousel: slide dari GET /catalog/anime/featured (maks 8). Gambar banner (fallback sampul besar), lencana skor dan format di kiri atas, judul, tombol (Details, + Watchlist, + Plan to Watch), titik indikator. Scroll-snap dan geser di ponsel, panah di laptop. role="region" aria-roledescription="carousel", slide diberi "n dari total". Autoplay maks 6 detik per slide, berhenti saat hover, fokus, atau sentuh, ada tombol jeda, mati bila prefers-reduced-motion. Gambar slide pertama dimuat prioritas, sisanya lazy; rasio tetap agar tidak bergeser. Teks di atas gambar memakai putih dengan scrim gelap (pengecualian token).
+- Carousel: slide dari GET /catalog/anime/featured (maks 8). Gambar banner (fallback sampul besar), lencana skor dan format di kiri atas, judul, tombol (Details, + Watchlist, + Plan to Watch), titik indikator. Scroll-snap dan geser di ponsel, panah di laptop. role="region" aria-roledescription="carousel", slide diberi "n of total". Autoplay maks 6 detik per slide, berhenti saat hover, fokus, atau sentuh, ada tombol jeda, mati bila prefers-reduced-motion. Gambar slide pertama dimuat prioritas, sisanya lazy; rasio tetap agar tidak bergeser. Teks di atas gambar memakai putih dengan scrim gelap (pengecualian token).
 - Panel forum: wadah "Discussion forum - Coming soon" tanpa isi palsu; komponen menerima daftar postingan agar Phase 3 tinggal mengisi.
 - Hero: wadah bg-subtle, border, tanpa kolom cari; teks, tab kategori di dalam wadah, dan chip "Results for ..." (dengan tombol hapus) saat ada ?q=.
 - Kotak hasil: bilah bg-subtle berisi ikon, label kecil, judul bagian, kontrol halaman (ikon panah, "Page N", label aksesibel), dan tombol tampilan grid/daftar. Kontrol halaman juga di bawah isi.

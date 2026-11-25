@@ -319,3 +319,4 @@ When assisting on this repository, all AI agents must strictly adhere to the fol
 9. **Tes Wajib:** Setiap endpoint baru atau perubahan perilaku API wajib disertai tes Supertest di backend/tests/. Tes hanya berjalan di database berakhiran `_test` dan tidak boleh memanggil internet (AniList di-mock).
 10. **Batas Modul:** Kode di luar modules/<nama>/ hanya boleh mengimpor modules/<nama>/index.mjs. integrations/ tidak boleh mengimpor dari modules/. Modul baru memakai pola controller-service-model. Dijaga oleh tests/architecture.test.mjs.
 11. **Konten Pengguna:** Teks buatan pengguna (displayName, bio, kolom lain) dirender sebagai teks biasa; dilarang dangerouslySetInnerHTML untuk konten pengguna.
+12. **Bahasa Antarmuka:** Semua teks yang dilihat pengguna (UI dan pesan error API) berbahasa Inggris. Dokumen kerja berbahasa Indonesia. Judul anime selalu romaji.
