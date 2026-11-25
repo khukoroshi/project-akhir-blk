@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.mjs",
   "scripts": {
+    "catalog:refresh": "node src/db/refresh-catalog.mjs",
     "migrate": "node src/db/migrate.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

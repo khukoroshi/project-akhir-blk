@@ -663,7 +663,7 @@ describe("katalog diisi server dari AniList (C1)", () => {
     expect(res.status).toBe(201);
     const row = await catalogRow(1535);
     expect(row).toMatchObject({
-      title: "Death Note",
+      title: "Desu Nōto",
       cover_image: "https://img.example.com/1535-large.jpg",
       total_episodes: 37,
       anim_type: "TV",
@@ -692,8 +692,8 @@ describe("katalog diisi server dari AniList (C1)", () => {
   });
 
   it.each([
-    [{ english: "E", romaji: "R", native: "N" }, "E"],
-    [{ english: null, romaji: "R", native: "N" }, "R"],
+    [{ english: "E", romaji: "R", native: "N" }, "R"],
+    [{ english: "E", romaji: null, native: "N" }, "E"],
     [{ english: null, romaji: null, native: "N" }, "N"],
     [{ english: null, romaji: null, native: null }, "Unknown"],
   ])("201: urutan judul %j menjadi %s", async (title, expected) => {
@@ -765,7 +765,7 @@ describe("katalog diisi server dari AniList (C1)", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.data).toMatchObject({
-      anim_title: "Anime 1535",
+      anim_title: "Romaji 1535",
       anim_total_episode: 37,
     });
     expect(anilist.calls).toHaveLength(2); // refresh was attempted

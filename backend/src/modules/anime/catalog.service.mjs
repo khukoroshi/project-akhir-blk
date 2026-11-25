@@ -14,13 +14,12 @@ const FORMAT_TO_TYPE = {
   MUSIC: "Music",
 };
 
-const toCatalogRow = (media) => ({
-  title: (
-    media.title?.english ||
-    media.title?.romaji ||
-    media.title?.native ||
-    "Unknown"
-  ).slice(0, 255),
+// T1 title rule: romaji, then english, then native.
+const pickTitle = (title) =>
+  (title?.romaji || title?.english || title?.native || "Unknown").slice(0, 255);
+
+export const toCatalogRow = (media) => ({
+  title: pickTitle(media.title),
   coverImage: media.coverImage?.large ?? null,
   totalEpisodes: media.episodes || 0,
   type: Object.hasOwn(FORMAT_TO_TYPE, media.format)

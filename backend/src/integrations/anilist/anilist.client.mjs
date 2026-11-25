@@ -12,6 +12,12 @@ const FEATURED_CACHE_TTL_MS = 30 * 60 * 1000;
 const PER_PAGE = 48;
 const MAX_TOP_PAGES = 10;
 
+const BATCH_SIZE = 50;
+const BATCH_DELAY_MS = 2_500;
+const BATCH_MAX_RETRIES = 3;
+const BATCH_DEFAULT_WAIT_MS = 30_000;
+const BATCH_MAX_WAIT_MS = 120_000;
+
 const CATALOG_FILTERS = {
   all: { sort: ["SCORE_DESC"] },
   airing: { status: "RELEASING", sort: ["SCORE_DESC"] },
@@ -164,6 +170,20 @@ const ANIME_FEATURED_QUERY = `
   }
 `;
 
+const ANIME_BATCH_QUERY = `
+  query ($ids: [Int], $page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) {
+      media(id_in: $ids, type: ANIME) {
+        id
+        title { romaji english native }
+        episodes
+        format
+        coverImage { large }
+      }
+    }
+  }
+`;
+
 const requestAniList = async (
   query,
   variables = {},
@@ -197,10 +217,12 @@ const requestAniList = async (
     const retryAfter = Number(response.headers.get("Retry-After"));
     const wait = retryAfter > 0 ? `${retryAfter} detik` : "beberapa saat";
 
-    throw createError(
+    const error = createError(
       `Terlalu banyak permintaan ke AniList. Coba lagi dalam ${wait}.`,
       429,
     );
+    error.retryAfterSeconds = retryAfter > 0 ? retryAfter : null;
+    throw error;
   }
 
   let result = null;
@@ -306,10 +328,70 @@ const getFeaturedAnime = async () => {
   return items;
 };
 
+const defaultSleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// One request for <= 50 ids. Retries only on 429 and honors Retry-After.
+// Not cached: used by the maintenance script, not by user requests.
+const fetchBatch = async (ids, { maxRetries, sleep }) => {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      const data = await requestAniList(ANIME_BATCH_QUERY, {
+        ids,
+        page: 1,
+        perPage: BATCH_SIZE,
+      });
+      return data.Page?.media ?? [];
+    } catch (error) {
+      if (error.statusCode !== 429 || attempt >= maxRetries) throw error;
+      const wait = error.retryAfterSeconds
+        ? error.retryAfterSeconds * 1000
+        : BATCH_DEFAULT_WAIT_MS;
+      await sleep(Math.min(wait, BATCH_MAX_WAIT_MS));
+    }
+  }
+};
+
+// Yields { ids, media } or { ids, error } per chunk of up to 50 ids, pausing
+// between chunks. Ids AniList does not return are simply absent from media.
+async function* getAnimeBatches(
+  ids,
+  {
+    batchSize = BATCH_SIZE,
+    delayMs = BATCH_DELAY_MS,
+    maxRetries = BATCH_MAX_RETRIES,
+    sleep = defaultSleep,
+  } = {},
+) {
+  const size = Math.min(Math.max(1, batchSize), BATCH_SIZE);
+  const unique = [...new Set(ids)];
+
+  for (let start = 0; start < unique.length; start += size) {
+    if (start > 0) await sleep(delayMs);
+    const chunk = unique.slice(start, start + size);
+
+    let result;
+    try {
+      result = {
+        ids: chunk,
+        media: await fetchBatch(chunk, { maxRetries, sleep }),
+      };
+    } catch (error) {
+      result = { ids: chunk, error };
+    }
+    yield result;
+  }
+}
+
 // Test-only: lets each test start with an empty cache. No behavior change.
 const clearCacheForTests = () => {
   cache.clear();
   featuredCache = null;
 };
 
-export { getAnime, getAnimeDetail, getFeaturedAnime, clearCacheForTests };
+export {
+  getAnime,
+  getAnimeDetail,
+  getFeaturedAnime,
+  getAnimeBatches,
+  clearCacheForTests,
+};

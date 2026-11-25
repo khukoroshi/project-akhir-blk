@@ -3,7 +3,7 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-24.
+> Terakhir diperbarui: 2026-11-25.
 
 ## 1. Konvensi Umum
 
@@ -124,7 +124,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 
 - **Sukses 201:** `data: Anime`
 - **Error:** 429 pembatas laju server (30 per 15 menit per user), atau AniList membatasi, 502 / 504 AniList gagal atau timeout (AniList hanya jika baris katalog belum ada)
-- **Catatan:** katalog (judul, gambar `coverImage.large`, total episode, tipe) diisi SERVER dari AniList berdasarkan `externalId`, bukan dari body. Cukup kirim `{ "externalId": 1535 }`. Format AniList dipetakan ke `type` (TV_SHORT -> TV Short, MOVIE -> Movie, format kosong -> TV). Total episode kosong menjadi 0. Baris katalog yang kosong atau lebih tua dari 7 hari disegarkan dari AniList saat ada yang menambahkan anime itu. Jika penyegaran gagal dan baris sudah ada, baris lama dipakai tanpa error. Status completed memakai total dari katalog sebagai episode. Field title, imgUrl, totalEps, dan type ditolak 400 ("Field 'title' tidak dikenal. Katalog diisi server dari AniList.").
+- **Catatan:** katalog (judul, gambar `coverImage.large`, total episode, tipe) diisi SERVER dari AniList berdasarkan `externalId`, bukan dari body. Cukup kirim `{ "externalId": 1535 }`. Format AniList dipetakan ke `type` (TV_SHORT -> TV Short, MOVIE -> Movie, format kosong -> TV). Total episode kosong menjadi 0. Baris katalog yang kosong atau lebih tua dari 7 hari disegarkan dari AniList saat ada yang menambahkan anime itu. Jika penyegaran gagal dan baris sudah ada, baris lama dipakai tanpa error. Status completed memakai total dari katalog sebagai episode. Field title, imgUrl, totalEps, dan type ditolak 400 ("Field 'title' tidak dikenal. Katalog diisi server dari AniList."), Judul (`anim_title`) = romaji AniList; jika kosong memakai english, lalu native, lalu "Unknown". Aturan yang sama dipakai saat baris katalog disegarkan..
 
 #### `PUT /anime/:anim_id`
 
@@ -279,3 +279,4 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - 2026-11-19: Users (Phase 2A): GET /users/:username (auth opsional), PUT /users/profile (30/15 menit per user). Register: nama baru wajib cocok regex `^[A-Za-z0-9][A-Za-z0-9_.-]{2,49}$`. Pada tabel "Endpoint Rencana", `/users/:username` dan `/users/profile` dihapus (sudah ada); follow memakai `/users/:username/follow` (2B), bukan `:id`.
 - 2026-11-19: Users (Phase 2B): POST dan DELETE /users/:username/follow (idempotent, auth + CSRF, 60/15 menit per user bersama). GET /users/:username dan respons PUT /users/profile menambah followersCount, followingCount, isFollowing. Bentuk field lain tidak berubah.
 - 2026-11-24: Katalog (D3A): GET /catalog/anime/featured (publik, tanpa parameter, maks 8 item, cache 30 menit, description teks biasa). GET /catalog/anime menambah field per item: genres (maks 3), season, seasonYear. Kontrak lain tidak berubah.
+- 2026-11-25: Watchlist (T1): `anim_title` kini romaji (fallback english, lalu native), sebelumnya english dahulu. Bentuk objek `Anime` dan endpoint lain tidak berubah.

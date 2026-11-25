@@ -50,6 +50,7 @@
 - `backend/api_test/` berisi koleksi uji endpoint (format YAML).
 - Tes backend: `backend/vitest.config.mjs`, `backend/tests/` (base-schema.sql, base-legacy-animes.sql, global-setup.mjs, setup.mjs, support/, {auth,auth-cookie,watchlist,catalog,catalog-featured,rateLimit,db,architecture,users,follow}.test.mjs).
 - Folder yang diizinkan di src/: config, db, integrations, middlewares, modules, utils, plus app.mjs (dijaga tests/architecture.test.mjs).
+- Katalog (T1): modules/anime/{catalog.service.mjs (toCatalogRow, aturan judul romaji), catalog.refresh.service.mjs (refreshCatalog)}; integrations/anilist menambah getAnimeBatches (id_in per 50, jeda, retry 429); CLI db/refresh-catalog.mjs (pnpm catalog:refresh [--dry-run]). Tes: tests/catalog-refresh.test.mjs.
 
 **Frontend:**
 `src/{components/common, components/features/{anime,aunt,user}, context, features/profile, hooks, layouts, pages, services, utils}`
@@ -148,6 +149,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Dot indikator carousel selebar 24px x tinggi 44px (bukan 44x44) agar delapan titik muat di 375px.
 - Cache useFeatured hanya di memori modul (hilang saat reload); TTL 5 menit, dibersihkan saat Try again.
 - getAnimeTitle kini juga dipakai di carousel; tinggal Detail (D4).
+- `pnpm catalog:refresh` adalah skrip pemeliharaan sekali pakai (T1) untuk judul lama yang masih english. Setelah dijalankan di kedua perangkat, skrip, fungsi refreshCatalog, getAnimeBatches, dan tes-nya boleh dihapus.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -169,6 +171,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
 18. Fase desain: D1, D2, D3 (D3A sampai D3D) selesai; D4 Detail (alihkan AnimeDetail.jsx ke useAddToList); D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+    18a. T1: judul anime romaji di katalog server dan skrip catalog:refresh. (selesai)
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
@@ -244,4 +247,10 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: frontend/src/pages/Home.jsx, frontend/src/components/common/icons.jsx
   - File baru: frontend/src/features/anime/{useFeatured.js, FeaturedCarousel.jsx, FeaturedSlide.jsx, FeaturedRow.jsx}, frontend/src/features/watchlist/useAddToList.js, frontend/src/features/community/ForumPanel.jsx, frontend/src/hooks/usePrefersReducedMotion.js
   - Keputusan baru: useAddToList(externalId, status, title) mengembalikan { ok, message } atau null (diarahkan ke login atau request sedang berjalan); hanya mengirim { externalId, status }. Anonim diarahkan ke /login dengan state.from (pola FollowButton). useFeatured memakai cache modul TTL 5 menit dan AbortController. Hook data berada di FeaturedRow (tidak ada fetch di halaman 2 atau saat mencari). Sentuhan pada carousel menjeda autoplay lewat tombol jeda. Fokus menahan autoplay hanya untuk fokus keyboard (:focus-visible). AnimeDetail.jsx dialihkan ke useAddToList di D4. Tidak ada perubahan backend, API.md, atau library.
+  - Berikutnya: D4 (Detail anime; getAnimeTitle dan useAddToList dipakai di sana), lalu D5 sampai D8.
+- **2026-11-25** — T1 (judul anime romaji di katalog server)
+  - Selesai: aturan judul katalog romaji, lalu english, lalu native (satu fungsi pickTitle di modules/anime, dipakai saat mengisi dan menyegarkan katalog). anim_title di watchlist kini romaji. getAnimeBatches di integrations/anilist (id_in per 50 id, jeda 2,5 detik, retry terbatas untuk 429 dengan Retry-After). refreshCatalog di modules/anime dan CLI src/db/refresh-catalog.mjs (pnpm catalog:refresh, opsi --dry-run; memperbarui title, gambar, total episode, tipe, synced_at; baris yang tidak ditemukan di AniList tidak disentuh; ringkasan diperbarui/tidak berubah/tidak ditemukan/gagal; exit code 1 bila ada yang gagal). Tes catalog-refresh.test.mjs.
+  - File diubah: backend/src/modules/anime/{catalog.service.mjs,index.mjs}, backend/src/integrations/anilist/{anilist.client.mjs,index.mjs}, backend/package.json, backend/tests/watchlist.test.mjs (tiga tes: judul katalog "Desu Nōto", tabel urutan judul, anim_title "Romaji 1535"), API.md
+  - File baru: backend/src/modules/anime/catalog.refresh.service.mjs, backend/src/db/refresh-catalog.mjs, backend/tests/catalog-refresh.test.mjs
+  - Keputusan baru: semua judul anime ditampilkan romaji; urutan judul katalog romaji, english, native. Error 429 dari AniList membawa retryAfterSeconds. Fungsi batch tidak memakai cache dan tidak memfilter konten dewasa. Tanpa migrasi, perubahan frontend, atau library baru.
   - Berikutnya: D4 (Detail anime; getAnimeTitle dan useAddToList dipakai di sana), lalu D5 sampai D8.
