@@ -3,9 +3,9 @@ import cx from "../../utils/cx";
 import { Monitor, Moon, Sun } from "./icons";
 
 const OPTIONS = [
-  { value: "system", label: "Ikuti sistem", Icon: Monitor },
-  { value: "light", label: "Terang", Icon: Sun },
-  { value: "dark", label: "Gelap", Icon: Moon },
+  { value: "system", label: "System", Icon: Monitor },
+  { value: "light", label: "Light", Icon: Sun },
+  { value: "dark", label: "Dark", Icon: Moon },
 ];
 
 export default function ThemeToggle({ className = "" }) {
@@ -14,7 +14,7 @@ export default function ThemeToggle({ className = "" }) {
   return (
     <div
       role="group"
-      aria-label="Pilih tema"
+      aria-label="Theme"
       className={cx(
         "inline-flex rounded-md border border-border-strong bg-subtle p-0.5",
         className,

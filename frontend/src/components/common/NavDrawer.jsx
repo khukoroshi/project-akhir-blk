@@ -92,7 +92,7 @@ export default function NavDrawer({
         id="app-drawer"
         role="dialog"
         aria-modal="true"
-        aria-label="Menu utama"
+        aria-label="Main Menu"
         className="drawer-panel fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r border-border bg-canvas shadow-xl"
       >
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-4">
@@ -100,22 +100,22 @@ export default function NavDrawer({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Tutup menu"
+            aria-label="Close menu"
             className="inline-flex size-11 items-center justify-center rounded-md text-fg hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-accent lg:size-9"
           >
             <X size={18} aria-hidden="true" />
           </button>
         </div>
 
-        <nav aria-label="Navigasi utama" className="flex flex-col gap-1 p-3">
+        <nav aria-label="Main navigation" className="flex flex-col gap-1 p-3">
           <NavLink to="/" end className={itemClass} onClick={onClose}>
             <House size={18} aria-hidden="true" className="text-muted" />
-            Beranda
+            Home
           </NavLink>
           {username && (
             <NavLink to="/myList" className={itemClass} onClick={onClose}>
               <ListVideo size={18} aria-hidden="true" className="text-muted" />
-              MyList
+              My List
             </NavLink>
           )}
         </nav>
@@ -123,14 +123,14 @@ export default function NavDrawer({
         {/* Account and theme live here only below lg; on lg they are in the header. */}
         <div className="mt-auto flex flex-col gap-3 border-t border-border p-3 lg:hidden">
           <div className="px-3">
-            <p className="mb-2 text-xs font-medium text-muted">Tema</p>
+            <p className="mb-2 text-xs font-medium text-muted">Theme</p>
             <ThemeToggle />
           </div>
 
           {username ? (
-            <nav aria-label="Akun" className="flex flex-col gap-1">
+            <nav aria-label="Account" className="flex flex-col gap-1">
               <p className="truncate px-3 text-xs text-muted">
-                Masuk sebagai{" "}
+                Signed in as{" "}
                 <span className="font-semibold text-fg">{username}</span>
               </p>
               <NavLink
@@ -143,7 +143,7 @@ export default function NavDrawer({
                   aria-hidden="true"
                   className="text-muted"
                 />
-                Profil saya
+                My profile
               </NavLink>
               <NavLink
                 to="/profile/edit"
@@ -151,7 +151,7 @@ export default function NavDrawer({
                 onClick={onClose}
               >
                 <Pencil size={18} aria-hidden="true" className="text-muted" />
-                Edit profil
+                Edit profile
               </NavLink>
               <button
                 type="button"
@@ -159,7 +159,7 @@ export default function NavDrawer({
                 className="flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-medium text-danger hover:bg-danger/10 focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <LogOut size={18} aria-hidden="true" />
-                Keluar
+                Log out
               </button>
             </nav>
           ) : (
@@ -169,14 +169,14 @@ export default function NavDrawer({
                 onClick={onClose}
                 className={LINK_BUTTON_PRIMARY}
               >
-                Masuk
+                Log in
               </Link>
               <Link
                 to="/register"
                 onClick={onClose}
                 className={LINK_BUTTON_SECONDARY}
               >
-                Daftar
+                Sign up
               </Link>
             </div>
           )}

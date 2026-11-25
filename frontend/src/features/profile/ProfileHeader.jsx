@@ -38,13 +38,13 @@ function ProfileHeader({ profile, onProfileChange }) {
 
             {profile.isPrivate && (
               <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                Privat
+                Private
               </span>
             )}
 
             {profile.isSelf && (
               <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
-                Ini profil kamu
+                This is your profile
               </span>
             )}
           </div>
@@ -59,7 +59,7 @@ function ProfileHeader({ profile, onProfileChange }) {
             </p>
           ) : (
             <p className="mt-3 text-sm italic text-slate-500 dark:text-slate-400">
-              Belum ada bio.
+              No bio yet.
             </p>
           )}
 
@@ -84,9 +84,7 @@ function ProfileHeader({ profile, onProfileChange }) {
 
             {joined && (
               <div className="flex gap-1.5">
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Bergabung
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Join</dt>
                 <dd className="font-semibold text-slate-900 dark:text-white">
                   <time dateTime={profile.joinedAt}>{joined}</time>
                 </dd>
@@ -100,7 +98,7 @@ function ProfileHeader({ profile, onProfileChange }) {
               to="/profile/edit"
               className="inline-block rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
             >
-              Edit profil
+              Edit profile
             </Link>
           ) : (
             <FollowButton profile={profile} onChange={onProfileChange} />

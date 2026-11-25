@@ -56,7 +56,7 @@ function HeaderSearch({
   return (
     <form role="search" onSubmit={handleSubmit} className={className}>
       <label htmlFor={inputId} className="sr-only">
-        Cari anime
+        Search anime
       </label>
       <div className="relative">
         <Search
@@ -69,7 +69,7 @@ function HeaderSearch({
           type="search"
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Cari anime..."
+          placeholder="Search anime..."
           maxLength={100}
           enterKeyHint="search"
           autoFocus={autoFocus}
@@ -141,7 +141,7 @@ function AccountMenu({ username, onLogout }) {
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={`Menu akun ${username}`}
+        aria-label={`Account menu for ${username}`}
         className="flex min-h-11 items-center gap-2 rounded-md px-1 hover:bg-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:px-2 lg:min-h-9"
       >
         <Avatar name={username} size="md" />
@@ -169,7 +169,7 @@ function AccountMenu({ username, onLogout }) {
           className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-md border border-border bg-canvas shadow-lg"
         >
           <div className="border-b border-border px-4 py-3">
-            <p className="text-xs text-muted">Masuk sebagai</p>
+            <p className="text-xs text-muted">Signed in as</p>
             <p className="mt-0.5 truncate text-sm font-semibold text-fg">
               {username}
             </p>
@@ -181,7 +181,7 @@ function AccountMenu({ username, onLogout }) {
               onClick={() => close(true)}
             >
               <UserRound size={16} aria-hidden="true" className="text-muted" />
-              Profil saya
+              My profile
             </NavLink>
             <NavLink
               to="/profile/edit"
@@ -189,7 +189,7 @@ function AccountMenu({ username, onLogout }) {
               onClick={() => close(true)}
             >
               <Pencil size={16} aria-hidden="true" className="text-muted" />
-              Edit profil
+              Edit profile
             </NavLink>
             <NavLink
               to="/myList"
@@ -197,7 +197,7 @@ function AccountMenu({ username, onLogout }) {
               onClick={() => close(true)}
             >
               <ListVideo size={16} aria-hidden="true" className="text-muted" />
-              MyList
+              My List
             </NavLink>
             <button
               type="button"
@@ -208,7 +208,7 @@ function AccountMenu({ username, onLogout }) {
               className="flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-left text-sm text-danger hover:bg-danger/10 focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-accent lg:min-h-9"
             >
               <LogOut size={16} aria-hidden="true" />
-              Keluar
+              Log out
             </button>
           </div>
         </div>
@@ -244,7 +244,7 @@ export default function Header({ username }) {
           ref={menuButtonRef}
           type="button"
           onClick={() => setDrawerOpen(true)}
-          aria-label="Buka menu"
+          aria-label="Open menu"
           aria-expanded={drawerOpen}
           aria-controls="app-drawer"
           aria-haspopup="dialog"
@@ -255,7 +255,7 @@ export default function Header({ username }) {
 
         <Link
           to="/"
-          aria-label="AniSphere, ke beranda"
+          aria-label="AniSphere, go to home"
           className="flex min-h-11 items-center gap-2 rounded-md px-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:min-h-9"
         >
           <img
@@ -283,7 +283,7 @@ export default function Header({ username }) {
             ref={searchButtonRef}
             type="button"
             onClick={() => setSearchOpen((prev) => !prev)}
-            aria-label={searchOpen ? "Tutup pencarian" : "Buka pencarian"}
+            aria-label={searchOpen ? "Close search" : "Open search"}
             aria-expanded={searchOpen}
             aria-controls="mobile-search"
             className={cx(ICON_BUTTON, "lg:hidden")}
@@ -302,13 +302,13 @@ export default function Header({ username }) {
           ) : (
             <div className="flex items-center gap-2">
               <Link to="/login" className={LINK_BUTTON_SECONDARY}>
-                Masuk
+                Log in
               </Link>
               <Link
                 to="/register"
                 className={cx(LINK_BUTTON_PRIMARY, "hidden lg:inline-flex")}
               >
-                Daftar
+                Sign up
               </Link>
             </div>
           )}

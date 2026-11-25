@@ -8,7 +8,7 @@ function MainLayout({ children, username }) {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:border focus:border-border-strong focus:bg-canvas focus:px-4 focus:py-2 focus:text-fg focus-visible:outline-2 focus-visible:outline-accent"
       >
-        Lewati ke konten
+        Skip to content
       </a>
 
       <Header username={username} />

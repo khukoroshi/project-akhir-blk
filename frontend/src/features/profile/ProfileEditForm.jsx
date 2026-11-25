@@ -227,10 +227,10 @@ function ProfileEditForm({ profile }) {
 
         <div>
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            Avatar dan banner
+            Avatar and banner
           </p>
           <p className="text-sm italic text-slate-500 dark:text-slate-400">
-            Segera hadir.
+            Coming soon.
           </p>
         </div>
       </fieldset>
@@ -241,14 +241,14 @@ function ProfileEditForm({ profile }) {
           disabled={saving}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {saving ? "Menyimpan..." : "Simpan"}
+          {saving ? "Storing..." : "Store"}
         </button>
 
         <Link
           to={`/u/${encodeURIComponent(profile.username)}`}
           className="text-sm font-medium text-slate-600 hover:underline dark:text-slate-400"
         >
-          Kembali ke profil
+          Back to profile
         </Link>
       </div>
     </form>

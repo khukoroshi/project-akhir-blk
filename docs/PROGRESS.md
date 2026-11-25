@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2, D3 selesai.
+- **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2, D3 selesai. L1 selesai (kerangka).
 - **Sedang dikerjakan:** -
-- **Berikutnya:** L1 (frontend: header, laci, footer, tema, Modal, halaman galat ke bahasa Inggris), lalu L2 (pesan server ke bahasa Inggris), lalu D4 sampai D8.
+- **Berikutnya:** L2 (pesan server ke bahasa Inggris), lalu D4 sampai D8 (tiap chat desain menerjemahkan berkas yang disentuhnya).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -142,7 +142,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Halaman lama masih memakai warna mentah (`slate-*`, `bg-white`) dan belum memakai token; dirapikan di D3 sampai D7.
 - utils/formatStatus tidak lagi dipakai CardImage; cek apakah masih dipakai halaman lain, hapus bila tidak. LoadingPage tidak lagi dipakai Home; cek pemakai lain.
 - AnimeListItem memakai div dengan kelas yang sama seperti CardImage, bukan komponen Card. Samakan ke Card di D8 bila Card cocok.
-- Teks antarmuka Inggris baru mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, dan komponen D3C. ErrorApiPage dan halaman lain masih bisa berbahasa Indonesia (dirapikan per chat desain).
+- Teks antarmuka Inggris sudah mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, komponen D3C, Header, NavDrawer, Footer, ThemeToggle, Modal, ErrorApiPage, NotFound, dan formatDate (L1). Masih memuat teks Indonesia: layouts/MainLayout.jsx ("Lewati ke konten"), features/profile/\*, pages/Profile.jsx, pages/ProfileEdit.jsx, LoginForm dan form Register (components/features/aunt), MyList, AnimeDetail, components/features/{anime,user}, ProtectedRoute.jsx. Dirapikan per chat desain.
+- Pemanggil formatDate (ProfileHeader, AnimeDetail, MyList) perlu dicek saat berkasnya disentuh. formatDate hanya menerima { year, month, day }; periksa apakah joinedAt (string ISO) di ProfileHeader benar-benar lewat fungsi ini.
 - getAnimeTitle dipakai di Home dan carousel; tinggal Detail (D4) dan tempat lain yang menampilkan judul AniList.
 - AnimeDetail.jsx masih memiliki handleAddToList sendiri (kata-kata Indonesia, mengirim tier/score/notes null). Dialihkan ke useAddToList di D4.
 - Diputuskan: pesan server diterjemahkan di server (L2).
@@ -173,7 +174,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
 18. Fase desain: D1, D2, D3 (D3A sampai D3D) selesai; D4 Detail (alihkan AnimeDetail.jsx ke useAddToList); D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
     18a. T1: judul anime romaji di katalog server dan skrip catalog:refresh. (selesai)
-    18b. L1: terjemahan frontend (header, laci, footer, tema, Modal, halaman galat).
+    18b. L1: terjemahan frontend (header, laci, footer, tema, Modal, halaman galat). (selesai, kecuali MainLayout.jsx)
     18c. L2: terjemahan pesan server.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
@@ -257,3 +258,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: backend/src/modules/anime/catalog.refresh.service.mjs, backend/src/db/refresh-catalog.mjs, backend/tests/catalog-refresh.test.mjs
   - Keputusan baru: semua judul anime ditampilkan romaji; urutan judul katalog romaji, english, native. Error 429 dari AniList membawa retryAfterSeconds. Fungsi batch tidak memakai cache dan tidak memfilter konten dewasa. Tanpa migrasi, perubahan frontend, atau library baru.
   - Berikutnya: D4 (Detail anime; getAnimeTitle dan useAddToList dipakai di sana), lalu D5 sampai D8.
+- **2026-11-26** — L1 (terjemahan frontend: kerangka)
+  - Selesai: teks Header, NavDrawer, Footer, ThemeToggle, Modal, ErrorApiPage diterjemahkan ke Inggris (label, tombol, placeholder, aria-label, sr-only). index.html: lang="en", title AniSphere. formatDate kini mengeluarkan "Nov 25, 2026" (en-US, UTC); tanggal tanpa hari menjadi "Nov 2026", tanpa bulan menjadi "2026" (sebelumnya diisi 01). LoadingPage, NotFound, dan Avatar tidak butuh perubahan.
+  - File diubah: frontend/index.html, frontend/src/utils/formatDate.js, frontend/src/components/common/{Header,NavDrawer,Footer,ThemeToggle,Modal,ErrorApiPage}.jsx
+  - Keputusan baru: padanan teks mengikuti daftar L1 (Home, My List, My profile, Edit profile, Log in, Sign up, Log out, Theme, Light/Dark/System). aria-label akun: "Account menu for <username>". Tidak ada perubahan rute, parameter URL, prop, backend, API.md, atau library.
+  - Berikutnya: terjemahkan layouts/MainLayout.jsx ("Skip to content"), L2 (pesan server), lalu D4 (Detail anime).

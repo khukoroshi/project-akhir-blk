@@ -91,7 +91,7 @@ export default function Modal({ open, onClose, title, children, footer }) {
           </h2>
           <button
             type="button"
-            aria-label="Tutup"
+            aria-label="Close"
             onClick={() => onCloseRef.current?.()}
             className="inline-flex size-11 items-center justify-center rounded-md text-muted hover:bg-border/40 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent lg:size-8"
           >

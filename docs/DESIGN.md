@@ -99,20 +99,20 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 
 ## 9. Status chat desain
 
-| Chat | Isi                                                                   | Status                   |
-| ---- | --------------------------------------------------------------------- | ------------------------ |
-| D0   | DESIGN.md                                                             | selesai                  |
-| D1   | Fondasi: tema, token, komponen dasar, ikon                            | selesai                  |
-| D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman              | selesai                  |
-| D3   | Home dan katalog                                                      | selesai (D3A sampai D3D) |
-| D4   | Detail anime                                                          | belum                    |
-| D5   | MyList                                                                | belum                    |
-| D6   | Profil, edit profil, aksen (plus backend 006)                         | belum                    |
-| D7   | Login dan Register                                                    | belum                    |
-| D8   | Poles: kondisi kosong, error, loading, aksesibilitas                  | belum                    |
-| T1   | Judul romaji di server (skrip catalog:refresh)                        | selesai                  |
-| L1   | Terjemahan frontend: header, laci, footer, tema, Modal, halaman galat | belum                    |
-| L2   | Terjemahan pesan server ke bahasa Inggris                             | belum                    |
+| Chat | Isi                                                                   | Status                                   |
+| ---- | --------------------------------------------------------------------- | ---------------------------------------- |
+| D0   | DESIGN.md                                                             | selesai                                  |
+| D1   | Fondasi: tema, token, komponen dasar, ikon                            | selesai                                  |
+| D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman              | selesai                                  |
+| D3   | Home dan katalog                                                      | selesai (D3A sampai D3D)                 |
+| D4   | Detail anime                                                          | belum                                    |
+| D5   | MyList                                                                | belum                                    |
+| D6   | Profil, edit profil, aksen (plus backend 006)                         | belum                                    |
+| D7   | Login dan Register                                                    | belum                                    |
+| D8   | Poles: kondisi kosong, error, loading, aksesibilitas                  | belum                                    |
+| T1   | Judul romaji di server (skrip catalog:refresh)                        | selesai                                  |
+| L1   | Terjemahan frontend: header, laci, footer, tema, Modal, halaman galat | selesai (kerangka; MainLayout menyusul). |
+| L2   | Terjemahan pesan server ke bahasa Inggris                             | belum                                    |
 
 ## 10. Halaman Home (D3)
 

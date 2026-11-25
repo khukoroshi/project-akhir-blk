@@ -16,17 +16,17 @@ export default function Footer({ username }) {
           className="flex flex-wrap items-center gap-x-4"
         >
           <Link to="/" className={linkClass}>
-            Beranda
+            Home
           </Link>
           {username && (
             <Link to="/myList" className={linkClass}>
-              MyList
+              My List
             </Link>
           )}
         </nav>
 
         <p className="text-sm text-muted">
-          Data anime dari{" "}
+          Anime data provided by{" "}
           <a
             href="https://anilist.co"
             target="_blank"
