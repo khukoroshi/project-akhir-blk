@@ -14,7 +14,7 @@
 - **CORS:** hanya origin di `CORS_ORIGINS` yang diizinkan (dengan credentials). Frontend wajib mengirim request dengan `withCredentials: true`. Header yang diizinkan: Content-Type, X-CSRF-Token.
 - **Validasi saat ini:** Zod (strict) di endpoint auth, watchlist, katalog (query), dan users.
 - "Semua message (sukses dan error) berbahasa Inggris sejak L2A. Frontend tidak boleh membandingkan teks pesan; gunakan kode status."
-- "401 tanpa cookie: 'Authentication required'. 401 cookie tidak valid atau kedaluwarsa: 'Session is invalid or has expired'."
+- **401:** tanpa cookie: "Authentication required"; cookie tidak valid atau kedaluwarsa: "Session is invalid or has expired".
 
 **Response sukses**
 
@@ -36,7 +36,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 **Pembatasan laju (rate limit)**
 
-Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "error", "message": "Too many ... Try again in N minutes." }`,Bila sisa waktu kurang dari 60 detik, pesan memakai detik (mis. 'Try again in 30 seconds'). Retry-After tetap dalam detik., dan header `Retry-After` (detik). Header standar `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` ikut dikirim. Batas dihitung per jendela waktu dan nilainya bisa diubah lewat env server (nilai di bawah adalah default).
+Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "error", "message": "Too many ... Try again in N minutes." }`, Bila sisa waktu kurang dari 60 detik, pesan memakai detik (mis. 'Try again in 30 seconds'). Retry-After tetap dalam detik., dan header `Retry-After` (detik). Header standar `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` ikut dikirim. Batas dihitung per jendela waktu dan nilainya bisa diubah lewat env server (nilai di bawah adalah default).
 
 | Endpoint                                                                      | Batas          | Kunci       | Catatan                                                    |
 | ----------------------------------------------------------------------------- | -------------- | ----------- | ---------------------------------------------------------- |

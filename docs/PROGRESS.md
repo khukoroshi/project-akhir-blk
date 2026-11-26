@@ -58,7 +58,7 @@
 
 - Fondasi desain (D1): `utils/{theme.js, cx.js}`, `hooks/useTheme.js`, `components/common/{icons.jsx, Button, Card, Input, Modal, Badge, Avatar, Skeleton, ThemeToggle}.jsx`, `pages/DesignPreview.jsx` (rute /design hanya saat import.meta.env.DEV). Token warna ada di `assets/styles/index.css` (variabel `--ds-*`, dipetakan lewat @theme inline).
 - Halaman lama belum memakai token. ThemeProvider lama (kelas .dark, kunci localStorage "theme") dan @custom-variant dark lama masih aktif sampai D2.
-- Kerangka (D2): components/common/{Header, NavDrawer, Footer, linkButtonClasses}, layouts/MainLayout.jsx (min-h-dvh, tautan "Lewati ke konten", wadah max-w-7xl). Tema hanya lewat utils/theme.js dan hooks/useTheme.js (kunci anisphere-theme, DEFAULT_MODE). ThemeProvider, ThemeContext, context/useTheme, ThemeSwitcher, dan Navbar sudah dihapus. @custom-variant dark berbasis data-theme.
+- Kerangka (D2): components/common/{Header, NavDrawer, Footer, linkButtonClasses}, layouts/MainLayout.jsx (min-h-dvh, tautan "Skip to content", wadah max-w-7xl). Tema hanya lewat utils/theme.js dan hooks/useTheme.js (kunci anisphere-theme, DEFAULT_MODE). ThemeProvider, ThemeContext, context/useTheme, ThemeSwitcher, dan Navbar sudah dihapus. @custom-variant dark berbasis data-theme.
 - Home (D3B): components/common/{AnimeGridSkeleton, Pagination, FilterTabs, DaftarAnime, CardImage}.jsx sudah memakai token. utils/animeLabels.js berisi formatLabel dan statusLabel.
 - Home (D3C): tampilan grid/daftar lewat ?view=list (grid default, nilai lain dianggap grid). components/common/{AnimeListItem, ViewToggle}.jsx baru; DaftarAnime dan AnimeGridSkeleton menerima prop view. utils/catalogLayout.js (kelas grid bersama), utils/catalogFilters.js memuat buildCatalogPath dan parseCatalogView (semua URL katalog dibangun lewat sini). utils/animeLabels.js memuat getAnimeTitle dan seasonLabel; label status berbahasa Inggris.
 - Home (D3D): features/anime/{useFeatured.js, FeaturedCarousel.jsx, FeaturedSlide.jsx, FeaturedRow.jsx}, features/watchlist/useAddToList.js, features/community/ForumPanel.jsx, hooks/usePrefersReducedMotion.js. icons.jsx menambah MessagesSquare, Pause, Play. Baris unggulan tampil di atas hero hanya bila tanpa ?q= dan page = 1.
@@ -142,7 +142,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Halaman lama masih memakai warna mentah (`slate-*`, `bg-white`) dan belum memakai token; dirapikan di D3 sampai D7.
 - utils/formatStatus tidak lagi dipakai CardImage; cek apakah masih dipakai halaman lain, hapus bila tidak. LoadingPage tidak lagi dipakai Home; cek pemakai lain.
 - AnimeListItem memakai div dengan kelas yang sama seperti CardImage, bukan komponen Card. Samakan ke Card di D8 bila Card cocok.
-- Teks antarmuka Inggris sudah mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, komponen D3C, Header, NavDrawer, Footer, ThemeToggle, Modal, ErrorApiPage, NotFound, dan formatDate (L1). Masih memuat teks Indonesia: layouts/MainLayout.jsx ("Lewati ke konten"), features/profile/\*, pages/Profile.jsx, pages/ProfileEdit.jsx, LoginForm dan form Register (components/features/aunt), MyList, AnimeDetail, components/features/{anime,user}, ProtectedRoute.jsx. Dirapikan per chat desain.
+- Teks antarmuka Inggris sudah mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, komponen D3C, Header, NavDrawer, Footer, ThemeToggle, Modal, ErrorApiPage, NotFound, dan formatDate (L1). Masih memuat teks Indonesia: layouts/MainLayout.jsx ("Skip to content"), features/profile/\*, pages/Profile.jsx, pages/ProfileEdit.jsx, LoginForm dan form Register (components/features/aunt), MyList, AnimeDetail, components/features/{anime,user}, ProtectedRoute.jsx. Dirapikan per chat desain.
 - Pemanggil formatDate (ProfileHeader, AnimeDetail, MyList) perlu dicek saat berkasnya disentuh. formatDate hanya menerima { year, month, day }; periksa apakah joinedAt (string ISO) di ProfileHeader benar-benar lewat fungsi ini.
 - getAnimeTitle dipakai di Home dan carousel; tinggal Detail (D4) dan tempat lain yang menampilkan judul AniList.
 - AnimeDetail.jsx masih memiliki handleAddToList sendiri (kata-kata Indonesia, mengirim tier/score/notes null). Dialihkan ke useAddToList di D4.
@@ -177,6 +177,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
     18a. T1: judul anime romaji di katalog server dan skrip catalog:refresh. (selesai)
     18b. L1: terjemahan frontend (header, laci, footer, tema, Modal, halaman galat). (selesai, kecuali MainLayout.jsx)
     18c. L2A: terjemahan pesan server. (selesai) L2B: perbarui tes dan koleksi Bruno ke pesan Inggris.
+    18d. L3: pesan 500 generik di produksi (log lengkap tetap di server).
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)

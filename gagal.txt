@@ -1,0 +1,66 @@
+[31m     [31m×[31m 400 'Email sudah digunakan' untuk email duplikat[39m[33m 432[2mms[22m[39m
+[31m     [31m×[31m 400 'Nama sudah digunakan' untuk nama duplikat[39m[33m 827[2mms[22m[39m
+[31m     [31m×[31m 400: POST dengan field lama 'imgUrl'[39m[33m 348[2mms[22m[39m
+[31m     [31m×[31m 400: POST dengan field lama 'title'[39m[33m 326[2mms[22m[39m
+[31m     [31m×[31m 400: POST dengan field lama 'totalEps'[39m[32m 287[2mms[22m[39m
+[31m     [31m×[31m 400: POST dengan field lama 'type'[39m[32m 284[2mms[22m[39m
+[31m     [31m×[31m 400: daftar top (tanpa q) page 11 ditolak[39m[32m 20[2mms[22m[39m
+[31m     [31m×[31m 400: diri sendiri[39m[33m 881[2mms[22m[39m
+[31m     [31m×[31m 400: mengikuti diri sendiri[39m[33m 458[2mms[22m[39m
+[31m     [31m×[31m 400: pesan untuk filter tidak valid[39m[32m 50[2mms[22m[39m
+[31m     [31m×[31m 403: DELETE dengan X-CSRF-Token salah[39m[33m 550[2mms[22m[39m
+[31m     [31m×[31m 403: DELETE dengan cookie tanpa X-CSRF-Token[39m[33m 506[2mms[22m[39m
+[31m     [31m×[31m 403: PATCH dengan X-CSRF-Token salah[39m[33m 577[2mms[22m[39m
+[31m     [31m×[31m 403: PATCH dengan cookie tanpa X-CSRF-Token[39m[33m 486[2mms[22m[39m
+[31m     [31m×[31m 403: POST dengan X-CSRF-Token salah[39m[33m 518[2mms[22m[39m
+[31m     [31m×[31m 403: POST dengan cookie tanpa X-CSRF-Token[39m[33m 536[2mms[22m[39m
+[31m     [31m×[31m 403: PUT dengan X-CSRF-Token salah[39m[33m 613[2mms[22m[39m
+[31m     [31m×[31m 403: PUT dengan cookie tanpa X-CSRF-Token[39m[33m 619[2mms[22m[39m
+[31m     [31m×[31m 429 + Retry-After setelah batas terlampaui[39m[32m 144[2mms[22m[39m
+[31m     [31m×[31m 429 after the limit, and does not affect the root route[39m[32m 58[2mms[22m[39m
+[31m     [31m×[31m 429 after the limit, counted per IP[39m[32m 57[2mms[22m[39m
+[31m     [31m×[31m 429 on the 6th failed attempt, with Retry-After[39m[33m 3398[2mms[22m[39m
+[31m     [31m×[31m 429 pada permintaan ke-3 (follow + unfollow dihitung bersama), per user[39m[33m 2731[2mms[22m[39m
+[31m     [31m×[31m 429 pada permintaan ke-3, dihitung per user, ada Retry-After[39m[33m 1205[2mms[22m[39m
+[31m     [31m×[31m Bearer valid + cookie tidak membebaskan CSRF: DELETE tanpa header = 403[39m[33m 676[2mms[22m[39m
+[31m     [31m×[31m a different email from the same IP is not locked[39m[33m 2106[2mms[22m[39m
+[31m     [31m×[31m blocks before bcrypt: even the correct password gets 429[39m[33m 1444[2mms[22m[39m
+[31m     [31m×[31m counts failures per IP across different emails[39m[32m 278[2mms[22m[39m
+[31m     [31m×[31m is counted per user, not per IP[39m[33m 1410[2mms[22m[39m
+[31m     [31m×[31m is counted per user, not per IP[39m[33m 1776[2mms[22m[39m
+[31m     [31m×[31m limit is shared by the list and detail endpoints[39m[32m 134[2mms[22m[39m
+[31m     [31m×[31m normalizes the email (case and spaces count as the same key)[39m[33m 1690[2mms[22m[39m
+[31m     [31m×[31m successful logins are not counted[39m[33m 3187[2mms[22m[39m
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mBearer tidak lagi diterima[2m > [22mBearer valid + cookie tidak membebaskan CSRF: DELETE tanpa header = 403
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mCSRF untuk request ber-cookie[2m > [22m403: DELETE dengan X-CSRF-Token salah
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mCSRF untuk request ber-cookie[2m > [22m403: DELETE dengan cookie tanpa X-CSRF-Token
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mCSRF untuk request ber-cookie[2m > [22m403: PATCH dengan X-CSRF-Token salah
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mCSRF untuk request ber-cookie[2m > [22m403: PATCH dengan cookie tanpa X-CSRF-Token
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mCSRF untuk request ber-cookie[2m > [22m403: POST dengan X-CSRF-Token salah
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mCSRF untuk request ber-cookie[2m > [22m403: POST dengan cookie tanpa X-CSRF-Token
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mCSRF untuk request ber-cookie[2m > [22m403: PUT dengan X-CSRF-Token salah
+[41m[1m FAIL [22m[49m tests/auth-cookie.test.mjs[2m > [22mCSRF untuk request ber-cookie[2m > [22m403: PUT dengan cookie tanpa X-CSRF-Token
+[41m[1m FAIL [22m[49m tests/auth.test.mjs[2m > [22mPOST /api/auth/register[2m > [22m400 'Email sudah digunakan' untuk email duplikat
+[41m[1m FAIL [22m[49m tests/auth.test.mjs[2m > [22mPOST /api/auth/register[2m > [22m400 'Nama sudah digunakan' untuk nama duplikat
+[41m[1m FAIL [22m[49m tests/catalog-featured.test.mjs[2m > [22mGET /api/catalog/anime/featured: pembatas laju katalog[2m > [22m429 + Retry-After setelah batas terlampaui
+[41m[1m FAIL [22m[49m tests/catalog.test.mjs[2m > [22mGET /api/catalog/anime: validasi query[2m > [22m400: daftar top (tanpa q) page 11 ditolak
+[41m[1m FAIL [22m[49m tests/catalog.test.mjs[2m > [22mGET /api/catalog/anime: validasi query[2m > [22m400: pesan untuk filter tidak valid
+[41m[1m FAIL [22m[49m tests/follow.test.mjs[2m > [22mDELETE /api/users/:username/follow[2m > [22m400: diri sendiri
+[41m[1m FAIL [22m[49m tests/follow.test.mjs[2m > [22mPOST /api/users/:username/follow[2m > [22m400: mengikuti diri sendiri
+[41m[1m FAIL [22m[49m tests/follow.test.mjs[2m > [22mfollow/unfollow: pembatas laju[2m > [22m429 pada permintaan ke-3 (follow + unfollow dihitung bersama), per user
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mPOST /api/anime[2m > [22mis counted per user, not per IP
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mPUT /api/users/profile[2m > [22mis counted per user, not per IP
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mcatalog[2m > [22mlimit is shared by the list and detail endpoints
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mglobal /api limiter[2m > [22m429 after the limit, and does not affect the root route
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mlogin: per IP[2m > [22mcounts failures per IP across different emails
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mlogin: per IP + email[2m > [22m429 on the 6th failed attempt, with Retry-After
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mlogin: per IP + email[2m > [22ma different email from the same IP is not locked
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mlogin: per IP + email[2m > [22mblocks before bcrypt: even the correct password gets 429
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mlogin: per IP + email[2m > [22mnormalizes the email (case and spaces count as the same key)
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mlogin: per IP + email[2m > [22msuccessful logins are not counted
+[41m[1m FAIL [22m[49m tests/rateLimit.test.mjs[2m > [22mregister[2m > [22m429 after the limit, counted per IP
+[41m[1m FAIL [22m[49m tests/users.test.mjs[2m > [22mPUT /api/users/profile: pembatas laju[2m > [22m429 pada permintaan ke-3, dihitung per user, ada Retry-After
+[41m[1m FAIL [22m[49m tests/watchlist.test.mjs[2m > [22mfield lama ditolak (C3)[2m > [22m400: POST dengan field lama 'imgUrl'
+[41m[1m FAIL [22m[49m tests/watchlist.test.mjs[2m > [22mfield lama ditolak (C3)[2m > [22m400: POST dengan field lama 'title'
+[41m[1m FAIL [22m[49m tests/watchlist.test.mjs[2m > [22mfield lama ditolak (C3)[2m > [22m400: POST dengan field lama 'totalEps'
+[41m[1m FAIL [22m[49m tests/watchlist.test.mjs[2m > [22mfield lama ditolak (C3)[2m > [22m400: POST dengan field lama 'type'
