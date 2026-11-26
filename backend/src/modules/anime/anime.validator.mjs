@@ -17,15 +17,15 @@ export const CATALOG_FILTERS = [
   "favorited",
 ];
 
-const pageMsg = `page harus bilangan bulat 1-${MAX_PAGE}`;
+const pageMsg = `Page must be a whole number from 1 to ${MAX_PAGE}`;
 
 // Query values always arrive as strings, so page is checked as text.
 export const catalogQuerySchema = z
   .strictObject(
     {
       q: z
-        .string({ error: "q harus berupa teks" })
-        .max(100, "q maksimal 100 karakter")
+        .string({ error: "Search query must be text" })
+        .max(100, "Search query must be at most 100 characters")
         .optional(),
       page: z
         .string({ error: pageMsg })
@@ -33,7 +33,7 @@ export const catalogQuerySchema = z
         .refine((v) => Number(v) <= MAX_PAGE, pageMsg)
         .optional(),
       filter: z
-        .enum(CATALOG_FILTERS, { error: "filter tidak valid" })
+        .enum(CATALOG_FILTERS, { error: "Filter is not valid" })
         .optional(),
     },
     strictOptions,
@@ -42,7 +42,7 @@ export const catalogQuerySchema = z
     (d) => (d.q ?? "").trim() !== "" || Number(d.page ?? 1) <= MAX_TOP_PAGE,
     {
       path: ["page"],
-      error: `Daftar top dibatasi maksimal ${MAX_TOP_PAGE} halaman`,
+      error: `The top list is limited to ${MAX_TOP_PAGE} pages`,
     },
   );
 

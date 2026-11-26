@@ -31,24 +31,26 @@ const buildProfile = async (row, viewerId) => {
   };
 };
 
+const USER_NOT_FOUND = "User not found";
+
 export const getProfile = async (username, viewerId) => {
   const row = await User.findProfileByUsername(username);
-  if (!row) throw new AppError("Pengguna tidak ditemukan", 404);
+  if (!row) throw new AppError(USER_NOT_FOUND, 404);
   return buildProfile(row, viewerId);
 };
 
 export const updateOwnProfile = async (userId, input) => {
   await User.upsertProfile(userId, input);
   const row = await User.findProfileById(userId);
-  if (!row) throw new AppError("Pengguna tidak ditemukan", 404);
+  if (!row) throw new AppError(USER_NOT_FOUND, 404);
   return buildProfile(row, userId);
 };
 
 const resolveFollowTarget = async (viewerId, username) => {
   const target = await User.findIdByUsername(username);
-  if (!target) throw new AppError("Pengguna tidak ditemukan", 404);
+  if (!target) throw new AppError(USER_NOT_FOUND, 404);
   if (target.us_id === viewerId) {
-    throw new AppError("Tidak bisa mengikuti diri sendiri", 400);
+    throw new AppError("You cannot follow yourself", 400);
   }
   return target;
 };

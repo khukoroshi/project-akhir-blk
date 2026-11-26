@@ -3,6 +3,7 @@ import { bodyStrictOptions } from "../../utils/validation.mjs";
 
 // Fields the client used to send before the server filled the catalog (C3).
 const LEGACY_FIELDS = ["title", "imgUrl", "totalEps", "type", "teps"];
+const externalIdMsg = "External ID must be a positive whole number";
 
 const strictOptions = {
   error: (issue) => {
@@ -10,7 +11,7 @@ const strictOptions = {
       const legacy = issue.keys.filter((key) => LEGACY_FIELDS.includes(key));
       if (legacy.length > 0) {
         const names = legacy.map((key) => `'${key}'`).join(", ");
-        return `Field ${names} tidak dikenal. Katalog diisi server dari AniList.`;
+        return `Field ${names} is not recognized. The catalog is filled by the server from AniList`;
       }
     }
     return bodyStrictOptions.error(issue);
@@ -26,14 +27,15 @@ const required = (label, message) => ({
 const STATUSES = ["watching", "completed", "dropped", "plan to watch"];
 const TIERS = ["S", "A", "B", "C", "D"];
 
-const scoreMsg = "score harus angka 1-10 (maksimal 1 angka desimal)";
+const scoreMsg =
+  "Score must be a number from 1 to 10 (at most 1 decimal place)";
 
 const statusField = z.enum(STATUSES, {
-  error: `status harus salah satu dari: ${STATUSES.join(", ")}`,
+  error: `Status must be one of: ${STATUSES.join(", ")}`,
 });
 
 const tierField = z
-  .enum(TIERS, { error: `tier harus salah satu dari: ${TIERS.join(", ")}` })
+  .enum(TIERS, { error: `Tier must be one of: ${TIERS.join(", ")}` })
   .nullish()
   .default(null);
 
@@ -46,19 +48,19 @@ const scoreField = z
   .default(null);
 
 const notesField = z
-  .string({ error: "notes harus berupa teks" })
-  .max(2000, "notes maksimal 2000 karakter")
+  .string({ error: "Notes must be text" })
+  .max(2000, "Notes must be at most 2000 characters")
   .nullish()
   .default(null);
 
-const epsMsg = (name) => `${name} harus bilangan bulat >= 0`;
+const epsMsg = (name) => `${name} must be a whole number of 0 or more`;
 
 // ---------- params ----------
 export const animIdParamSchema = z.strictObject(
   {
     anim_id: z
-      .string({ error: "anim_id wajib diisi" })
-      .regex(/^[1-9]\d{0,9}$/, "anim_id harus bilangan bulat positif"),
+      .string({ error: "Anime ID is required" })
+      .regex(/^[1-9]\d{0,9}$/, "Anime ID must be a positive whole number"),
   },
   strictOptions,
 );
@@ -67,11 +69,11 @@ export const animIdParamSchema = z.strictObject(
 export const createAnimeSchema = z.strictObject(
   {
     externalId: z
-      .int(required("externalId", "externalId harus bilangan bulat positif"))
-      .positive("externalId harus bilangan bulat positif")
-      .max(2_147_483_647, "externalId terlalu besar"),
+      .int(required("External ID", externalIdMsg))
+      .positive(externalIdMsg)
+      .max(2_147_483_647, "External ID is too large"),
     externalSource: z
-      .literal("anilist", { error: 'externalSource hanya boleh "anilist"' })
+      .literal("anilist", { error: 'External source must be "anilist"' })
       .default("anilist"),
     status: statusField.default("watching"),
     tier: tierField,
@@ -86,7 +88,9 @@ export const createAnimeSchema = z.strictObject(
 // The eps <= total rule is checked in the model against the catalog total.
 export const updateAnimeSchema = z.strictObject(
   {
-    eps: z.int(required("eps", epsMsg("eps"))).min(0, epsMsg("eps")),
+    eps: z
+      .int(required("Episodes", epsMsg("Episodes")))
+      .min(0, epsMsg("Episodes")),
     status: statusField,
     tier: tierField,
     score: scoreField,

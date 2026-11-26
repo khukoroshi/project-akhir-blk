@@ -78,7 +78,7 @@ const Anime = {
 
     if (total > 0 && eps > total) {
       throw new AppError(
-        `Episode (${eps}) tidak boleh melebihi total episode (${total})`,
+        `Episodes (${eps}) cannot exceed total episodes (${total})`,
         400,
       );
     }

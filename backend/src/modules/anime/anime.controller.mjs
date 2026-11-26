@@ -22,7 +22,7 @@ const searchAnime = async (req, res, next) => {
   } catch (error) {
     next(
       new AppError(
-        error.message || "Gagal mengambil data dari AniList",
+        error.message || "Could not fetch data from AniList",
         error.statusCode || 500,
       ),
     );
@@ -42,7 +42,7 @@ const getDetail = async (req, res, next) => {
   } catch (error) {
     next(
       new AppError(
-        error.message || "Gagal mengambil detail anime dari AniList",
+        error.message || "Could not fetch anime details from AniList",
         error.statusCode || 500,
       ),
     );
@@ -57,7 +57,7 @@ const getFeatured = async (req, res, next) => {
   } catch (error) {
     next(
       new AppError(
-        error.message || "Gagal mengambil anime unggulan dari AniList",
+        error.message || "Could not fetch featured anime from AniList",
         error.statusCode || 500,
       ),
     );

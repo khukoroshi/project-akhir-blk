@@ -3,16 +3,18 @@
 > Kontrak API antara frontend dan backend. Satu-satunya sumber kebenaran untuk endpoint.
 > Tugas frontend cukup membaca file ini, tidak perlu membaca kode backend (dan sebaliknya).
 > **Aturan:** setiap menambah atau mengubah endpoint, perbarui file ini di tugas yang sama.
-> Terakhir diperbarui: 2026-11-25.
+> Terakhir diperbarui: 2026-11-26.
 
 ## 1. Konvensi Umum
 
 - **Base URL:** dari `VITE_API_URL` di frontend (contoh lokal: `http://localhost:3000/api`)
 - **Format body:** JSON (`Content-Type: application/json`)
 - **Auth:** cookie HttpOnly `access_token` yang diatur oleh `POST /auth/login`. Header `Authorization` diabaikan total (request ber-Bearer tanpa cookie: 401).
-- **CSRF:** semua POST/PUT/PATCH/DELETE yang terautentikasi wajib header `X-CSRF-Token` berisi nilai cookie `csrf_token` (cookie ini bisa dibaca JavaScript). Tidak cocok atau hilang: 403 "Token CSRF tidak valid". Dikecualikan: GET dan endpoint tanpa sesi (register, login, logout).
+- **CSRF:** semua POST/PUT/PATCH/DELETE yang terautentikasi wajib header `X-CSRF-Token` berisi nilai cookie `csrf_token` (cookie ini bisa dibaca JavaScript). Tidak cocok atau hilang: 403 "Invalid CSRF token". Dikecualikan: GET dan endpoint tanpa sesi (register, login, logout).
 - **CORS:** hanya origin di `CORS_ORIGINS` yang diizinkan (dengan credentials). Frontend wajib mengirim request dengan `withCredentials: true`. Header yang diizinkan: Content-Type, X-CSRF-Token.
 - **Validasi saat ini:** Zod (strict) di endpoint auth, watchlist, katalog (query), dan users.
+- "Semua message (sukses dan error) berbahasa Inggris sejak L2A. Frontend tidak boleh membandingkan teks pesan; gunakan kode status."
+- "401 tanpa cookie: 'Authentication required'. 401 cookie tidak valid atau kedaluwarsa: 'Session is invalid or has expired'."
 
 **Response sukses**
 
@@ -34,7 +36,7 @@ Saat `NODE_ENV=development`, response error juga memuat `stack`.
 
 **Pembatasan laju (rate limit)**
 
-Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "error", "message": "Terlalu banyak ... Coba lagi dalam N menit." }`, dan header `Retry-After` (detik). Header standar `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` ikut dikirim. Batas dihitung per jendela waktu dan nilainya bisa diubah lewat env server (nilai di bawah adalah default).
+Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "error", "message": "Too many ... Try again in N minutes." }`,Bila sisa waktu kurang dari 60 detik, pesan memakai detik (mis. 'Try again in 30 seconds'). Retry-After tetap dalam detik., dan header `Retry-After` (detik). Header standar `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` ikut dikirim. Batas dihitung per jendela waktu dan nilainya bisa diubah lewat env server (nilai di bawah adalah default).
 
 | Endpoint                                                                      | Batas          | Kunci       | Catatan                                                    |
 | ----------------------------------------------------------------------------- | -------------- | ----------- | ---------------------------------------------------------- |
@@ -47,9 +49,7 @@ Server membatasi jumlah request. Jika terlampaui: **429**, body `{ "status": "er
 | `PUT /users/profile`                                                          | 30 / 15 menit  | user (sesi) | semua request ber-sesi dihitung                            |
 | `POST` / `DELETE /users/:username/follow`                                     | 60 / 15 menit  | user (sesi) | satu batas untuk keduanya; semua request ber-sesi dihitung |
 
-Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, password benar pun ditolak 429. Frontend sebaiknya menampilkan `message` dan jangan mengulang request sebelum `Retry-After` lewat.
-
----
+## Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, password benar pun ditolak 429. Frontend sebaiknya menampilkan `message` dan jangan mengulang request sebelum `Retry-After` lewat.
 
 ## 2. Endpoint yang Sudah Ada
 
@@ -67,7 +67,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 | `password` | string | ya    | 8-72 karakter, wajib ada huruf dan angka                                                                                |
 
 - **Sukses 201:** `data: { us_id, us_name, us_email }`
-- **Error:** 400 validasi gagal (pesan error pertama), 400 "Nama sudah digunakan", 400 "Email sudah digunakan", 400 "Nama atau email sudah digunakan" (kunci tidak dikenali), 429 terlalu banyak percobaan (pembatas laju server)
+- **Error:** 400 validasi gagal (pesan error pertama), 400 "Name is already taken", 400 "Email is already registered", 400 "Name or email is already in use" (kunci tidak dikenali), 429 terlalu banyak percobaan (pembatas laju server)
 - **Catatan:** email disimpan huruf kecil. Nama harus unik di database.
 
 #### `POST /auth/login`
@@ -88,7 +88,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 
 - **Auth:** tidak (token tidak diperiksa)
 - **Body:** tidak ada
-- **Sukses 200:** `message: "Logout berhasil"`. Menghapus cookie `access_token` dan `csrf_token`.
+- **Sukses 200:** `message: "Logout successful"`. Menghapus cookie `access_token` dan `csrf_token`.
 - **Error:** tidak ada (selalu 200)
 - **Catatan:** tidak butuh CSRF. Hanya menghapus cookie di browser; JWT yang bocor tetap berlaku sampai kedaluwarsa (belum ada revokasi).
 
@@ -124,12 +124,12 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 
 - **Sukses 201:** `data: Anime`
 - **Error:** 429 pembatas laju server (30 per 15 menit per user), atau AniList membatasi, 502 / 504 AniList gagal atau timeout (AniList hanya jika baris katalog belum ada)
-- **Catatan:** katalog (judul, gambar `coverImage.large`, total episode, tipe) diisi SERVER dari AniList berdasarkan `externalId`, bukan dari body. Cukup kirim `{ "externalId": 1535 }`. Format AniList dipetakan ke `type` (TV_SHORT -> TV Short, MOVIE -> Movie, format kosong -> TV). Total episode kosong menjadi 0. Baris katalog yang kosong atau lebih tua dari 7 hari disegarkan dari AniList saat ada yang menambahkan anime itu. Jika penyegaran gagal dan baris sudah ada, baris lama dipakai tanpa error. Status completed memakai total dari katalog sebagai episode. Field title, imgUrl, totalEps, dan type ditolak 400 ("Field 'title' tidak dikenal. Katalog diisi server dari AniList."), Judul (`anim_title`) = romaji AniList; jika kosong memakai english, lalu native, lalu "Unknown". Aturan yang sama dipakai saat baris katalog disegarkan..
+- **Catatan:** katalog (judul, gambar `coverImage.large`, total episode, tipe) diisi SERVER dari AniList berdasarkan `externalId`, bukan dari body. Cukup kirim `{ "externalId": 1535 }`. Format AniList dipetakan ke `type` (TV_SHORT -> TV Short, MOVIE -> Movie, format kosong -> TV). Total episode kosong menjadi 0. Baris katalog yang kosong atau lebih tua dari 7 hari disegarkan dari AniList saat ada yang menambahkan anime itu. Jika penyegaran gagal dan baris sudah ada, baris lama dipakai tanpa error. Status completed memakai total dari katalog sebagai episode. Field title, imgUrl, totalEps, dan type ditolak 400 ("Field 'title' is not recognized. The catalog is filled by the server from AniList"), Judul (`anim_title`) = romaji AniList; jika kosong memakai english, lalu native, lalu "Unknown". Aturan yang sama dipakai saat baris katalog disegarkan..
 
 #### `PUT /anime/:anim_id`
 
 - **Body:** `{ eps, status, tier, score, notes }`. `teps` dan field lain di luar daftar ditolak 400 (strict).
-- **Aturan:** total episode diambil dari katalog (bukan dari klien). Jika total > 0 dan `eps` > total: 400 "Episode (X) tidak boleh melebihi total episode (Y)". Jika total > 0 dan `status` = `completed`: `eps` = total. Jika total > 0 dan `eps` >= total: status menjadi `completed`. Jika total = 0 (tidak diketahui): `eps` memakai nilai yang dikirim.
+- **Aturan:** total episode diambil dari katalog (bukan dari klien). Jika total > 0 dan `eps` > total: 400 "Episodes (X) cannot exceed total episodes (Y)". Jika total > 0 dan `status` = `completed`: `eps` = total. Jika total > 0 dan `eps` >= total: status menjadi `completed`. Jika total = 0 (tidak diketahui): `eps` memakai nilai yang dikirim.
 - **Sukses 200:** `data: Anime`
 - **Error:** 400 validasi gagal atau eps melebihi total katalog, 404 tidak ditemukan
 - **Catatan:** Semua field tetap dikirim sekaligus (bukan partial update). `tier`/`score`/`notes` yang tidak dikirim menjadi null.
@@ -157,7 +157,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Auth:** opsional (cookie valid mengisi `isSelf`; tanpa cookie atau cookie tidak valid tetap 200 sebagai anonim)
 - **Param:** `username` string, trim, 3-50 karakter (ter-encode di URL)
 - **Sukses 200:** `data: Profile`
-- **Error:** 400 username tidak valid, 404 "Pengguna tidak ditemukan", 429 pembatas laju global
+- **Error:** 400 username tidak valid, 404 "User not found", 429 pembatas laju global
 - **Catatan:** `followersCount` dan `followingCount` selalu ada, juga untuk profil privat. `isFollowing` true hanya jika pemanggil login, bukan pemilik, dan mengikuti pengguna itu; false untuk anonim dan pemilik.
 
 #### `PUT /users/profile`
@@ -172,7 +172,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 | `isPrivate`   | boolean          | ya    | true atau false                                         |
 
 - **Sukses 200:** `data: Profile` (profil terbaru, `isSelf: true`)
-- **Error:** 400 validasi gagal (termasuk `avatarUrl`/`bannerUrl`: belum bisa diubah, upload di Phase 3), 401 belum login, 403 token CSRF tidak valid, 429 pembatas laju (30 per 15 menit per user)
+- **Error:** 400 validasi gagal (termasuk `avatarUrl`/`bannerUrl`: belum bisa diubah, upload di Phase 3), 401 belum login, 403 Invalid CSRF token, 429 pembatas laju (30 per 15 menit per user)
 - **Catatan:** pemanggilan pertama membuat baris profil (upsert). Teks `displayName` dan `bio` harus dirender sebagai teks biasa di frontend.
 
 #### `POST /users/:username/follow`
@@ -181,7 +181,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Param:** `username` string, trim, 3-50 karakter (ter-encode di URL)
 - **Body:** tidak ada
 - **Sukses 200:** `data: { username, isFollowing: true, followersCount }`
-- **Error:** 400 username tidak valid, 400 "Tidak bisa mengikuti diri sendiri", 401 belum login, 403 token CSRF tidak valid, 404 "Pengguna tidak ditemukan", 429 pembatas laju (60 per 15 menit per user, dibagi dengan DELETE)
+- **Error:** 400 username tidak valid, 400 "You cannot follow yourself", 401 belum login, 403 Invalid CSRF token, 404 "User not found", 429 pembatas laju (60 per 15 menit per user, dibagi dengan DELETE)
 - **Catatan:** idempotent, bukan toggle: mengikuti dua kali tetap satu relasi dan tetap 200. Berlaku juga untuk profil privat (tanpa persetujuan; statistik profil privat tetap tersembunyi). `username` pada respons memakai ejaan tersimpan di database.
 
 #### `DELETE /users/:username/follow`
@@ -201,10 +201,10 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Query** (strict, parameter lain ditolak 400):
   - `q` (opsional, maks 100 karakter). Jika kosong, mengembalikan daftar top.
   - `page` (opsional, bilangan bulat 1-200, default 1). Daftar top (tanpa `q`) dibatasi maksimal halaman 10.
-  - `filter` (opsional, default `all`): `all` `airing` `upcoming` `tv` `movie` `ova` `ona` `special` `popular` `favorited`. Nilai lain 400 "filter tidak valid". Diabaikan jika `q` ada.
+  - `filter` (opsional, default `all`): `all` `airing` `upcoming` `tv` `movie` `ova` `ona` `special` `popular` `favorited`. Nilai lain 400 "Filter is not valid". Diabaikan jika `q` ada.
 - **Sukses 200:** `data: [ { id, title: { romaji, english, native }, episodes, format, status, averageScore, coverImage: { large }, genres: string[] (maks 3), season: string|null, seasonYear: number|null } ]`, `meta: { page, perPage, hasNextPage }`
 - **Catatan:** Pemetaan filter di server: all/tv/movie/ova/ona/special/airing = skor tertinggi (airing: status RELEASING; format sesuai filter), upcoming = status NOT_YET_RELEASED urut popularitas, popular = popularitas, favorited = favorit. Konten dewasa dikecualikan di daftar top dan pencarian. Di halaman 10 daftar top, meta.hasNextPage selalu false, genres, season, seasonYear ditambahkan 2026-11-24; field lain dan meta tidak berubah..
-- **Error:** 400 `page` tidak valid atau di luar batas ("Daftar top dibatasi maksimal 10 halaman"), 400 query apa pun ditolak (endpoint ini tidak punya parameter), 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 429 AniList membatasi request (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, membalas status gagal selain 429 (termasuk 404), atau membalas error GraphQL, 504 AniList timeout
+- **Error:** 400 `page` tidak valid atau di luar batas ("The top list is limited to 10 pages"), 400 query apa pun ditolak (endpoint ini tidak punya parameter), 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan: 'AniList rate limit reached. Try again in N seconds', atau '... Try again shortly' bila AniList tidak memberi waktu), 429 AniList membatasi request (pesan: 'AniList rate limit reached. Try again in N seconds', atau '... Try again shortly' bila AniList tidak memberi waktu), 502 AniList tidak bisa dihubungi, membalas status gagal selain 429 (termasuk 404), atau membalas error GraphQL, 504 AniList timeout
 
 #### `GET /catalog/anime/featured`
 
@@ -213,14 +213,14 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - **Sukses 200:** `data: [Featured]` (maks 8), tanpa `meta`.
   `Featured`: `{ id, title: { romaji, english, native }, bannerImage: string|null, coverImage: { extraLarge, large, color }, format, episodes, status, averageScore, genres: string[] (maks 3), season, seasonYear, description: string|null }`
 - **Catatan:** diambil dari AniList (ANIME, status RELEASING, urut TRENDING_DESC, bukan dewasa, 16 item). Hanya item ber-banner yang dipertahankan; jika kurang dari 5, diisi item yang punya `coverImage.extraLarge` (bannerImage = null) sampai 8. `description` adalah teks biasa (tanpa HTML, entitas didecode, spasi dirapikan, maks 220 karakter, dipotong di batas kata dengan "..."), atau null jika kosong; render sebagai teks. Di-cache 30 menit (terpisah dari cache daftar). Timeout 10 detik. Rute ini sebelum `/catalog/anime/:id`.
-- **Error:** 400 parameter dikenali tidak ada (query apa pun), 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 502 AniList tidak bisa dihubungi, membalas status gagal, atau membalas error GraphQL, 504 AniList timeout
+- **Error:** 400 parameter dikenali tidak ada (query apa pun), 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan: 'AniList rate limit reached. Try again in N seconds', atau '... Try again shortly' bila AniList tidak memberi waktu), 502 AniList tidak bisa dihubungi, membalas status gagal, atau membalas error GraphQL, 504 AniList timeout
 
 #### `GET /catalog/anime/:id`
 
 - **Param:** `id` = ID AniList
 - **Sukses 200:** `data: Media` (detail lengkap dari AniList)
 - **Catatan:** deskripsi bisa berisi HTML, wajib disanitasi di frontend. Detail di-cache 5 menit. Timeout 10 detik.
-- **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan memuat waktu tunggu), 502 / 504 sama seperti pencarian (502 untuk status gagal selain 429 dan 404)
+- **Error:** 400 ID bukan angka positif, 404 anime tidak ditemukan, 429 pembatas laju server (60 per menit per IP) atau AniList membatasi (pesan: 'AniList rate limit reached. Try again in N seconds', atau '... Try again shortly' bila AniList tidak memberi waktu), 502 / 504 sama seperti pencarian (502 untuk status gagal selain 429 dan 404)
 
 ---
 
@@ -265,7 +265,7 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - 2026-11-02: Katalog AniList: tambah cache 5 menit, timeout 10 detik, error 400/429/502/504.
 - 2026-11-03: Auth: validasi Zod (strict) pada register dan login.
 - 2026-11-04: Watchlist: validasi Zod (strict) pada param anim_id, POST, PUT. type tidak peka huruf besar/kecil.
-- 2026-11-05: Register: nama duplikat kini 400 "Nama sudah digunakan" (dulu 500). PUT: completed dengan teps 0 mempertahankan eps. PATCH increment: tidak lagi 500 untuk anime completed dengan total 0.
+- 2026-11-05: Register: nama duplikat kini 400 "Name is already taken" (dulu 500). PUT: completed dengan teps 0 mempertahankan eps. PATCH increment: tidak lagi 500 untuk anime completed dengan total 0.
 - 2026-11-05: Watchlist beralih ke tabel anime_catalog + user_anime (bentuk response tidak berubah). type menerima TV Short dan Music (TV_SHORT dinormalisasi). score boleh desimal (1-10, maks 1 desimal). PUT pada ID tidak ada kini selalu 404.
 - 2026-11-07: Katalog AniList: tambah query `page`, 48 judul per halaman, field `meta` { page, perPage, hasNextPage }. Daftar top maks 10 halaman. Sebelumnya search 20 hasil dan top 50 hasil tanpa halaman.
 - 2026-11-07: Katalog AniList: tambah query filter (10 kategori) untuk daftar top.
@@ -280,3 +280,4 @@ Di login, batas dicek sebelum validasi dan pengecekan password: jika terkunci, p
 - 2026-11-19: Users (Phase 2B): POST dan DELETE /users/:username/follow (idempotent, auth + CSRF, 60/15 menit per user bersama). GET /users/:username dan respons PUT /users/profile menambah followersCount, followingCount, isFollowing. Bentuk field lain tidak berubah.
 - 2026-11-24: Katalog (D3A): GET /catalog/anime/featured (publik, tanpa parameter, maks 8 item, cache 30 menit, description teks biasa). GET /catalog/anime menambah field per item: genres (maks 3), season, seasonYear. Kontrak lain tidak berubah.
 - 2026-11-25: Watchlist (T1): `anim_title` kini romaji (fallback english, lalu native), sebelumnya english dahulu. Bentuk objek `Anime` dan endpoint lain tidak berubah.
+- 2026-11-26: L2A: semua pesan server diterjemahkan ke bahasa Inggris (teks saja). Pesan batas laju memakai detik bila sisa waktu < 60 detik. Kode status, field, dan struktur tidak berubah.

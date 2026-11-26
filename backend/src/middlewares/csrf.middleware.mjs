@@ -27,7 +27,7 @@ export const csrfProtect = (req, res, next) => {
     typeof headerToken !== "string" ||
     !safeEqual(cookieToken, headerToken)
   ) {
-    return next(new AppError("Token CSRF tidak valid", 403));
+    return next(new AppError("Invalid CSRF token", 403));
   }
   next();
 };

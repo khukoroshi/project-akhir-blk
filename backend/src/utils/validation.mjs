@@ -10,12 +10,12 @@ const createStrictOptions = ({ unknownKeysLabel, invalidTypeMessage }) => ({
 
 // For request bodies and route params.
 export const bodyStrictOptions = createStrictOptions({
-  unknownKeysLabel: "Field tidak dikenal",
-  invalidTypeMessage: "Body request tidak valid",
+  unknownKeysLabel: "Unknown field",
+  invalidTypeMessage: "Request body is not valid",
 });
 
 // For query strings.
 export const queryStrictOptions = createStrictOptions({
-  unknownKeysLabel: "Parameter tidak dikenal",
-  invalidTypeMessage: "Query request tidak valid",
+  unknownKeysLabel: "Unknown parameter",
+  invalidTypeMessage: "Request query is not valid",
 });

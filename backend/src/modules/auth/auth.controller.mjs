@@ -9,7 +9,7 @@ export const register = async (req, res, next) => {
     // Respon sukses ke frontend
     res.status(201).json({
       status: "success",
-      message: "Register berhasil",
+      message: "Registration successful",
       data: newUser,
     });
   } catch (error) {
@@ -27,7 +27,7 @@ export const login = async (req, res, next) => {
 
     res.status(200).json({
       status: "success",
-      message: "Login berhasil",
+      message: "Login successful",
       data: {
         user: result.user,
       },
@@ -42,7 +42,7 @@ export const getProfile = (req, res) => {
   // Objek req.user didapat dari middleware auth/protect
   res.status(200).json({
     status: "success",
-    message: "Berhasil mengambil profil user",
+    message: "Profile retrieved successfully",
     data: {
       userInfo: req.user,
     },
@@ -52,5 +52,5 @@ export const getProfile = (req, res) => {
 // Controller untuk Logout (tanpa input, jadi tanpa schema Zod)
 export const logout = (req, res) => {
   clearAuthCookies(res);
-  res.status(200).json({ status: "success", message: "Logout berhasil" });
+  res.status(200).json({ status: "success", message: "Logout successful" });
 };

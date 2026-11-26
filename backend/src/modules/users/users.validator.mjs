@@ -3,10 +3,10 @@ import { bodyStrictOptions } from "../../utils/validation.mjs";
 
 export const usernameParamSchema = z.object({
   username: z
-    .string({ error: "Username wajib diisi" })
+    .string({ error: "Username is required" })
     .trim()
-    .min(3, "Username minimal 3 karakter")
-    .max(50, "Username maksimal 50 karakter"),
+    .min(3, "Username must be at least 3 characters")
+    .max(50, "Username must be at most 50 characters"),
 });
 
 // Full update: all three fields must be sent. avatarUrl/bannerUrl are rejected
@@ -14,16 +14,18 @@ export const usernameParamSchema = z.object({
 export const updateProfileSchema = z.strictObject(
   {
     displayName: z
-      .string({ error: "displayName wajib diisi (teks atau null)" })
+      .string({ error: "Display name is required (text or null)" })
       .trim()
-      .min(1, "Nama tampilan tidak boleh kosong")
-      .max(100, "Nama tampilan maksimal 100 karakter")
+      .min(1, "Display name cannot be empty")
+      .max(100, "Display name must be at most 100 characters")
       .nullable(),
     bio: z
-      .string({ error: "bio wajib diisi (teks atau null)" })
-      .max(500, "Bio maksimal 500 karakter")
+      .string({ error: "Bio is required (text or null)" })
+      .max(500, "Bio must be at most 500 characters")
       .nullable(),
-    isPrivate: z.boolean({ error: "isPrivate wajib diisi (true atau false)" }),
+    isPrivate: z.boolean({
+      error: "Privacy setting is required (true or false)",
+    }),
   },
   bodyStrictOptions,
 );

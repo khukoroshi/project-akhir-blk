@@ -15,7 +15,7 @@ export const validate = (schema, source = "body") => {
     const result = schema.safeParse(req[source] ?? {});
 
     if (!result.success) {
-      const message = result.error.issues[0]?.message || "Data tidak valid";
+      const message = result.error.issues[0]?.message || "Data is not valid";
       return next(new AppError(message, 400));
     }
 

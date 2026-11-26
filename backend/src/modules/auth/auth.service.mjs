@@ -9,7 +9,7 @@ export const registerUser = async (data) => {
   const { name, email, password } = data;
 
   if (await isEmailTaken(email)) {
-    throw new AppError("Email sudah digunakan", 400);
+    throw new AppError("Email is already registered", 400);
   }
 
   // Hash Password
@@ -27,12 +27,12 @@ export const registerUser = async (data) => {
       const key = message.match(/for key '([^']+)'/)?.[1] || "";
 
       if (key.endsWith("us_name")) {
-        throw new AppError("Nama sudah digunakan", 400);
+        throw new AppError("Name is already taken", 400);
       }
       if (key.endsWith("us_email")) {
-        throw new AppError("Email sudah digunakan", 400);
+        throw new AppError("Email is already registered", 400);
       }
-      throw new AppError("Nama atau email sudah digunakan", 400);
+      throw new AppError("Name or email is already in use", 400);
     }
     throw error;
   }
@@ -48,13 +48,13 @@ export const registerUser = async (data) => {
 export const loginUser = async (email, password) => {
   const user = await findUserByEmail(email);
   if (!user) {
-    throw new AppError("Email atau password salah", 401);
+    throw new AppError("Invalid email or password", 401);
   }
 
   // Cek Password
   const isMatch = await bcrypt.compare(password, user.us_password);
   if (!isMatch) {
-    throw new AppError("Email atau password salah", 401);
+    throw new AppError("Invalid email or password", 401);
   }
 
   // Buat token JWT

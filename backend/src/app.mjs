@@ -9,7 +9,6 @@ import { authRoutes } from "./modules/auth/index.mjs";
 import { createWatchlistRoutes } from "./modules/watchlist/index.mjs";
 import { catalogRoutes } from "./modules/anime/index.mjs";
 import { createUsersRoutes } from "./modules/users/index.mjs";
-// ...
 
 export const createApp = ({
   rateLimit = env.rateLimit,
@@ -38,12 +37,12 @@ export const createApp = ({
 
   // Endpoint utama
   app.get("/", (req, res) => {
-    res.send("Hello World! Server Express AniWatchlist berhasil berjalan.");
+    res.send("Hello World! The AniWatchlist Express server is running.");
   });
 
   // handler 404
   app.use((req, res, next) => {
-    next(new AppError(`Route ${req.originalUrl} tidak ditemukan`, 404));
+    next(new AppError(`Route ${req.originalUrl} not found`, 404));
   });
 
   // global handler error

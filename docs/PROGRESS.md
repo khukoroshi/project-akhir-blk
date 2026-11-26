@@ -8,7 +8,7 @@
 
 - **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2, D3 selesai. L1 selesai (kerangka).
 - **Sedang dikerjakan:** -
-- **Berikutnya:** L2 (pesan server ke bahasa Inggris), lalu D4 sampai D8 (tiap chat desain menerjemahkan berkas yang disentuhnya).
+- **Berikutnya:** L2B (perbarui tes Supertest dan koleksi Bruno ke pesan Inggris), lalu D4 sampai D8 (tiap chat desain menerjemahkan berkas yang disentuhnya).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -146,7 +146,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Pemanggil formatDate (ProfileHeader, AnimeDetail, MyList) perlu dicek saat berkasnya disentuh. formatDate hanya menerima { year, month, day }; periksa apakah joinedAt (string ISO) di ProfileHeader benar-benar lewat fungsi ini.
 - getAnimeTitle dipakai di Home dan carousel; tinggal Detail (D4) dan tempat lain yang menampilkan judul AniList.
 - AnimeDetail.jsx masih memiliki handleAddToList sendiri (kata-kata Indonesia, mengirim tier/score/notes null). Dialihkan ke useAddToList di D4.
-- Diputuskan: pesan server diterjemahkan di server (L2).
+- L2A selesai: semua pesan server (AppError, Zod, controller, middleware auth/CSRF/validate, pembatas laju, klien AniList) berbahasa Inggris. Pesan batas laju memakai detik bila sisa waktu < 60 detik, selain itu menit ("1 minute" / "N minutes"). Tes Supertest dan koleksi Bruno yang memeriksa teks Indonesia belum diperbarui (L2B); kode status tidak berubah.
+- Error tak terduga (500) meneruskan err.message mentah ke klien (error.middleware dan controller katalog). Pertimbangkan pesan generik di produksi.
 - Skor lencana carousel = averageScore / 10 (1 desimal). Samakan dengan CardImage bila formatnya berbeda.
 - Dot indikator carousel selebar 24px x tinggi 44px (bukan 44x44) agar delapan titik muat di 375px.
 - Cache useFeatured hanya di memori modul (hilang saat reload); TTL 5 menit, dibersihkan saat Try again.
@@ -175,7 +176,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 18. Fase desain: D1, D2, D3 (D3A sampai D3D) selesai; D4 Detail (alihkan AnimeDetail.jsx ke useAddToList); D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
     18a. T1: judul anime romaji di katalog server dan skrip catalog:refresh. (selesai)
     18b. L1: terjemahan frontend (header, laci, footer, tema, Modal, halaman galat). (selesai, kecuali MainLayout.jsx)
-    18c. L2: terjemahan pesan server.
+    18c. L2A: terjemahan pesan server. (selesai) L2B: perbarui tes dan koleksi Bruno ke pesan Inggris.
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 
 ## 10. Template Serah-Terima (tempel di akhir tiap tugas)
@@ -263,3 +264,8 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: frontend/index.html, frontend/src/utils/formatDate.js, frontend/src/components/common/{Header,NavDrawer,Footer,ThemeToggle,Modal,ErrorApiPage}.jsx
   - Keputusan baru: padanan teks mengikuti daftar L1 (Home, My List, My profile, Edit profile, Log in, Sign up, Log out, Theme, Light/Dark/System). aria-label akun: "Account menu for <username>". Tidak ada perubahan rute, parameter URL, prop, backend, API.md, atau library.
   - Berikutnya: terjemahkan layouts/MainLayout.jsx ("Skip to content"), L2 (pesan server), lalu D4 (Detail anime).
+- **2026-11-26** — L2A (terjemahan pesan server ke bahasa Inggris)
+  - Selesai: semua pesan yang bisa sampai ke respons HTTP menjadi Inggris: AppError, pesan kustom Zod, pesan sukses controller, middleware (auth, CSRF, validate, strict options), pembatas laju, dan klien AniList. Teks root "/" ikut diterjemahkan. Grep frontend untuk pembandingan teks pesan: kosong. Tanpa perubahan kode status, nama field, urutan validasi, atau library.
+  - File diubah: backend/src/app.mjs, src/middlewares/{auth,csrf,validate}.middleware.mjs, src/config/rateLimit.mjs, src/utils/validation.mjs, src/integrations/anilist/anilist.client.mjs, src/modules/anime/{anime.controller,anime.validator,catalog.service}.mjs, src/modules/auth/{auth.controller,auth.service,auth.validator}.mjs, src/modules/users/{users.service,users.validator}.mjs, src/modules/watchlist/{watchlist.controller,watchlist.model,watchlist.validator}.mjs, API.md
+  - Keputusan baru: gaya pesan = kalimat singkat, huruf besar di awal, tanpa titik akhir. Label Zod memakai nama manusiawi (External ID, Episodes, Privacy setting). Password dipecah per aturan. Konstanta USER_NOT_FOUND, NOT_IN_LIST, externalIdMsg. rateLimit.mjs punya helper formatWait (detik bila < 60 dtk, selain itu menit); subject limiter berbahasa Inggris. Pesan 401 dibedakan: "Authentication required" (tanpa cookie) dan "Session is invalid or has expired".
+  - Berikutnya: L2B (tes Supertest dan koleksi Bruno), lalu D4 (Detail anime).

@@ -17,6 +17,12 @@ export const userKey = (req) => {
   return id !== undefined ? `user:${id}` : ipKeyGenerator(req.ip ?? "unknown");
 };
 
+export const formatWait = (seconds) => {
+  if (seconds < 60) return seconds === 1 ? "1 second" : `${seconds} seconds`;
+  const minutes = Math.ceil(seconds / 60);
+  return minutes === 1 ? "1 minute" : `${minutes} minutes`;
+};
+
 export const createLimiter = ({
   windowMs,
   limit,
@@ -43,11 +49,10 @@ export const createLimiter = ({
             1000,
         ),
       );
-      const minutes = Math.ceil(seconds / 60);
       res.set("Retry-After", String(seconds));
       next(
         new AppError(
-          `Terlalu banyak ${subject}. Coba lagi dalam ${minutes} menit.`,
+          `Too many ${subject}. Try again in ${formatWait(seconds)}`,
           429,
         ),
       );
@@ -66,25 +71,25 @@ export const createRateLimiters = ({ enabled, limits }) => {
     loginEmail: make("loginEmail", {
       skipSuccessfulRequests: true,
       keyGenerator: loginEmailKey,
-      subject: "percobaan login",
+      subject: "login attempts",
     }),
     loginIp: make("loginIp", {
       skipSuccessfulRequests: true,
-      subject: "percobaan login",
+      subject: "login attempts",
     }),
-    register: make("register", { subject: "percobaan pendaftaran" }),
+    register: make("register", { subject: "registration attempts" }),
     catalog: make("catalog"),
     createAnime: make("createAnime", {
       keyGenerator: userKey,
-      subject: "penambahan anime",
+      subject: "requests to add anime",
     }),
     profileUpdate: make("profileUpdate", {
       keyGenerator: userKey,
-      subject: "perubahan profil",
+      subject: "profile update requests",
     }),
     follow: make("follow", {
       keyGenerator: userKey,
-      subject: "permintaan follow",
+      subject: "follow requests",
     }),
   };
 };

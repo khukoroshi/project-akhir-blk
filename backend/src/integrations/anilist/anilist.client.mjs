@@ -205,22 +205,23 @@ const requestAniList = async (
     text = await response.text();
   } catch (error) {
     if (error.name === "TimeoutError" || error.name === "AbortError") {
-      throw createError(
-        "AniList tidak merespons (timeout). Coba lagi nanti.",
-        504,
-      );
+      throw createError("AniList request timed out", 504);
     }
-    throw createError("Tidak dapat terhubung ke AniList.", 502);
+    throw createError("Could not reach AniList", 502);
   }
 
   if (response.status === 429) {
     const retryAfter = Number(response.headers.get("Retry-After"));
-    const wait = retryAfter > 0 ? `${retryAfter} detik` : "beberapa saat";
+    const wait =
+      retryAfter > 0
+        ? `in ${retryAfter} ${retryAfter === 1 ? "second" : "seconds"}`
+        : "shortly";
 
     const error = createError(
-      `Terlalu banyak permintaan ke AniList. Coba lagi dalam ${wait}.`,
+      `AniList rate limit reached. Try again ${wait}`,
       429,
     );
+
     error.retryAfterSeconds = retryAfter > 0 ? retryAfter : null;
     throw error;
   }
@@ -236,14 +237,14 @@ const requestAniList = async (
     // Only the detail endpoint treats AniList's 404 as "not found".
     if (allowNotFound && response.status === 404) {
       throw createError(
-        result?.errors?.[0]?.message || "Anime tidak ditemukan",
+        result?.errors?.[0]?.message || "Anime not found on AniList",
         404,
       );
     }
 
     // Any other failure is an upstream problem, not the client's fault.
     throw createError(
-      `AniList mengembalikan error (${response.status}). Coba lagi nanti.`,
+      `AniList returned an error (${response.status}). Try again later`,
       502,
     );
   }
@@ -262,7 +263,7 @@ const getAnimeDetail = async (id) => {
   const numericId = Number(id);
 
   if (!Number.isInteger(numericId) || numericId <= 0) {
-    throw createError("ID anime tidak valid", 400);
+    throw createError("Anime ID must be a positive whole number", 400);
   }
 
   const cacheKey = `detail:${numericId}`;

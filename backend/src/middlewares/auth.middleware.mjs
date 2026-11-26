@@ -9,20 +9,13 @@ export const protect = (req, res, next) => {
   const token = req.cookies?.[ACCESS_COOKIE];
 
   if (!token) {
-    return next(
-      new AppError("Anda belum login. Silakan login terlebih dahulu.", 401),
-    );
+    return next(new AppError("Authentication required", 401));
   }
 
   try {
     req.user = jwt.verify(token, env.jwt.secret);
   } catch (error) {
-    return next(
-      new AppError(
-        "Token tidak valid atau sudah kadaluarsa. Silahkan login lagi",
-        401,
-      ),
-    );
+    return next(new AppError("Session is invalid or has expired", 401));
   }
 
   // Every authenticated request uses the cookie, so every mutation needs CSRF.
