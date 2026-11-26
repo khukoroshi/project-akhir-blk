@@ -141,7 +141,7 @@ describe("CSRF untuk request ber-cookie", () => {
       const res = await call(agent, method, url, body);
       expect(res.status).toBe(403);
       expect(res.body.status).toBe("error");
-      expect(res.body.message).toBe("Token CSRF tidak valid");
+      expect(res.body.message).toBe("Invalid CSRF token");
     },
   );
 
@@ -154,7 +154,7 @@ describe("CSRF untuk request ber-cookie", () => {
         "salah",
       );
       expect(res.status).toBe(403);
-      expect(res.body.message).toBe("Token CSRF tidak valid");
+      expect(res.body.message).toBe("Invalid CSRF token");
     },
   );
 
@@ -208,7 +208,7 @@ describe("Bearer tidak lagi diterima", () => {
     const { agent, token } = await loginWithAgent();
     const res = await agent.delete("/api/anime/999999").set(bearer(token));
     expect(res.status).toBe(403);
-    expect(res.body.message).toBe("Token CSRF tidak valid");
+    expect(res.body.message).toBe("Invalid CSRF token");
   });
 });
 

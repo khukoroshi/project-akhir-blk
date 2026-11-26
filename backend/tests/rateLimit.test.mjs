@@ -36,7 +36,7 @@ const buildApp = ({ limits = {}, trustProxy, enabled = true } = {}) =>
 const expectLimited = (res) => {
   expect(res.status).toBe(429);
   expect(res.body.status).toBe("error");
-  expect(res.body.message).toMatch(/menit/);
+  expect(res.body.message).toMatch(/minute/);
   expect(Number(res.headers["retry-after"])).toBeGreaterThan(0);
   expect(res.headers["ratelimit-limit"]).toBeDefined();
   expect(res.headers["x-ratelimit-limit"]).toBeUndefined();

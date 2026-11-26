@@ -79,7 +79,7 @@ describe("POST /api/users/:username/follow", () => {
     const a = await alice();
     const res = await follow(a.token, "alice");
     expectError(res, 400);
-    expect(res.body.message).toBe("Tidak bisa mengikuti diri sendiri");
+    expect(res.body.message).toBe("You cannot follow yourself");
     expect(await countRows()).toBe(0);
   });
 
@@ -175,7 +175,7 @@ describe("DELETE /api/users/:username/follow", () => {
     const a = await alice();
     const res = await unfollow(a.token, "alice");
     expectError(res, 400);
-    expect(res.body.message).toBe("Tidak bisa mengikuti diri sendiri");
+    expect(res.body.message).toBe("You cannot follow yourself");
   });
 
   it("404: username tidak ada", async () => {
@@ -286,7 +286,7 @@ describe("follow/unfollow: pembatas laju", () => {
 
     const blocked = await follow(a.token, "bob", app);
     expectError(blocked, 429);
-    expect(blocked.body.message).toContain("permintaan follow");
+    expect(blocked.body.message).toContain("follow requests");
     expect(Number(blocked.headers["retry-after"])).toBeGreaterThan(0);
 
     // A different user is not locked out.

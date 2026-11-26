@@ -66,7 +66,7 @@ describe("GET /api/catalog/anime: validasi query", () => {
     ["page 201", { page: "201" }],
     ["page bukan angka", { page: "abc" }],
     ["page 201 walau ada q", { q: "naruto", page: "201" }],
-    ["filter tidak valid", { filter: "bogus" }],
+    ["Filter is not valid", { filter: "bogus" }],
     ["parameter asing", { foo: "bar" }],
     ["q lebih dari 100 karakter", { q: "x".repeat(101) }],
   ])("400: %s", async (_label, query) => {
@@ -80,7 +80,7 @@ describe("GET /api/catalog/anime: validasi query", () => {
     const res = await api().get(CATALOG).query({ filter: "bogus" });
 
     expectError(res, 400);
-    expect(res.body.message).toContain("filter tidak valid");
+    expect(res.body.message).toContain("Filter is not valid");
   });
 
   it("400: daftar top (tanpa q) page 11 ditolak", async () => {
@@ -88,7 +88,7 @@ describe("GET /api/catalog/anime: validasi query", () => {
 
     expectError(res, 400);
     expect(res.body.message).toContain(
-      "Daftar top dibatasi maksimal 10 halaman",
+      "The top list is limited to 10 pages",
     );
     expect(fetchMock).not.toHaveBeenCalled();
   });

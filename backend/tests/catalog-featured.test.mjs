@@ -397,7 +397,7 @@ describe("GET /api/catalog/anime/featured: pembatas laju katalog", () => {
     const res = await server.get(FEATURED);
 
     expectError(res, 429);
-    expect(res.body.message).toMatch(/menit/);
+    expect(res.body.message).toMatch(/minute/);
     expect(Number(res.headers["retry-after"])).toBeGreaterThan(0);
     expect(res.headers["ratelimit-limit"]).toBeDefined();
     // Cache means AniList is only contacted once.

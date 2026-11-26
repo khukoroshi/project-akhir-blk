@@ -243,7 +243,7 @@ describe("POST /api/anime", () => {
     ["externalId desimal", { externalId: 1.5 }],
     ["externalId string angka", { externalId: "1535" }],
     ["externalId bukan angka", { externalId: "abc" }],
-    ["externalId terlalu besar", { externalId: 2147483648 }],
+    ["External ID is too large", { externalId: 2147483648 }],
     ["externalSource jikan", { externalSource: "jikan" }],
     ["status tidak valid", { status: "bogus" }],
     ["status 'on hold' ditolak", { status: "on hold" }],

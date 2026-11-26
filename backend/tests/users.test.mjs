@@ -345,7 +345,7 @@ describe("PUT /api/users/profile: pembatas laju", () => {
 
     const blocked = await put(first.token);
     expectError(blocked, 429);
-    expect(blocked.body.message).toContain("perubahan profil");
+    expect(blocked.body.message).toContain("profile update requests");
     expect(Number(blocked.headers["retry-after"])).toBeGreaterThan(0);
 
     // A different user is not locked out.

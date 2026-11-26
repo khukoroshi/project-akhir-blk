@@ -95,7 +95,7 @@ describe("POST /api/auth/register", () => {
       .send({ ...defaultCredentials, email: "lain@example.com" });
 
     expectError(res, 400);
-    expect(res.body.message).toBe("Nama sudah digunakan");
+    expect(res.body.message).toBe("Name is already taken");
   });
 
   it("400 'Email sudah digunakan' untuk email duplikat", async () => {
@@ -106,7 +106,7 @@ describe("POST /api/auth/register", () => {
       .send({ ...defaultCredentials, name: "penguji-lain" });
 
     expectError(res, 400);
-    expect(res.body.message).toBe("Email sudah digunakan");
+    expect(res.body.message).toBe("Email is already registered");
   });
   it.each([
     ["spasi", "nama dengan spasi"],

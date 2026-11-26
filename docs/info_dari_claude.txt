@@ -4,3 +4,82 @@ cd backend
 pnpm test && pnpm test          
 pnpm catalog:refresh --dry-run  
 pnpm catalog:refresh            
+
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/watchlist.test.mjs > field lama ditolak (C3) > 400: POST dengan field lama 'title'
+AssertionError: expected 'Field \'title\' is not recognized. Th…' to contain 'Katalog diisi server dari AniList'
+
+Expected: "Katalog diisi server dari AniList"
+Received: "Field 'title' is not recognized. The catalog is filled by the server from AniList"
+
+ ❯ tests/watchlist.test.mjs:858:32
+    856|       expectError(res, 400);
+    857|       expect(res.body.message).toContain(`'${field}'`);
+    858|       expect(res.body.message).toContain("Katalog diisi server dari AniList");
+       |                                ^
+    859|       expect(await countWatchlist()).toBe(0);
+    860|       expect(anilist.calls).toEqual([]); // rejected before AniList is called
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/watchlist.test.mjs > field lama ditolak (C3) > 400: POST dengan field lama 'imgUrl'
+AssertionError: expected 'Field \'imgUrl\' is not recognized. T…' to contain 'Katalog diisi server dari AniList'
+
+Expected: "Katalog diisi server dari AniList"
+Received: "Field 'imgUrl' is not recognized. The catalog is filled by the server from AniList"
+
+ ❯ tests/watchlist.test.mjs:858:32
+    856|       expectError(res, 400);
+    857|       expect(res.body.message).toContain(`'${field}'`);
+    858|       expect(res.body.message).toContain("Katalog diisi server dari AniList");
+       |                                ^
+    859|       expect(await countWatchlist()).toBe(0);
+    860|       expect(anilist.calls).toEqual([]); // rejected before AniList is called
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/watchlist.test.mjs > field lama ditolak (C3) > 400: POST dengan field lama 'totalEps'
+AssertionError: expected 'Field \'totalEps\' is not recognized.…' to contain 'Katalog diisi server dari AniList'
+
+Expected: "Katalog diisi server dari AniList"
+Received: "Field 'totalEps' is not recognized. The catalog is filled by the server from AniList"
+
+ ❯ tests/watchlist.test.mjs:858:32
+    856|       expectError(res, 400);
+    857|       expect(res.body.message).toContain(`'${field}'`);
+    858|       expect(res.body.message).toContain("Katalog diisi server dari AniList");
+       |                                ^
+    859|       expect(await countWatchlist()).toBe(0);
+    860|       expect(anilist.calls).toEqual([]); // rejected before AniList is called
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/watchlist.test.mjs > field lama ditolak (C3) > 400: POST dengan field lama 'type'
+AssertionError: expected 'Field \'type\' is not recognized. The…' to contain 'Katalog diisi server dari AniList'
+
+Expected: "Katalog diisi server dari AniList"
+Received: "Field 'type' is not recognized. The catalog is filled by the server from AniList"
+
+ ❯ tests/watchlist.test.mjs:858:32
+    856|       expectError(res, 400);
+    857|       expect(res.body.message).toContain(`'${field}'`);
+    858|       expect(res.body.message).toContain("Katalog diisi server dari AniList");
+       |                                ^
+    859|       expect(await countWatchlist()).toBe(0);
+    860|       expect(anilist.calls).toEqual([]); // rejected before AniList is called
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed | 10 passed (11)
+      Tests  4 failed | 363 passed (367)
+   Start at  01:39:42
+   Duration  198.66s (tests 78%, import 16%, setup 5%, transform 1%)
+
+    Isolate  11 workers spawned · ~1.21s startup each (spawn + environment, per file)
+             at least ~12.09s faster with isolate: false — reuses workers across files instead of one per file
+
+[ELIFECYCLE] Test failed. See above for more details.

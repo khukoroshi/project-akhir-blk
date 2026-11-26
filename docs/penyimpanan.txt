@@ -1,0 +1,59 @@
+╰─❯ node replace-test-messages.mjs pesan-l2a.md tests
+tests\auth-cookie.test.mjs:144
+  - expect(res.body.message).toBe("Token CSRF tidak valid");
+  + expect(res.body.message).toBe("Invalid CSRF token");
+tests\auth-cookie.test.mjs:157
+  - expect(res.body.message).toBe("Token CSRF tidak valid");
+  + expect(res.body.message).toBe("Invalid CSRF token");
+tests\auth-cookie.test.mjs:211
+  - expect(res.body.message).toBe("Token CSRF tidak valid");
+  + expect(res.body.message).toBe("Invalid CSRF token");
+tests\auth.test.mjs:98
+  - expect(res.body.message).toBe("Nama sudah digunakan");
+  + expect(res.body.message).toBe("Name is already taken");
+tests\auth.test.mjs:109
+  - expect(res.body.message).toBe("Email sudah digunakan");
+  + expect(res.body.message).toBe("Email is already registered");
+tests\catalog.test.mjs:69
+  - ["filter tidak valid", { filter: "bogus" }],
+  + ["Filter is not valid", { filter: "bogus" }],
+tests\catalog.test.mjs:83
+  - expect(res.body.message).toContain("filter tidak valid");
+  + expect(res.body.message).toContain("Filter is not valid");
+tests\catalog.test.mjs:91
+  - "Daftar top dibatasi maksimal 10 halaman",
+  + "The top list is limited to 10 pages",
+tests\follow.test.mjs:82
+  - expect(res.body.message).toBe("Tidak bisa mengikuti diri sendiri");
+  + expect(res.body.message).toBe("You cannot follow yourself");
+tests\follow.test.mjs:178
+  - expect(res.body.message).toBe("Tidak bisa mengikuti diri sendiri");
+  + expect(res.body.message).toBe("You cannot follow yourself");
+tests\watchlist.test.mjs:246
+  - ["externalId terlalu besar", { externalId: 2147483648 }],
+  + ["External ID is too large", { externalId: 2147483648 }],
+
+==== RINGKASAN ====
+DRY-RUN (belum ada berkas yang diubah): 11 baris di 5 berkas.
+Aturan pesan lengkap yang dipakai: 7 dari 68.
+
+Dilewati (perlu cek manual, 17):
+  - app.mjs: Route ${url} tidak ditemukan  =>  Route ${url} not found
+  - validation.mjs: Field tidak dikenal: a, b  =>  Unknown field: a, b
+  - validation.mjs: Parameter tidak dikenal: a  =>  Unknown parameter: a
+  - rateLimit.mjs: Terlalu banyak ${subject}. Coba lagi dalam N menit.  =>  Too many ${subject}. Try again in N minutes (juga "1 minute", "N seconds", "1 second")
+  - rateLimit.mjs: subject: permintaan (default)  =>  requests
+  - rateLimit.mjs: subject: percobaan login  =>  login attempts
+  - rateLimit.mjs: subject: percobaan pendaftaran  =>  registration attempts
+  - rateLimit.mjs: subject: penambahan anime  =>  requests to add anime
+  - rateLimit.mjs: subject: perubahan profil  =>  profile update requests
+  - rateLimit.mjs: subject: permintaan follow  =>  follow requests
+  - anilist.client.mjs: Terlalu banyak permintaan ke AniList. Coba lagi dalam N detik.  =>  AniList rate limit reached. Try again in N seconds (1 detik → "1 second")
+  - anilist.client.mjs: AniList mengembalikan error (N). Coba lagi nanti.  =>  AniList returned an error (N). Try again later
+  - watchlist.model.mjs: Episode (X) tidak boleh melebihi total episode (Y)  =>  Episodes (X) cannot exceed total episodes (Y)
+  - watchlist.validator.mjs: <label> wajib diisi  =>  <label> is required (label: External ID, Episodes)
+  - watchlist.validator.mjs: status harus salah satu dari: …  =>  Status must be one of: …
+  - watchlist.validator.mjs: tier harus salah satu dari: …  =>  Tier must be one of: …
+  - AMBIGU (lama sama, baru berbeda): "Anime tidak ditemukan"  =>  Anime not found on AniList  |  Anime not found
+
+Tinjau perubahan di atas. Jika sudah sesuai, jalankan ulang dengan --write.
