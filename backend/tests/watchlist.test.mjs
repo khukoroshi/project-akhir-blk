@@ -855,7 +855,9 @@ describe("field lama ditolak (C3)", () => {
 
       expectError(res, 400);
       expect(res.body.message).toContain(`'${field}'`);
-      expect(res.body.message).toContain("Katalog diisi server dari AniList");
+      expect(res.body.message).toContain(
+        "The catalog is filled by the server from AniList",
+      );
       expect(await countWatchlist()).toBe(0);
       expect(anilist.calls).toEqual([]); // rejected before AniList is called
     },

@@ -176,7 +176,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 18. Fase desain: D1, D2, D3 (D3A sampai D3D) selesai; D4 Detail (alihkan AnimeDetail.jsx ke useAddToList); D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
     18a. T1: judul anime romaji di katalog server dan skrip catalog:refresh. (selesai)
     18b. L1: terjemahan frontend (header, laci, footer, tema, Modal, halaman galat). (selesai, kecuali MainLayout.jsx)
-    18c. L2A: terjemahan pesan server. (selesai) L2B: perbarui tes dan koleksi Bruno ke pesan Inggris.
+    18c. L2A: terjemahan pesan server. (selesai) L2B: perbarui tes dan koleksi Bruno ke pesan Inggris. (selesai)
     18d. L3: pesan 500 generik di produksi (log lengkap tetap di server).
 19. Phase 3 (posts, comments, likes, upload gambar, avatar dan banner).
 

@@ -112,7 +112,7 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 | D8   | Poles: kondisi kosong, error, loading, aksesibilitas                  | belum                                    |
 | T1   | Judul romaji di server (skrip catalog:refresh)                        | selesai                                  |
 | L1   | Terjemahan frontend: header, laci, footer, tema, Modal, halaman galat | selesai (kerangka; MainLayout menyusul). |
-| L2   | Terjemahan pesan server ke bahasa Inggris                             | belum                                    |
+| L2   | Terjemahan pesan server ke bahasa Inggris                             | selesai                                  |
 
 ## 10. Halaman Home (D3)
 

@@ -149,6 +149,8 @@ dist
 
 node_modules
 
+Frontend-Code-Documentation-Vault
+
 *.sublime*
 
 .obsidian
