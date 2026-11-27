@@ -83,9 +83,12 @@ function AnimeDetail() {
           <div className="min-w-0 lg:col-start-2 lg:row-start-1">
             <AnimeSynopsis description={anime.description} />
           </div>
+
+          {/* Tambahkan kelas responsif max-w atau atur grid di sini */}
           <div className="min-w-0 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:self-start">
             <AnimeInfoSidebar anime={anime} />
           </div>
+
           <div className="min-w-0 lg:col-start-2 lg:row-start-2">
             <AnimeRelations />
           </div>

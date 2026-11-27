@@ -54,7 +54,12 @@ function AnimeInfoSidebar({ anime }) {
         <h2 id="information-heading" className="mb-3 text-xl font-semibold">
           Information
         </h2>
-        <dl className="space-y-3">
+
+        {/* Mengubah dl menjadi grid responsif: 
+        - Default (HP kecil): 2 kolom
+        - sm / md: 3 sampai 4 kolom agar melebar ke samping dan tidak panjang ke bawah
+        - lg: kembali ke 1 kolom ke bawah seperti semula */}
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-1 lg:space-y-3">
           {items.map(([label, value]) => (
             <div key={label} className="min-w-0">
               <dt className="text-xs font-medium uppercase tracking-wider text-muted">

@@ -8,12 +8,16 @@ const linkClass =
 export default function Footer({ username }) {
   return (
     <footer className="border-t border-border bg-subtle">
-      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <p className="text-sm text-muted">© {YEAR} AniSphere</p>
+      <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-6 sm:px-6 md:flex-row md:justify-between md:gap-6 lg:px-8">
+        {/* Copyright */}
+        <p className="text-center text-sm text-muted md:text-left">
+          © {YEAR} AniSphere
+        </p>
 
+        {/* Navigasi Footer */}
         <nav
           aria-label="Footer"
-          className="flex flex-wrap items-center gap-x-4"
+          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2"
         >
           <Link to="/" className={linkClass}>
             Home
@@ -25,7 +29,8 @@ export default function Footer({ username }) {
           )}
         </nav>
 
-        <p className="text-sm text-muted">
+        {/* Kredit Data */}
+        <p className="text-center text-sm text-muted md:text-right">
           Anime data provided by{" "}
           <a
             href="https://anilist.co"
