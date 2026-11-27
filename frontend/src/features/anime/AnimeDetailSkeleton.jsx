@@ -19,21 +19,20 @@ function AnimeDetailSkeleton() {
         </div>
       </div>
 
-      <Card className="space-y-3 p-4 sm:p-6">
-        <Skeleton className="h-6 w-32" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-11/12" />
-        <Skeleton className="h-4 w-2/3" />
-      </Card>
-
-      <Card className="space-y-3 p-4 sm:p-6">
-        <Skeleton className="h-6 w-40" />
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {Array.from({ length: 7 }, (_, index) => (
-            <Skeleton key={index} className="h-16" />
+      <div className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
+        <Card className="space-y-3 p-4 sm:p-6 lg:col-start-2">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-2/3" />
+        </Card>
+        <Card className="space-y-3 p-4 lg:col-start-1 lg:row-start-1">
+          <Skeleton className="h-6 w-40" />
+          {Array.from({ length: 6 }, (_, index) => (
+            <Skeleton key={index} className="h-10" />
           ))}
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

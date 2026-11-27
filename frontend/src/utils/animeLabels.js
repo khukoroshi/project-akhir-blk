@@ -23,6 +23,24 @@ const SEASON_LABELS = {
   FALL: "Fall",
 };
 
+const SOURCE_LABELS = {
+  ORIGINAL: "Original",
+  MANGA: "Manga",
+  LIGHT_NOVEL: "Light novel",
+  VISUAL_NOVEL: "Visual novel",
+  VIDEO_GAME: "Video game",
+  OTHER: "Other",
+  NOVEL: "Novel",
+  DOUJINSHI: "Doujinshi",
+  ANIME: "Anime",
+  WEB_NOVEL: "Web novel",
+  LIVE_ACTION: "Live action",
+  GAME: "Game",
+  COMIC: "Comic",
+  MULTIMEDIA_PROJECT: "Multimedia project",
+  PICTURE_BOOK: "Picture book",
+};
+
 export function seasonLabel(season) {
   if (!season) return null;
   return SEASON_LABELS[season] ?? null;
@@ -42,4 +60,9 @@ export function formatLabel(format) {
 export function statusLabel(status) {
   if (!status) return "-";
   return STATUS_LABELS[status] ?? status.replaceAll("_", " ");
+}
+
+export function sourceLabel(source) {
+  if (!source) return null;
+  return SOURCE_LABELS[source] ?? source.replaceAll("_", " ");
 }

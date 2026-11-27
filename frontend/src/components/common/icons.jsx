@@ -26,4 +26,5 @@ export {
   Pause,
   Play,
   Bookmark,
+  ExternalLink,
 } from "lucide-react";

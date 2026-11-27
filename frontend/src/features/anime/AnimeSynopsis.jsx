@@ -20,7 +20,7 @@ function AnimeSynopsis({ description }) {
       </h2>
       {safeDescription ? (
         <div
-          className="max-w-4xl leading-7 text-muted [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5"
+          className="leading-7 text-muted [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5"
           dangerouslySetInnerHTML={{ __html: safeDescription }}
         />
       ) : (

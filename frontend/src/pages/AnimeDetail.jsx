@@ -8,7 +8,9 @@ import { ChevronLeft } from "../components/common/icons";
 import { useAuth } from "../context/useAuth";
 import AnimeDetailSkeleton from "../features/anime/AnimeDetailSkeleton";
 import AnimeHero from "../features/anime/AnimeHero";
-import AnimeInfoGrid from "../features/anime/AnimeInfoGrid";
+import AnimeCharacters from "../features/anime/AnimeCharacters";
+import AnimeInfoSidebar from "../features/anime/AnimeInfoSidebar";
+import AnimeRelations from "../features/anime/AnimeRelations";
 import AnimeSynopsis from "../features/anime/AnimeSynopsis";
 import useAnimeDetail from "../features/anime/useAnimeDetail";
 import MainLayout from "../layouts/MainLayout";
@@ -75,8 +77,22 @@ function AnimeDetail() {
       <>
         {backButton}
         <AnimeHero key={anime.id} anime={anime} />
-        <AnimeSynopsis description={anime.description} />
-        <AnimeInfoGrid anime={anime} />
+
+        {/* Below lg: one column in DOM order. From lg: sidebar left, rest right. */}
+        <div className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:grid-rows-[auto_auto_1fr]">
+          <div className="min-w-0 lg:col-start-2 lg:row-start-1">
+            <AnimeSynopsis description={anime.description} />
+          </div>
+          <div className="min-w-0 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:self-start">
+            <AnimeInfoSidebar anime={anime} />
+          </div>
+          <div className="min-w-0 lg:col-start-2 lg:row-start-2">
+            <AnimeRelations />
+          </div>
+          <div className="min-w-0 lg:col-start-2 lg:row-start-3 lg:self-start">
+            <AnimeCharacters />
+          </div>
+        </div>
       </>
     );
   }
