@@ -25,4 +25,5 @@ export {
   MessagesSquare,
   Pause,
   Play,
+  Bookmark,
 } from "lucide-react";

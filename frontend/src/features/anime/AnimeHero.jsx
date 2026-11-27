@@ -2,13 +2,15 @@ import { useState } from "react";
 
 import Badge from "../../components/common/Badge";
 import Button from "../../components/common/Button";
-import { Check, Star } from "../../components/common/icons";
+import { Bookmark, Check, Play, Star } from "../../components/common/icons";
 import {
   formatLabel,
   getAnimeTitle,
   statusLabel,
 } from "../../utils/animeLabels";
 import useAddToList from "../watchlist/useAddToList";
+import AnimeScoreCard from "./AnimeScoreCard";
+import ComingSoonButton from "./ComingSoonButton";
 
 const STATUS_TONES = {
   RELEASING: "success",
@@ -104,23 +106,39 @@ function AnimeHero({ anime }) {
         />
       </div>
 
-      <div className="flex flex-col gap-4 px-4 sm:px-6 lg:flex-row lg:gap-6">
-        {/* Poster hangs over the banner (negative margin on the poster only) */}
-        <div className="relative z-10 -mt-24 w-32 shrink-0 overflow-hidden rounded-md border border-border bg-subtle sm:-mt-32 sm:w-44 lg:-mt-40 lg:w-56">
-          <div className="aspect-[2/3]">
-            {poster && (
-              <img
-                src={poster}
-                alt={title}
-                loading="eager"
-                decoding="async"
-                className="size-full object-cover"
-              />
-            )}
+      {/* Below lg: one centered column. From lg: poster | text | score card. */}
+      <div className="relative flex flex-col items-center gap-4 px-4 sm:px-6 md:flex-row md:justify-center md:gap-6 md:flex-nowrap lg:items-start">
+        {/* Poster hangs over the banner; self-start stops it stretching */}
+        <div className="relative z-10 -mt-24 w-32 shrink-0 space-y-3 self-center sm:-mt-32 sm:w-44 lg:-mt-40 lg:w-56 lg:self-start">
+          <div className="overflow-hidden rounded-md border border-border bg-subtle">
+            <div className="aspect-[2/3]">
+              {poster && (
+                <img
+                  src={poster}
+                  alt={title}
+                  loading="eager"
+                  decoding="async"
+                  className="size-full object-cover"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <ComingSoonButton label="Watch trailer" variant="danger">
+              <Play size={18} aria-hidden="true" />
+            </ComingSoonButton>
+            <ComingSoonButton
+              label="Bookmark"
+              variant="secondary"
+              className="text-accent"
+            >
+              <Bookmark size={18} aria-hidden="true" />
+            </ComingSoonButton>
           </div>
         </div>
 
-        <div className="min-w-0 flex-1 space-y-3 lg:pt-4">
+        <div className="min-w-0 lg:flex-1 space-y-3 text-center lg:pt-4 md:text-left md:flex-initial">
           <h1 className="wrap-break-word text-2xl font-semibold leading-tight text-fg sm:text-3xl">
             {title}
           </h1>
@@ -131,7 +149,7 @@ function AnimeHero({ anime }) {
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
             {format && <Badge>{format}</Badge>}
             {anime.status && (
               <Badge tone={STATUS_TONES[anime.status] ?? "neutral"}>
@@ -139,7 +157,7 @@ function AnimeHero({ anime }) {
               </Badge>
             )}
             {anime.averageScore != null && (
-              <Badge>
+              <Badge className="lg:hidden">
                 <Star size={12} aria-hidden="true" />
                 <span className="sr-only">Score </span>
                 {(anime.averageScore / 10).toFixed(1)}
@@ -148,7 +166,7 @@ function AnimeHero({ anime }) {
           </div>
 
           {anime.genres?.length > 0 && (
-            <ul className="flex flex-wrap gap-2">
+            <ul className="flex flex-wrap justify-center gap-2 md:justify-start">
               {anime.genres.map((genre) => (
                 <li key={genre}>
                   <Badge tone="accent">{genre}</Badge>
@@ -157,7 +175,7 @@ function AnimeHero({ anime }) {
             </ul>
           )}
 
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="flex flex-wrap justify-center gap-2 pt-1 md:justify-start">
             {renderAddButton("watching", "+ Watchlist", "primary")}
             {renderAddButton("plan to watch", "+ Plan to Watch", "secondary")}
           </div>
@@ -171,6 +189,12 @@ function AnimeHero({ anime }) {
             {feedback?.text}
           </p>
         </div>
+
+        {/* Laptop only; below lg the small score badge above is used instead */}
+        <AnimeScoreCard
+          averageScore={anime.averageScore}
+          className="hidden w-52 shrink-0 lg:flex absolute lg:right-8 top-1/2 -translate-y-1/2"
+        />
       </div>
     </header>
   );

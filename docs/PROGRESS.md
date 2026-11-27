@@ -62,7 +62,7 @@
 - Home (D3B): components/common/{AnimeGridSkeleton, Pagination, FilterTabs, DaftarAnime, CardImage}.jsx sudah memakai token. utils/animeLabels.js berisi formatLabel dan statusLabel.
 - Home (D3C): tampilan grid/daftar lewat ?view=list (grid default, nilai lain dianggap grid). components/common/{AnimeListItem, ViewToggle}.jsx baru; DaftarAnime dan AnimeGridSkeleton menerima prop view. utils/catalogLayout.js (kelas grid bersama), utils/catalogFilters.js memuat buildCatalogPath dan parseCatalogView (semua URL katalog dibangun lewat sini). utils/animeLabels.js memuat getAnimeTitle dan seasonLabel; label status berbahasa Inggris.
 - Home (D3D): features/anime/{useFeatured.js, FeaturedCarousel.jsx, FeaturedSlide.jsx, FeaturedRow.jsx}, features/watchlist/useAddToList.js, features/community/ForumPanel.jsx, hooks/usePrefersReducedMotion.js. icons.jsx menambah MessagesSquare, Pause, Play. Baris unggulan tampil di atas hero hanya bila tanpa ?q= dan page = 1.
-- Detail (D4): features/anime/{useAnimeDetail.js, AnimeHero.jsx, AnimeSynopsis.jsx, AnimeInfoGrid.jsx, AnimeDetailSkeleton.jsx}. pages/AnimeDetail.jsx hanya merangkai hook dan komponen (MainLayout username tetap dipakai).
+- Detail (D4): features/anime/{useAnimeDetail.js, AnimeHero.jsx, AnimeScoreCard.jsx, ComingSoonButton.jsx, AnimeSynopsis.jsx, AnimeInfoGrid.jsx, AnimeDetailSkeleton.jsx}. pages/AnimeDetail.jsx hanya merangkai hook dan komponen (MainLayout username tetap dipakai).
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
 - Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
@@ -157,6 +157,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Detail belum tahu apakah anime sudah ada di list saat halaman dibuka: "In your list" muncul setelah menambah atau setelah server menjawab 409. API.md belum mencantumkan 409 untuk POST /anime. Cek daftar saat dibuka butuh keputusan terpisah (mis. GET /anime atau endpoint cek).
 - Galat id tidak valid (400) pada GET /catalog/anime/:id ditampilkan sama dengan 404 ("Anime not found").
 - ErrorApiPage masih memakai warna mentah (red-600, #666); dirapikan di D8.
+- Tombol Trailer dan Bookmark di Detail hanya placeholder (tooltip "Coming soon"). Trailer menunggu keputusan apakah GET /catalog/anime/:id perlu meminta field trailer AniList (ubah backend dan API.md). Bookmark menunggu fitur bookmark.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -280,3 +281,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File baru: frontend/src/features/anime/{useAnimeDetail.js, AnimeHero.jsx, AnimeSynopsis.jsx, AnimeInfoGrid.jsx, AnimeDetailSkeleton.jsx}
   - Keputusan baru: useAnimeDetail menyimpan hasil bersama kunci id (data lama tidak tampil saat id berubah) dan membatalkan permintaan lewat AbortController. useAddToList menambah field alreadyInList (status 409) pada hasil galat; bentuk hasil lain tidak berubah. Judul utama Detail kini romaji (sebelumnya english dahulu). Label format dan status dari animeLabels.js (status "Not yet released", bukan "Upcoming"). Tidak ada perubahan backend, API.md, rute, atau library.
   - Berikutnya: D5 (MyList).
+- - **2026-11-27** — D4b (revisi hero Detail)
+  - Selesai: kartu skor (teks "Score 9.0" dan 5 bintang, bintang separuh) di kanan hero, hanya dari lg; di bawah lg kembali ke lencana skor kecil. Di bawah poster ada dua tombol ikon (Trailer: danger bergaris, Bookmark: secondary dengan ikon accent) berupa placeholder dengan tooltip "Coming soon" (hover, fokus, dan tap). Di bawah lg poster, teks, lencana, genre, dan tombol diratakan tengah; di lg tetap rata kiri. Kotak poster tidak lagi meregang (self-start).
+  - File diubah: frontend/src/features/anime/AnimeHero.jsx, frontend/src/components/common/icons.jsx
+  - File baru: frontend/src/features/anime/{AnimeScoreCard.jsx, ComingSoonButton.jsx}
+  - Keputusan baru: bintang = averageScore / 20; pecahan di bawah 0,25 turun, 0,25 sampai 0,75 jadi setengah, di atas 0,75 naik. Tooltip berbahasa Inggris sesuai PRD aturan 12. Tidak ada perubahan backend, API.md, rute, atau library.
+  - Berikutnya: revisi Sinopsis dan Information (prompt berikutnya), lalu D5 (MyList).
