@@ -105,7 +105,7 @@ Teks putih di atas isi terang bernilai minimal 5,0:1; teks gelap di atas isi gel
 | D1   | Fondasi: tema, token, komponen dasar, ikon                            | selesai                                  |
 | D2   | Kerangka: header, navigasi ponsel, footer, wadah halaman              | selesai                                  |
 | D3   | Home dan katalog                                                      | selesai (D3A sampai D3D)                 |
-| D4   | Detail anime                                                          | belum                                    |
+| D4   | Detail anime                                                          | selesai                                  |
 | D5   | MyList                                                                | belum                                    |
 | D6   | Profil, edit profil, aksen (plus backend 006)                         | belum                                    |
 | D7   | Login dan Register                                                    | belum                                    |

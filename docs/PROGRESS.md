@@ -6,9 +6,9 @@
 
 ## 1. Posisi Saat Ini
 
-- **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2, D3 selesai. L1 selesai (kerangka).
+- **Phase aktif:** Phase 2 selesai. Fase desain: D0, D1, D2, D3, D4 selesai. L1 selesai (kerangka).
 - **Sedang dikerjakan:** -
-- **Berikutnya:** L2B (perbarui tes Supertest dan koleksi Bruno ke pesan Inggris), lalu D4 sampai D8 (tiap chat desain menerjemahkan berkas yang disentuhnya).
+- **Berikutnya:** D5 (MyList), lalu D6 sampai D8 (tiap chat desain menerjemahkan berkas yang disentuhnya).
 
 ## 2. Stack Aktual (sesuai repo)
 
@@ -62,6 +62,7 @@
 - Home (D3B): components/common/{AnimeGridSkeleton, Pagination, FilterTabs, DaftarAnime, CardImage}.jsx sudah memakai token. utils/animeLabels.js berisi formatLabel dan statusLabel.
 - Home (D3C): tampilan grid/daftar lewat ?view=list (grid default, nilai lain dianggap grid). components/common/{AnimeListItem, ViewToggle}.jsx baru; DaftarAnime dan AnimeGridSkeleton menerima prop view. utils/catalogLayout.js (kelas grid bersama), utils/catalogFilters.js memuat buildCatalogPath dan parseCatalogView (semua URL katalog dibangun lewat sini). utils/animeLabels.js memuat getAnimeTitle dan seasonLabel; label status berbahasa Inggris.
 - Home (D3D): features/anime/{useFeatured.js, FeaturedCarousel.jsx, FeaturedSlide.jsx, FeaturedRow.jsx}, features/watchlist/useAddToList.js, features/community/ForumPanel.jsx, hooks/usePrefersReducedMotion.js. icons.jsx menambah MessagesSquare, Pause, Play. Baris unggulan tampil di atas hero hanya bila tanpa ?q= dan page = 1.
+- Detail (D4): features/anime/{useAnimeDetail.js, AnimeHero.jsx, AnimeSynopsis.jsx, AnimeInfoGrid.jsx, AnimeDetailSkeleton.jsx}. pages/AnimeDetail.jsx hanya merangkai hook dan komponen (MainLayout username tetap dipakai).
 - Halaman: `Home`, `MyList` (protected), `AnimeDetail`, `Profile` (publik, /u/:username), `ProfileEdit` (protected, /profile/edit), `NotFound`. Login dan Register berupa komponen form yang dipakai langsung sebagai route.
 - Fitur profil: `features/profile/{profileApi.js, profileErrors.js, useProfile.js, ProfileHeader.jsx, ProfileStats.jsx, ScoreDistribution.jsx, ProfileStatus.jsx, ProfileEditForm.jsx, FollowButton.jsx}`. `pages/Profile.jsx` dan `pages/ProfileEdit.jsx` hanya merangkai hook dan komponen.
 - Baru `features/profile` yang mengikuti struktur PRD; komponen lama di `components/features/{anime,aunt,user}` dipindahkan saat fase desain.
@@ -140,11 +141,11 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Gambar berat: public/favicon.png (304 KB) dan public/logo.png (250 KB). Optimalkan.
 - Nama berkas logo di Header.jsx (LOGO_SRC) harus sama dengan berkas di frontend/public/.
 - Halaman lama masih memakai warna mentah (`slate-*`, `bg-white`) dan belum memakai token; dirapikan di D3 sampai D7.
-- utils/formatStatus tidak lagi dipakai CardImage; cek apakah masih dipakai halaman lain, hapus bila tidak. LoadingPage tidak lagi dipakai Home; cek pemakai lain.
+- utils/formatStatus.js dan utils/formatValue.js tidak lagi diimpor AnimeDetail (kini memakai animeLabels.js); berkas belum dihapus dan pemakai lain belum diperiksa.
 - AnimeListItem memakai div dengan kelas yang sama seperti CardImage, bukan komponen Card. Samakan ke Card di D8 bila Card cocok.
-- Teks antarmuka Inggris sudah mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, komponen D3C, Header, NavDrawer, Footer, ThemeToggle, Modal, ErrorApiPage, NotFound, dan formatDate (L1). Masih memuat teks Indonesia: layouts/MainLayout.jsx ("Skip to content"), features/profile/\*, pages/Profile.jsx, pages/ProfileEdit.jsx, LoginForm dan form Register (components/features/aunt), MyList, AnimeDetail, components/features/{anime,user}, ProtectedRoute.jsx. Dirapikan per chat desain.
-- Pemanggil formatDate (ProfileHeader, AnimeDetail, MyList) perlu dicek saat berkasnya disentuh. formatDate hanya menerima { year, month, day }; periksa apakah joinedAt (string ISO) di ProfileHeader benar-benar lewat fungsi ini.
-- getAnimeTitle dipakai di Home dan carousel; tinggal Detail (D4) dan tempat lain yang menampilkan judul AniList.
+- Teks antarmuka Inggris sudah mencakup Home, FilterTabs, Pagination, CardImage, animeLabels, komponen D3C, Header, NavDrawer, Footer, ThemeToggle, Modal, ErrorApiPage, NotFound, dan formatDate (L1), AnimeDetail (D4). Masih memuat teks Indonesia: layouts/MainLayout.jsx ("Skip to content"), features/profile/\*, pages/Profile.jsx, pages/ProfileEdit.jsx, LoginForm dan form Register (components/features/aunt), MyList, components/features/{anime,user}, ProtectedRoute.jsx. Dirapikan per chat desain.
+- Pemanggil formatDate (ProfileHeader, MyList) perlu dicek saat berkasnya disentuh. formatDate hanya menerima { year, month, day }; periksa apakah joinedAt (string ISO) di ProfileHeader benar-benar lewat fungsi ini.
+- getAnimeTitle dipakai di Home, carousel, dan Detail. Tinggal tempat lain yang menampilkan judul AniList (MyList memakai anim_title dari server).
 - AnimeDetail.jsx masih memiliki handleAddToList sendiri (kata-kata Indonesia, mengirim tier/score/notes null). Dialihkan ke useAddToList di D4.
 - L2A selesai: semua pesan server (AppError, Zod, controller, middleware auth/CSRF/validate, pembatas laju, klien AniList) berbahasa Inggris. Pesan batas laju memakai detik bila sisa waktu < 60 detik, selain itu menit ("1 minute" / "N minutes"). Tes Supertest dan koleksi Bruno yang memeriksa teks Indonesia belum diperbarui (L2B); kode status tidak berubah.
 - Error tak terduga (500) meneruskan err.message mentah ke klien (error.middleware dan controller katalog). Pertimbangkan pesan generik di produksi.
@@ -153,6 +154,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
 - Cache useFeatured hanya di memori modul (hilang saat reload); TTL 5 menit, dibersihkan saat Try again.
 - `pnpm catalog:refresh` adalah skrip pemeliharaan sekali pakai (T1) untuk judul lama yang masih english. Setelah dijalankan di kedua perangkat, skrip, fungsi refreshCatalog, getAnimeBatches, dan tes-nya boleh dihapus.
 - Wajib dilakukan sendiri: backup, lalu pnpm catalog:refresh --dry-run dan pnpm catalog:refresh di tiap perangkat.
+- Detail belum tahu apakah anime sudah ada di list saat halaman dibuka: "In your list" muncul setelah menambah atau setelah server menjawab 409. API.md belum mencantumkan 409 untuk POST /anime. Cek daftar saat dibuka butuh keputusan terpisah (mis. GET /anime atau endpoint cek).
+- Galat id tidak valid (400) pada GET /catalog/anime/:id ditampilkan sama dengan 404 ("Anime not found").
+- ErrorApiPage masih memakai warna mentah (red-600, #666); dirapikan di D8.
 
 ## 9. Rencana Berikutnya (urutan disarankan)
 
@@ -173,7 +177,7 @@ Status hasil pemeriksaan kode, bukan asumsi.
 15. Hapus tabel animes lama dan 2 stored procedure, rapikan project_akhir_blk.sql, cek db-project-test.sql (tugas terpisah).(selesai)
 16. Refactor backend ke modules/ (16A sampai 16D). (selesai)
 17. Phase 2 (profil dan follow): 2A, 2B, 2C, dan 2D. (selesai)
-18. Fase desain: D1, D2, D3 (D3A sampai D3D) selesai; D4 Detail (alihkan AnimeDetail.jsx ke useAddToList); D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
+18. Fase desain: D1, D2, D3 (D3A sampai D3D) selesai; 18: D4 Detail selesai; berikutnya D5 MyList; D6 Profil + aksen (plus backend migrasi 006); D7 Login dan Register; D8 poles.
     18a. T1: judul anime romaji di katalog server dan skrip catalog:refresh. (selesai)
     18b. L1: terjemahan frontend (header, laci, footer, tema, Modal, halaman galat). (selesai, kecuali MainLayout.jsx)
     18c. L2A: terjemahan pesan server. (selesai) L2B: perbarui tes dan koleksi Bruno ke pesan Inggris. (selesai)
@@ -270,3 +274,9 @@ Status hasil pemeriksaan kode, bukan asumsi.
   - File diubah: backend/src/app.mjs, src/middlewares/{auth,csrf,validate}.middleware.mjs, src/config/rateLimit.mjs, src/utils/validation.mjs, src/integrations/anilist/anilist.client.mjs, src/modules/anime/{anime.controller,anime.validator,catalog.service}.mjs, src/modules/auth/{auth.controller,auth.service,auth.validator}.mjs, src/modules/users/{users.service,users.validator}.mjs, src/modules/watchlist/{watchlist.controller,watchlist.model,watchlist.validator}.mjs, API.md
   - Keputusan baru: gaya pesan = kalimat singkat, huruf besar di awal, tanpa titik akhir. Label Zod memakai nama manusiawi (External ID, Episodes, Privacy setting). Password dipecah per aturan. Konstanta USER_NOT_FOUND, NOT_IN_LIST, externalIdMsg. rateLimit.mjs punya helper formatWait (detik bila < 60 dtk, selain itu menit); subject limiter berbahasa Inggris. Pesan 401 dibedakan: "Authentication required" (tanpa cookie) dan "Session is invalid or has expired".
   - Berikutnya: L2B (tes Supertest dan koleksi Bruno), lalu D4 (Detail anime).
+- **2026-11-27** — D4 (Detail anime)
+  - Selesai: pemecahan AnimeDetail.jsx (355 baris) menjadi hook dan komponen. Hero: strip banner (h-40 sm:h-56 lg:h-64, fallback bg-subtle dengan gradien dari coverImage.color bila valid #RRGGBB), lapisan bawah menyatu ke canvas, poster menjorok ke bawah strip (di atas judul di ponsel, di kiri judul di lg), H1 romaji lewat getAnimeTitle, judul alternatif (english dan native bila berbeda), lencana format, status (nada sesuai status), skor (averageScore / 10, 1 desimal) dan genre. Tombol "+ Watchlist" dan "+ Plan to Watch" lewat useAddToList (anonim ke /login dengan state.from, penjaga klik ganda, pesan aria-live); tombol yang dipakai menjadi "In your list" dan nonaktif, juga untuk jawaban 409. Sinopsis (DOMPurify, daftar tag sama) dan Information (grid 2 kolom, 4 di lg; nilai kosong "-") dalam Card. Loading = Skeleton yang meniru tata letak, error = ErrorApiPage + "Back to home", 404 dan 400 = "Anime not found". Tombol Back (ikon ChevronLeft, 44px) berperilaku sama seperti sebelumnya. document.title = "<judul> - AniSphere", dipulihkan saat dilepas.
+  - File diubah: frontend/src/pages/AnimeDetail.jsx, frontend/src/features/watchlist/useAddToList.js
+  - File baru: frontend/src/features/anime/{useAnimeDetail.js, AnimeHero.jsx, AnimeSynopsis.jsx, AnimeInfoGrid.jsx, AnimeDetailSkeleton.jsx}
+  - Keputusan baru: useAnimeDetail menyimpan hasil bersama kunci id (data lama tidak tampil saat id berubah) dan membatalkan permintaan lewat AbortController. useAddToList menambah field alreadyInList (status 409) pada hasil galat; bentuk hasil lain tidak berubah. Judul utama Detail kini romaji (sebelumnya english dahulu). Label format dan status dari animeLabels.js (status "Not yet released", bukan "Upcoming"). Tidak ada perubahan backend, API.md, rute, atau library.
+  - Berikutnya: D5 (MyList).

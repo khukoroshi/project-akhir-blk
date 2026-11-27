@@ -5,8 +5,9 @@ import { useAuth } from "../../context/useAuth";
 import api from "../../services/api";
 
 /*
- * addToList(externalId, status, title) -> { ok, message } | null
+ * addToList(externalId, status, title) -> { ok, message, alreadyInList? } | null
  * null = nothing happened (redirected to login, or a request is in flight).
+ * alreadyInList = true when the server answers 409.
  */
 export default function useAddToList() {
   const { isAuthenticated } = useAuth();
@@ -36,6 +37,7 @@ export default function useAddToList() {
       } catch (error) {
         return {
           ok: false,
+          alreadyInList: error.response?.status === 409,
           message: error.response?.data?.message || "Failed to add anime.",
         };
       } finally {
